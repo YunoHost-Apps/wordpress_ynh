@@ -76,7 +76,7 @@ $table_prefix  = 'wp_';
  * Par exemple, pour mettre en place une traduction française, mettez le fichier
  * fr_FR.mo dans wp-content/languages, et réglez l'option ci-dessous à "fr_FR".
  */
-define('WPLANG', 'fr_FR');
+define('WPLANG', 'en_EN');
 
 /** 
  * Pour les développeurs : le mode deboguage de WordPress.

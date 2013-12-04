@@ -15,7 +15,7 @@ fi
 db_user=wordpress
 
 # Initialize database and store mysql password for upgrade
-sudo yunohost app initdb $db_user -p $db_pwd)
+sudo yunohost app initdb $db_user -p $db_pwd
 sudo yunohost app setting wordpress mysqlpwd -v $db_pwd
 
 # Copy files to the right place

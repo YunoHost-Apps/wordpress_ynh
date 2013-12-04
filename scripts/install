@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Retrieve arguments
+domain=$1
+path=$2
+admin_passwd=$3
+
+# Check domain/path availability
+sudo yunohost app checkurl $domain$path -a wordpress
+if [[ ! $? -eq 0 ]]; then
+    exit 1
+fi
+
+# Use 'wordpress' as database name and user
+db_user=wordpress
+
+# Initialize database and store mysql password for upgrade
+sudo yunohost app initdb $db_user -p $db_pwd)
+sudo yunohost app setting wordpress mysqlpwd -v $db_pwd
+
+# Copy files to the right place
+final_path=/var/www/wordpress
+sudo mkdir -p $final_path
+sudo cp -a ../sources/* $final_path
+sudo cp ../conf/wp-config.php $final_path/config/
+
+# Change variables in Wordpress configuration
+sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
+sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
+sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+
+# Set permissions to roundcube directory
+sudo chown -R www-data: $final_path
+
+#Installation Wordpress
+curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://dev.example.com/yeshello/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=yeshello&user_name=admin&admin_password=admin&admin_password2=admin&admin_email=mathias%40example.com&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
+sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+
+# Reload Nginx and regenerate SSOwat conf
+sudo service nginx reload
+sudo yunohost app ssowatconf

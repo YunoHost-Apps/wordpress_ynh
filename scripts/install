@@ -22,7 +22,7 @@ sudo yunohost app setting wordpress mysqlpwd -v $db_pwd
 final_path=/var/www/wordpress
 sudo mkdir -p $final_path
 sudo cp -a ../sources/* $final_path
-sudo cp ../conf/wp-config.php $final_path/config/
+sudo cp ../conf/wp-config.php $final_path/wp-config.php
 
 # Change variables in Wordpress configuration
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php

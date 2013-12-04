@@ -36,7 +36,7 @@ sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
 sudo chown -R www-data: $final_path
 
 #Installation Wordpress
-curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://dev.example.com/yeshello/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=yeshello&user_name=admin&admin_password=admin&admin_password2=admin&admin_email=mathias%40example.com&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
+curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf

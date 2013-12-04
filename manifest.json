@@ -25,16 +25,14 @@
                 "ask": {
                     "en": "Choose a path for Wordpress"
                 },
-                "example": "/blog",
-                "default": ""
+                "example": "/blog"
             },
             {
                 "name": "admin_passwd",
                 "ask": {
                     "en": "Choose a password for Wordpress administrator"
                 },
-                "example": "",
-                "default": ""
+                "example": ""
             }
 
         ]

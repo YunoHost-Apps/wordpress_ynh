@@ -4,6 +4,7 @@
 domain=$1
 path=$2
 admin_passwd=$3
+root_pwd=$(sudo cat /etc/yunohost/mysql)
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpress
@@ -31,7 +32,7 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
-sudo sed -i "s/URLWORDPRESS/$domain$path/g" ../conf/*.sql
+sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
 
 # Set permissions to roundcube directory
 sudo chown -R www-data: $final_path
@@ -54,8 +55,8 @@ if [ $4 = "n" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d
 	sudo yunohost app ssowatconf
-	mysql -u $db_user -p $db_pwd $db_user < ../conf/private.sql
+	mysql -u root -p$root_pwd wordpress < ../conf/private.sql
 else
-	mysql -u $db_user -p $db_pwd $db_user < ../conf/public.sql
+	mysql -u root -p$root_pwd wordpress < ../conf/public.sql
 fi
 sudo sed -i '/wordpress/d' /etc/hosts

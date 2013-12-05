@@ -31,6 +31,7 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+sudo sed -i "s/URLWORDPRESS/$domain$path/g" ../conf/*.sql
 
 # Set permissions to roundcube directory
 sudo chown -R www-data: $final_path

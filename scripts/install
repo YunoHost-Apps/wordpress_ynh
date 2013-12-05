@@ -60,4 +60,4 @@ sudo yunohost app ssowatconf
 
 # Remove swap
 sudo swapoff /var/swap.1
-rm -Rf /var/swap.1
+sudo rm -Rf /var/swap.1

@@ -43,7 +43,7 @@ sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
 #Installation Wordpress
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
-sudo yunohost app setting wordpress skipped_uris -v "$path"
+sudo yunohost app setting wordpress skipped_uris -v "/"
 sudo yunohost app ssowatconf
 
 #Installation Wordpress

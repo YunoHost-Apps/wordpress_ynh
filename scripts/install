@@ -40,12 +40,19 @@ sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
 sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
 
+#Installation Wordpress
+sudo dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+sudo mkswap /var/swap.1
+sudo swapon /var/swap.1
+dpkg -l | grep php5-cli > /dev/null 2>&1
+if [ $? != 0 ];
+then
+	apt-get install php5-cli
+fi
+curl https://raw.github.com/wp-cli/wp-cli.github.com/master/installer.sh | bash
+wp core install --url=$domain$path --title=Yunohost --admin_user=admin --admin_password=$admin_passwd --admin_email=admin@$domain --path=$final_path
+wp plugin activate http-authentication --path=$final_path
+
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
-sudo yunohost app setting wordpress skipped_uris -v "$path/wp-admin"
-sudo yunohost app ssowatconf
-
-#Installation Wordpress
-curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress > /dev/null 2>&1
-sudo yunohost app setting wordpress skipped_uris -v ""
 sudo yunohost app ssowatconf

@@ -33,7 +33,7 @@
                     "en": "Choose a password for Wordpress administrator"
                 },
                 "example": ""
-            }
+            },
             {
                 "name": "public_site",
                 "ask": {

@@ -39,7 +39,7 @@
                 "ask": {
                     "en": "Is it a public Wordpress site ? (Y/n)"
                 },
-                "default": "Y"
+                "example": "Y"
             }
 
 

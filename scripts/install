@@ -50,9 +50,14 @@ then
 	apt-get install php5-cli
 fi
 curl https://raw.github.com/wp-cli/wp-cli.github.com/master/installer.sh | bash
+export PATH=/home/admin/.wp-cli/bin:$PATH
 wp core install --url=$domain$path --title=Yunohost --admin_user=admin --admin_password=$admin_passwd --admin_email=admin@$domain --path=$final_path
 wp plugin activate http-authentication --path=$final_path
 
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
 sudo yunohost app ssowatconf
+
+# Remove swap
+sudo swapoff /var/swap.1
+rm -Rf /var/swap.1

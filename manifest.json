@@ -3,11 +3,11 @@
     "id": "wordpress",
     "description": {
         "en": "WordPress is web software you can use to create a beautiful website or blog",
-        "fr": "Outils de création de Blog ou de site web"
+        "fr": "Logiciel de création de blog ou de site Web"
     },
     "developer": {
         "name": "beudbeud",
-        "email": "beudbeud@beudibox.Fr",
+        "email": "beudbeud@beudibox.fr",
         "url": "http://wordpress.org/"
     },
     "multi_instance": "true",
@@ -25,21 +25,22 @@
                 "ask": {
                     "en": "Choose a path for Wordpress"
                 },
-                "example": "/blog"
+                "example": "/blog",
+                "default": "/blog"
             },
             {
                 "name": "admin_passwd",
                 "ask": {
                     "en": "Choose a password for Wordpress administrator"
-                },
-                "example": ""
+                }
             },
             {
                 "name": "public_site",
                 "ask": {
-                    "en": "Is it a public Wordpress site ? (Y/n)"
+                    "en": "Is it a public Wordpress site ?"
                 },
-                "example": "Y"
+                "example": "Y/n",
+                "default": "Y"
             }
 
 

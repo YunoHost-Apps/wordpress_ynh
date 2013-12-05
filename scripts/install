@@ -53,5 +53,8 @@ if [ $4 = "n" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d
 	sudo yunohost app ssowatconf
+	mysql -u $db_user -p $db_pwd $db_user < ../conf/private.sql
+else
+	mysql -u $db_user -p $db_pwd $db_user < ../conf/public.sql
 fi
 sudo sed -i '/wordpress/d' /etc/hosts

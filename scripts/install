@@ -36,6 +36,12 @@ sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
 for i in 1 2 3 4 5 6 7 8
 do
     j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    if [ $j = "" ];
+    then
+        # For obscure reasons, the loop is too fast at execution
+        sleep 1
+        j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    fi
     sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
 done
 sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php

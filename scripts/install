@@ -4,6 +4,8 @@
 domain=$1
 path=$2
 admin_passwd=$3
+language=$4
+is_public=$5
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpress
@@ -31,6 +33,8 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+sudo sed -i "s/KEYSTOCHANGE/$(curl https://api.wordpress.org/secret-key/1.1/salt/)/g" $final_path/wp-config.php
+sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
 sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
 
 # Set permissions to roundcube directory
@@ -61,7 +65,7 @@ do
 	let loop_number++
 done
 
-if [ $4 = "No" ];
+if [ $is_public = "No" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d
 	sudo yunohost app ssowatconf

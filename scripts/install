@@ -41,15 +41,23 @@ sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
 sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
 
-#Installation Wordpress
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
 sudo yunohost app setting wordpress skipped_uris -v "/"
 sudo yunohost app ssowatconf
 
 #Installation Wordpress
-echo '127.0.0.1 $domain #wordpress' | sudo tee -a /etc/hosts
+echo "127.0.0.1 $domain #wordpress" | sudo tee -a /etc/hosts
 curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
+mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+RESULT=$?
+while [ $RESULT != 0 ];
+do
+	sleep 5
+	mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+	RESULT=$?
+done
+
 if [ $4 = "n" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d

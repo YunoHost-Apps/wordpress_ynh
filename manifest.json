@@ -35,6 +35,14 @@
                 }
             },
             {
+                "name": "language",
+                "ask": {
+                    "en": "Choose the language of the Wordpress site"
+                },
+                "choices": ["en_EN", "fr_FR"],
+                "default": "en_EN"
+            },
+            {
                 "name": "public_site",
                 "ask": {
                     "en": "Is it a public Wordpress site ?"

@@ -54,7 +54,7 @@ check_sql=$(mysql -p wordpress -e "select * from wp_options;" > /dev/null 2>&1)
 while [ $check_sql != 0 ];
 do
 	sleep 5
-	check_sql=$(mysql -p wordpress -e "select * from wp_options;" > /dev/null 2>&1)
+	check_sql=$(mysql -p $db_user -e "select * from wp_options;" > /dev/null 2>&1)
 done
 
 if [ $4 = "n" ];

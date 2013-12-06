@@ -33,7 +33,7 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
-keys=$(curl https://api.wordpress.org/secret-key/1.1/salt/ -kL)
+keys=$(wget -qO - https://api.wordpress.org/secret-key/1.1/salt/)
 sudo sed -i "s/KEYSTOCHANGE/$keys/g" $final_path/wp-config.php
 sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
 sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql

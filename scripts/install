@@ -50,7 +50,7 @@ sudo yunohost app ssowatconf
 #Installation Wordpress
 echo '127.0.0.1 $domain #wordpress' | sudo tee -a /etc/hosts
 curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
-check_sql=$(mysql -u $db_user -p$db_pwd wordpress -e "select * from wp_options;" > /dev/null 2>&1)
+check_sql=$(mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1)
 while [ $check_sql != 0 ];
 do
 	sleep 5

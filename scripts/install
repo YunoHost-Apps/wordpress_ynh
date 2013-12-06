@@ -15,6 +15,14 @@ fi
 
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
+key1=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key2=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key3=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key4=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key5=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key6=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key7=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+key8=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
 
 # Use 'wordpress' as database name and user
 db_user=wordpress
@@ -33,9 +41,14 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
-keys=$(wget -qO - https://api.wordpress.org/secret-key/1.1/salt/)
-keys=$(echo $keys | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')
-sudo sed -i "s/KEYSTOCHANGE/$keys/g" $final_path/wp-config.php
+sudo sed -i "s/KEY1/$key1/g" $final_path/wp-config.php
+sudo sed -i "s/KEY2/$key2/g" $final_path/wp-config.php
+sudo sed -i "s/KEY3/$key3/g" $final_path/wp-config.php
+sudo sed -i "s/KEY4/$key4/g" $final_path/wp-config.php
+sudo sed -i "s/KEY5/$key5/g" $final_path/wp-config.php
+sudo sed -i "s/KEY6/$key6/g" $final_path/wp-config.php
+sudo sed -i "s/KEY7/$key7/g" $final_path/wp-config.php
+sudo sed -i "s/KEY8/$key8/g" $final_path/wp-config.php
 sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
 sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
 

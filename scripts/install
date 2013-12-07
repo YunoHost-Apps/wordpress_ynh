@@ -69,7 +69,7 @@ sudo yunohost app ssowatconf
 # Wordpress installation
 echo "127.0.0.1 $domain #yunowordpress" | sudo tee -a /etc/hosts
 sleep 1
-curl -kL -X POST --data "?step=2&weblog_title=YunoBlog&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2
+curl -kL -X POST --data "?step=2&weblog_title=YunoBlog&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 sleep 5
 mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 result=$?

@@ -2,7 +2,7 @@
     "name": "Wordpress",
     "id": "wordpress",
     "description": {
-        "en": "WordPress is web software you can use to create a beautiful website or blog",
+        "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
     },
     "developer": {
@@ -35,12 +35,20 @@
                 }
             },
             {
+                "name": "language",
+                "ask": {
+                    "en": "Choose the language of the Wordpress site"
+                },
+                "choices": ["en_EN", "fr_FR"],
+                "default": "en_EN"
+            },
+            {
                 "name": "public_site",
                 "ask": {
                     "en": "Is it a public Wordpress site ?"
                 },
-                "example": "Y/n",
-                "default": "Y"
+                "choices": ["Yes", "No"],
+                "default": "Yes"
             }
 
 

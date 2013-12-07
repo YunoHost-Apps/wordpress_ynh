@@ -4,6 +4,8 @@
 domain=$1
 path=$2
 admin_passwd=$3
+language=$4
+is_public=$5
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpress
@@ -31,6 +33,18 @@ sudo cp ../conf/wp-config.php $final_path/wp-config.php
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+for i in 1 2 3 4 5 6 7 8
+do
+    j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    if [ "$j" = "" ];
+    then
+        # For obscure reasons, the loop is too fast at execution
+        sleep 1
+        j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    fi
+    sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
+done
+sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
 sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
 
 # Set permissions to roundcube directory
@@ -46,19 +60,22 @@ sudo service nginx reload
 sudo yunohost app setting wordpress skipped_uris -v "/"
 sudo yunohost app ssowatconf
 
-#Installation Wordpress
+# Wordpress installation
 echo "127.0.0.1 $domain #wordpress" | sudo tee -a /etc/hosts
-curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=Yunohost&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
+curl -X POST -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:12.0) Gecko/20100101 Firefox/12.0" -e "http://$domain$path/wp-admin/install.php?step=2" -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding:gzip, deflate" --data "?step=2&weblog_title=YunoBlog&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress" http://$domain$path/wp-admin/install.php?step=2&weblog_title=YunoBlog&user_name=admin&admin_password=$admin_passwd&admin_password2=$admin_passwd&admin_email=admin@$domain&Submit=Install+WordPress
+sleep 5
 mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
-RESULT=$?
-while [ $RESULT != 0 ];
+result=$?
+loop_number=1
+while [ $result != 0 ] && [ $loop_number -lt 5 ];
 do
 	sleep 5
 	mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
-	RESULT=$?
+	let result=$?
+	let loop_number++
 done
 
-if [ $4 = "n" ];
+if [ $is_public = "No" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d
 	sudo yunohost app ssowatconf

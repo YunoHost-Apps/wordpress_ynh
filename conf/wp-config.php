@@ -35,4 +35,4 @@ if ( !defined('ABSPATH') )
 require_once(ABSPATH . 'wp-settings.php');
 
 // Force https redirect
-define('FORCE_SSL_ADMIN', true);
+//define('FORCE_SSL_ADMIN', true);

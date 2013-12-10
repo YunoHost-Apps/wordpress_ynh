@@ -57,9 +57,14 @@ sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
 sudo chown -R www-data: $final_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
-sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx*.conf
+sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx*.conf
+if [ $is_public = "No" ];
+then
+	sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+else
+	sudo cp ../conf/nginx-public.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+fi
 
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload

@@ -8,8 +8,8 @@ language=$4
 is_public=$5
 
 # Check if admin password is not null
-if [ "$admin_passwd" = "" ]; then
-echo "Wrong password"
+if [ "$admin_wordpress" = "" ]; then
+echo "Wrong admin"
     exit 1
 fi
 

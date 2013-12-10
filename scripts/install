@@ -63,7 +63,7 @@ if [ $is_public = "No" ];
 then
 	sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
 else
-	sudo cp ../conf/nginx-public.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+	sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
 fi
 
 # Reload Nginx and regenerate SSOwat conf

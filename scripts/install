@@ -59,12 +59,6 @@ sudo chown -R www-data: $final_path
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx*.conf
 sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx*.conf
-if [ $is_public = "No" ];
-then
-	sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
-else
-	sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
-fi
 
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
@@ -94,5 +88,8 @@ then
 	mysql -u $db_user -p$db_pwd $db_user < ../conf/private.sql
 else
 	mysql -u $db_user -p$db_pwd $db_user < ../conf/public.sql
+	sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
 fi
 sudo sed -i '/yunowordpress/d' /etc/hosts
+
+echo "define('FORCE_SSL_ADMIN', true);" | sudo tee -a $final_path/wp-config.php

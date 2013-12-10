@@ -29,11 +29,12 @@
                 "default": "/blog"
             },
             {
-                "name": "admin_passwd",
+                "name": "admin",
                 "ask": {
-                    "en": "Choose a password for Wordpress administrator"
-                }
-            },
+                    "en": "Choose the Wordpress administrator (must be an existing YunoHost user)"
+                },
+                "example": "homer"
+            }
             {
                 "name": "language",
                 "ask": {

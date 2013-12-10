@@ -34,7 +34,7 @@
                     "en": "Choose the Wordpress administrator (must be an existing YunoHost user)"
                 },
                 "example": "homer"
-            }
+            },
             {
                 "name": "language",
                 "ask": {

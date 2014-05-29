@@ -13,6 +13,7 @@ if [[ ! $? -eq 0 ]]; then
     echo "Wrong admin"
     exit 1
 fi
+sudo yunohost app setting wordpress admin -v $admin_wordpress
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpress

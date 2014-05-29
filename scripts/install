@@ -14,6 +14,8 @@ if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
 sudo yunohost app setting wordpress admin -v $admin_wordpress
+sudo yunohost app setting wordpress language -v $language
+sudo yunohost app setting wordpress is_public -v $is_public
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpress

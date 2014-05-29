@@ -7,9 +7,10 @@ admin_wordpress=$3
 language=$4
 is_public=$5
 
-# Check if admin password is not null
-if [ "$admin_wordpress" = "" ]; then
-echo "Wrong admin"
+# Check if admin exists
+sudo yunohost user list --json | grep -q '"username": "$admin_wordpress"'
+if [[ ! $? -eq 0 ]]; then
+    echo "Wrong admin"
     exit 1
 fi
 

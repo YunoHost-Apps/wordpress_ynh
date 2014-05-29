@@ -1,3 +1,68 @@
 #!/bin/bash
 
-#TODO
+# Retrieve arguments
+domain=$(sudo yunohost app setting wordpress domain)
+path=$(sudo yunohost app setting wordpress path)
+admin_wordpress=$(sudo yunohost app setting wordpress admin)
+language=$(sudo yunohost app setting wordpress language)
+is_public=$(sudo yunohost app setting wordpress is_public)
+
+# Check if admin is not null
+if [ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]; then
+    echo "Unable to upgrade, please contact support"
+    exit 1
+fi
+
+# Generate random password
+db_pwd=$(sudo yunohost app setting wordpress mysqlpwd)
+
+# Use 'wordpress' as database name and user
+db_user=wordpress
+
+### Execute potential SQL statements here
+
+# Copy files to the right place
+final_path=/var/www/wordpress
+sudo mkdir -p $final_path
+sudo cp -a ../sources/* $final_path
+sudo cp ../conf/wp-config.php $final_path/wp-config.php
+
+# Change variables in Wordpress configuration
+sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
+sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
+sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+for i in 1 2 3 4 5 6 7 8
+do
+    j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    if [ "$j" = "" ];
+    then
+        # For obscure reasons, the loop is too fast at execution
+        sleep 1
+        j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+    fi
+    sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
+done
+sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
+sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
+
+# Set permissions to roundcube directory
+sudo chown -R www-data: $final_path
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf*
+sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf*
+
+if [ $is_public = "Yes" ];
+then
+    sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
+    grep -q "define('FORCE_SSL_ADMIN', true);" $final_path/wp-config.php
+    if [[ ! $? -eq 0 ]];
+    then
+        echo "define('FORCE_SSL_ADMIN', true);" | sudo tee -a $final_path/wp-config.php
+    fi
+else
+    sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+fi
+
+# Reload Nginx
+sudo service nginx reload

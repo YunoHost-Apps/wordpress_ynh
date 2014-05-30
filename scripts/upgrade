@@ -8,7 +8,7 @@ language=$(sudo yunohost app setting wordpress language)
 is_public=$(sudo yunohost app setting wordpress is_public)
 
 # Check if admin is not null
-if [ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]; then
+if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
     echo "Unable to upgrade, please contact support"
     exit 1
 fi

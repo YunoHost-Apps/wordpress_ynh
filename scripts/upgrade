@@ -4,20 +4,20 @@
 domain=$(sudo yunohost app setting wordpress domain)
 path=$(sudo yunohost app setting wordpress path)
 admin_wordpress=$(sudo yunohost app setting wordpress admin)
-if [ $admin_wordpress = '' ];
-then
-    mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
-fi
+#if [ $admin_wordpress = '' ];
+#then
+#    mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
+#fi
 language=$(sudo yunohost app setting wordpress language)
-if [ $language = '' ];
-then
-    grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4
-fi
+#if [ $language = '' ];
+#then
+#    grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4
+#fi
 is_public=$(sudo yunohost app setting wordpress is_public)
-if [ is_public = '' ];
-then
-    mysql -u root -p$root_pwd $db_name -e "select * from wp_options where option_name='http_authentication_options'";
-fi
+#if [ is_public = '' ];
+#then
+#    mysql -u root -p$root_pwd $db_name -e "select * from wp_options where option_name='http_authentication_options'";
+#fi
 
 # Check if admin is not null
 if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then

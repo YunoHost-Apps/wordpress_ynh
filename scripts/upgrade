@@ -3,37 +3,38 @@
 # Retrieve arguments
 domain=$(sudo yunohost app setting wordpress domain)
 path=$(sudo yunohost app setting wordpress path)
-
 admin_wordpress=$(sudo yunohost app setting wordpress admin)
-if [ $admin_wordpress = '' ];
+language=$(sudo yunohost app setting wordpress language)
+is_public=$(sudo yunohost app setting wordpress is_public)
+
+root_pwd=$(sudo cat /etc/yunohost/mysql)
+
+db_name=wordpress
+
+if [[ "$admin_wordpress" = "" ]];
 then
     mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
-    admin_wordpress="$(cat /tmp/wordpressuser)"
-    rm /tmp/wordpressuser
+    admin_wordpress=$(cat /tmp/wordpressuser)
+    sudo rm -f /tmp/wordpressuser
 fi
 
-language=$(sudo yunohost app setting wordpress language)
-if [ $language = '' ];
+if [[ "$language" = "" ]];
 then
-    language="$(grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4)"
+    language=$(sudo grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4)
 fi
 
-is_public=$(sudo yunohost app setting wordpress is_public)
-if [ is_public = '' ];
+if [[ "$is_public" = "" ]];
 then
     mysql -u root -p$root_pwd $db_name -e "select option_value from wp_options WHERE option_name='active_plugins' INTO OUTFILE '/tmp/wordpressispublic';"
-    grep http-authentication /tmp/wordpressispublic > /dev/null 2>&1
-    if [ $? = 0 ];
-    then 
-        is_public='Yes'
+    grep -q http-authentication /tmp/wordpressispublic
+    if [[ $? -eq 0 ]];
+    then
+        is_public=Yes
     else
-        is_public='No'
+        is_public=No
     fi
-    rm /tmp/wordpressispublic
+    sudo rm -f /tmp/wordpressispublic
 fi
-    
-        
-#fi
 
 # Check if admin is not null
 if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then

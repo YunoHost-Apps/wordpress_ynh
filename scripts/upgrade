@@ -8,14 +8,14 @@ admin_wordpress=$(sudo yunohost app setting wordpress admin)
 if [ $admin_wordpress = '' ];
 then
     mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
-    admin_wordpress = $(cat /tmp/wordpressuser)
+    admin_wordpress="$(cat /tmp/wordpressuser)"
     rm /tmp/wordpressuser
 fi
 
 language=$(sudo yunohost app setting wordpress language)
 if [ $language = '' ];
 then
-    grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4
+    language="$(grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4)"
 fi
 
 is_public=$(sudo yunohost app setting wordpress is_public)
@@ -25,9 +25,9 @@ then
     grep http-authentication /tmp/wordpressispublic > /dev/null 2>&1
     if [ $? = 0 ];
     then 
-        is_public = 'Yes'
+        is_public='Yes'
     else
-        is_public = 'No'
+        is_public='No'
     fi
     rm /tmp/wordpressispublic
 fi

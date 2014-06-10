@@ -16,14 +16,16 @@
             {
                 "name": "domain",
                 "ask": {
-                    "en": "Choose a domain for Wordpress"
+                    "en": "Choose a domain for Wordpress",
+                    "fr": "Choisissez un domaine pour Wordpress"
                 },
                 "example": "domain.org"
             },
             {
                 "name": "path",
                 "ask": {
-                    "en": "Choose a path for Wordpress"
+                    "en": "Choose a path for Wordpress",
+                    "fr": "Choisissez un chemin pour Wordpress"
                 },
                 "example": "/blog",
                 "default": "/blog"
@@ -31,14 +33,16 @@
             {
                 "name": "admin",
                 "ask": {
-                    "en": "Choose the Wordpress administrator (must be an existing YunoHost user)"
+                    "en": "Choose the Wordpress administrator (must be an existing YunoHost user)",
+                    "fr": "Administrateur du site (doit être un utilisateur Yunohost existant)"
                 },
                 "example": "homer"
             },
             {
                 "name": "language",
                 "ask": {
-                    "en": "Choose the language of the Wordpress site"
+                    "en": "Choose the language of the Wordpress site",
+                    "fr": "Choissisez la langue du Wordpress"
                 },
                 "choices": ["en_EN", "fr_FR"],
                 "default": "en_EN"
@@ -46,7 +50,8 @@
             {
                 "name": "public_site",
                 "ask": {
-                    "en": "Is it a public Wordpress site ?"
+                    "en": "Is it a public Wordpress site ?",
+                    "fr": "Est-ce un site public ?"
                 },
                 "choices": ["Yes", "No"],
                 "default": "Yes"

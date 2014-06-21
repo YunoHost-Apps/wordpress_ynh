@@ -9,6 +9,8 @@ is_public=$(sudo yunohost app setting wordpress is_public)
 
 root_pwd=$(sudo cat /etc/yunohost/mysql)
 
+final_path=/var/www/wordpress
+
 db_name=wordpress
 
 if [[ "$admin_wordpress" = "" ]];
@@ -20,7 +22,7 @@ fi
 
 if [[ "$language" = "" ]];
 then
-    language=$(sudo grep WPLANG /var/www/wordpress/wp-config.php | cut -d"'" -f4)
+    language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
 fi
 
 if [[ "$is_public" = "" ]];

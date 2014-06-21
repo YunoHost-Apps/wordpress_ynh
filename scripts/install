@@ -95,6 +95,6 @@ else
 	mysql -u $db_user -p$db_pwd $db_user < ../conf/public.sql
 	sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
 	sudo service nginx reload
-	echo "define('FORCE_SSL_ADMIN', true);" | sudo tee -a $final_path/wp-config.php
+	sudo sed -i "s@//define('FORCE_SSL_ADMIN@define('FORCE_SSL_ADMIN@g" $final_path/wp-config.php
 fi
 sudo sed -i '/yunowordpress/d' /etc/hosts

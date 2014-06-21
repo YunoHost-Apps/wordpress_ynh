@@ -56,6 +56,8 @@ then
     if [[ ! $? -eq 0 ]];
     then
         echo "define('FORCE_SSL_ADMIN', true);" | sudo tee -a $final_path/wp-config.php
+    else 
+        sudo sed -i "s@//define('FORCE_SSL_ADMIN@define('FORCE_SSL_ADMIN@g" $final_path/wp-config.php
     fi
 else
     sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf

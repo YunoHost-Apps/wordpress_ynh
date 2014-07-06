@@ -19,8 +19,6 @@ if ( ! current_user_can( 'edit_posts' ) || ! current_user_can( get_post_type_obj
 /**
  * Press It form handler.
  *
- * @package WordPress
- * @subpackage Press_This
  * @since 2.6.0
  *
  * @return int Post ID
@@ -146,7 +144,7 @@ if ( !empty($_REQUEST['ajax']) ) {
 			<h3 class="tb"><label for="tb_this_photo_description"><?php _e('Description') ?></label></h3>
 			<div class="titlediv">
 				<div class="titlewrap">
-					<input id="tb_this_photo_description" name="photo_description" class="tb_this_photo_description tbtitle text" onkeypress="if(event.keyCode==13) image_selector(this);" value="<?php echo esc_attr($title);?>"/>
+					<input id="tb_this_photo_description" name="photo_description" class="tb_this_photo_description tbtitle text" type="text" onkeypress="if(event.keyCode==13) image_selector(this);" value="<?php echo esc_attr($title);?>"/>
 				</div>
 			</div>
 
@@ -163,8 +161,6 @@ if ( !empty($_REQUEST['ajax']) ) {
 		/**
 		 * Retrieve all image URLs from given URI.
 		 *
-		 * @package WordPress
-		 * @subpackage Press_This
 		 * @since 2.6.0
 		 *
 		 * @param string $uri
@@ -297,6 +293,7 @@ die;
 
 	wp_enqueue_style( 'colors' );
 	wp_enqueue_script( 'post' );
+	add_thickbox();
 	_wp_admin_html_begin();
 ?>
 <title><?php _e('Press This') ?></title>
@@ -309,12 +306,37 @@ var photostorage = false;
 </script>
 
 <?php
+	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_enqueue_scripts', 'press-this.php' );
+
+	/**
+	 * Fires when styles are printed for the Press This admin page.
+	 *
+	 * @since 3.7.0
+	 */
 	do_action( 'admin_print_styles-press-this.php' );
+
+	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_print_styles' );
+
+	/**
+	 * Fires when scripts are printed for the Press This admin page.
+	 *
+	 * @since 3.7.0
+	 */
 	do_action( 'admin_print_scripts-press-this.php' );
+
+	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_print_scripts' );
+
+	/**
+	 * Fires in the head tag on the Press This admin page.
+	 *
+	 * @since 3.7.0
+	 */
 	do_action( 'admin_head-press-this.php' );
+
+	/** This action is documented in wp-admin/admin-header.php */
 	do_action( 'admin_head' );
 ?>
 	<script type="text/javascript">
@@ -417,7 +439,7 @@ var photostorage = false;
 	}
 	jQuery(document).ready(function($) {
 		//resize screen
-		window.resizeTo(740,580);
+		window.resizeTo(760,580);
 		// set button actions
 		jQuery('#photo_button').click(function() { show('photo'); return false; });
 		jQuery('#video_button').click(function() { show('video'); return false; });
@@ -564,7 +586,6 @@ $admin_body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( 
 	<div class="posting">
 
 		<div id="wphead">
-			<img id="header-logo" src="<?php echo esc_url( includes_url( 'images/blank.gif' ) ); ?>" alt="" width="16" height="16" />
 			<h1 id="site-heading">
 				<a href="<?php echo get_option('home'); ?>/" target="_blank">
 					<span id="site-title"><?php bloginfo('name'); ?></span>
@@ -585,7 +606,7 @@ $admin_body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( 
 
 		<div id="titlediv">
 			<div class="titlewrap">
-				<input name="title" id="title" class="text" value="<?php echo esc_attr($title);?>"/>
+				<input name="title" id="title" class="text" type="text" value="<?php echo esc_attr($title);?>"/>
 			</div>
 		</div>
 
@@ -649,8 +670,10 @@ $admin_body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( 
 	</tr></table>
 </div>
 <?php
-do_action('admin_footer');
-do_action('admin_print_footer_scripts');
+/** This action is documented in wp-admin/admin-footer.php */
+do_action( 'admin_footer' );
+/** This action is documented in wp-admin/admin-footer.php */
+do_action( 'admin_print_footer_scripts' );
 ?>
 <script type="text/javascript">if(typeof wpOnload=='function')wpOnload();</script>
 </body>

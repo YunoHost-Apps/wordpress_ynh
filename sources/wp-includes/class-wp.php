@@ -25,7 +25,7 @@ class WP {
 	 * @since 2.0.0
 	 * @var array
 	 */
-	var $private_query_vars = array( 'offset', 'posts_per_page', 'posts_per_archive_page', 'showposts', 'nopaging', 'post_type', 'post_status', 'category__in', 'category__not_in', 'category__and', 'tag__in', 'tag__not_in', 'tag__and', 'tag_slug__in', 'tag_slug__and', 'tag_id', 'post_mime_type', 'perm', 'comments_per_page', 'post__in', 'post__not_in', 'post_parent__in', 'post_parent__not_in' );
+	var $private_query_vars = array( 'offset', 'posts_per_page', 'posts_per_archive_page', 'showposts', 'nopaging', 'post_type', 'post_status', 'category__in', 'category__not_in', 'category__and', 'tag__in', 'tag__not_in', 'tag__and', 'tag_slug__in', 'tag_slug__and', 'tag_id', 'post_mime_type', 'perm', 'comments_per_page', 'post__in', 'post__not_in', 'post_parent', 'post_parent__in', 'post_parent__not_in' );
 
 	/**
 	 * Extra query variables set by the user.
@@ -120,6 +120,15 @@ class WP {
 	function parse_request($extra_query_vars = '') {
 		global $wp_rewrite;
 
+		/**
+		 * Filter whether to parse the request.
+		 *
+		 * @since 3.5.0
+		 *
+		 * @param bool         $bool             Whether or not to parse the request. Default true.
+		 * @param WP           $this             Current WordPress environment instance.
+		 * @param array|string $extra_query_vars Extra passed query variables.
+		 */
 		if ( ! apply_filters( 'do_parse_request', true, $this, $extra_query_vars ) )
 			return;
 
@@ -236,7 +245,18 @@ class WP {
 			}
 		}
 
-		$this->public_query_vars = apply_filters('query_vars', $this->public_query_vars);
+		/**
+		 * Filter the query variables whitelist before processing.
+		 *
+		 * Allows (publicly allowed) query vars to be added, removed, or changed prior
+		 * to executing the query. Needed to allow custom rewrite rules using your own arguments
+		 * to work, or any other custom query variables you want to be publicly available.
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param array $public_query_vars The array of whitelisted query variables.
+		 */
+		$this->public_query_vars = apply_filters( 'query_vars', $this->public_query_vars );
 
 		foreach ( get_post_types( array(), 'objects' ) as $post_type => $t )
 			if ( $t->query_var )
@@ -294,9 +314,23 @@ class WP {
 		if ( isset($error) )
 			$this->query_vars['error'] = $error;
 
-		$this->query_vars = apply_filters('request', $this->query_vars);
+		/**
+		 * Filter the array of parsed query variables.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param array $query_vars The array of requested query variables.
+		 */
+		$this->query_vars = apply_filters( 'request', $this->query_vars );
 
-		do_action_ref_array('parse_request', array(&$this));
+		/**
+		 * Fires once all query variables for the current request have been parsed.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param WP &$this Current WordPress environment instance (passed by reference).
+		 */
+		do_action_ref_array( 'parse_request', array( &$this ) );
 	}
 
 	/**
@@ -366,7 +400,15 @@ class WP {
 			}
 		}
 
-		$headers = apply_filters('wp_headers', $headers, $this);
+		/**
+		 * Filter the HTTP headers before they're sent to the browser.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $headers The list of headers to be sent.
+		 * @param WP    $this    Current WordPress environment instance.
+		 */
+		$headers = apply_filters( 'wp_headers', $headers, $this );
 
 		if ( ! empty( $status ) )
 			status_header( $status );
@@ -396,7 +438,14 @@ class WP {
 		if ( $exit_required )
 			exit();
 
-		do_action_ref_array('send_headers', array(&$this));
+		/**
+		 * Fires once the requested HTTP headers for caching, content type, etc. have been sent.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param WP &$this Current WordPress environment instance (passed by reference).
+		 */
+		do_action_ref_array( 'send_headers', array( &$this ) );
 	}
 
 	/**
@@ -418,9 +467,16 @@ class WP {
 			}
 		}
 
-		// query_string filter deprecated. Use request filter instead.
-		if ( has_filter('query_string') ) {  // Don't bother filtering and parsing if no plugins are hooked in.
-			$this->query_string = apply_filters('query_string', $this->query_string);
+		if ( has_filter( 'query_string' ) ) {  // Don't bother filtering and parsing if no plugins are hooked in.
+			/**
+			 * Filter the query string before parsing.
+			 *
+			 * @since 1.5.0
+			 * @deprecated 2.1.0 Use 'query_vars' or 'request' filters instead.
+			 *
+			 * @param string $query_string The query string to modify.
+			 */
+			$this->query_string = apply_filters( 'query_string', $this->query_string );
 			parse_str($this->query_string, $this->query_vars);
 		}
 	}
@@ -512,8 +568,15 @@ class WP {
 		// We will 404 for paged queries, as no posts were found.
 		if ( ! is_paged() ) {
 
+			// Don't 404 for authors without posts as long as they matched an author on this site.
+			$author = get_query_var( 'author' );
+			if ( is_author() && is_numeric( $author ) && $author > 0 && is_user_member_of_blog( $author ) ) {
+				status_header( 200 );
+				return;
+			}
+
 			// Don't 404 for these queries if they matched an object.
-			if ( ( is_tag() || is_category() || is_tax() || is_author() || is_post_type_archive() ) && $wp_query->get_queried_object() ) {
+			if ( ( is_tag() || is_category() || is_tax() || is_post_type_archive() ) && get_queried_object() ) {
 				status_header( 200 );
 				return;
 			}
@@ -549,7 +612,15 @@ class WP {
 		$this->query_posts();
 		$this->handle_404();
 		$this->register_globals();
-		do_action_ref_array('wp', array(&$this));
+
+		/**
+		 * Fires once the WordPress environment has been set up.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param WP &$this Current WordPress environment instance (passed by reference).
+		 */
+		do_action_ref_array( 'wp', array( &$this ) );
 	}
 
 }

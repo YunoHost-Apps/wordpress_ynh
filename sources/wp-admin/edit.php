@@ -197,7 +197,7 @@ if ( 'post' == $post_type ) {
 	get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
 	'<p>' . __('<a href="http://codex.wordpress.org/Posts_Screen" target="_blank">Documentation on Managing Posts</a>') . '</p>' .
-	'<p>' . __('<a href="http://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 	);
 
 } elseif ( 'page' == $post_type ) {
@@ -218,7 +218,7 @@ if ( 'post' == $post_type ) {
 	get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
 	'<p>' . __('<a href="http://codex.wordpress.org/Pages_Screen" target="_blank">Documentation on Managing Pages</a>') . '</p>' .
-	'<p>' . __('<a href="http://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 	);
 }
 
@@ -265,7 +265,6 @@ $bulk_counts = array_filter( $bulk_counts );
 require_once( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
 <div class="wrap">
-<?php screen_icon(); ?>
 <h2><?php
 echo esc_html( $post_type_object->labels->name );
 if ( current_user_can( $post_type_object->cap->create_posts ) )

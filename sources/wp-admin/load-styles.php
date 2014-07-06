@@ -117,22 +117,24 @@ foreach( $load as $handle ) {
 	$style = $wp_styles->registered[$handle];
 	$path = ABSPATH . $style->src;
 
-	$content = get_file($path) . "\n";
-
-	if ( $rtl && isset($style->extra['rtl']) && $style->extra['rtl'] ) {
-		$rtl_path = is_bool($style->extra['rtl']) ? str_replace( '.min.css', '-rtl.min.css', $path ) : ABSPATH . $style->extra['rtl'];
-		$content .= get_file($rtl_path) . "\n";
+	if ( $rtl && ! empty( $style->extra['rtl'] ) ) {
+		// All default styles have fully independent RTL files.
+		$path = str_replace( '.min.css', '-rtl.min.css', $path );
 	}
+
+	$content = get_file( $path ) . "\n";
 
 	if ( strpos( $style->src, '/wp-includes/css/' ) === 0 ) {
 		$content = str_replace( '../images/', '../wp-includes/images/', $content );
-		$out .= str_replace( '../js/tinymce/', '../wp-includes/js/tinymce/', $content );
+		$content = str_replace( '../js/tinymce/', '../wp-includes/js/tinymce/', $content );
+		$content = str_replace( '../fonts/', '../wp-includes/fonts/', $content );
+		$out .= $content;
 	} else {
 		$out .= str_replace( '../images/', 'images/', $content );
 	}
 }
 
-header('Content-Type: text/css');
+header('Content-Type: text/css; charset=UTF-8');
 header('Expires: ' . gmdate( "D, d M Y H:i:s", time() + $expires_offset ) . ' GMT');
 header("Cache-Control: public, max-age=$expires_offset");
 

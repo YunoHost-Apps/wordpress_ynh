@@ -510,7 +510,7 @@ function wp_http_validate_url( $url ) {
 	if ( 80 === $port || 443 === $port || 8080 === $port )
 		return $url;
 
-	if ( $parsed_home && $same_host && $parsed_home['port'] === $port )
+	if ( $parsed_home && $same_host && isset( $parsed_home['port'] ) && $parsed_home['port'] === $port )
 		return $url;
 
 	return false;
@@ -545,11 +545,11 @@ function allowed_http_request_hosts( $is_external, $host ) {
  * @return bool
  */
 function ms_allowed_http_request_hosts( $is_external, $host ) {
-	global $wpdb, $current_site;
+	global $wpdb;
 	static $queried = array();
 	if ( $is_external )
 		return $is_external;
-	if ( $host === $current_site->domain )
+	if ( $host === get_current_site()->domain )
 		return true;
 	if ( isset( $queried[ $host ] ) )
 		return $queried[ $host ];

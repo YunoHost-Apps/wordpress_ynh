@@ -32,8 +32,7 @@ if ( isset($_GET['c']) && 1 == $_GET['c'] && isset($_SERVER['HTTP_ACCEPT_ENCODIN
 	header('Content-Encoding: gzip');
 	echo $file;
 } else {
-	// Back compat. This file shouldn't be used if this condition can occur (as in, if gzip isn't accepted).
-	echo get_file( $basepath . '/tinymce.min.js' );
-	echo get_file( $basepath . '/plugins/compat3x/plugin.min.js' );
+	echo get_file($basepath . '/tiny_mce.js');
+	echo get_file($basepath . '/wp-tinymce-schema.js');
 }
 exit;

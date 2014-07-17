@@ -18,7 +18,7 @@
  *
  * @param string $type Filename without extension.
  * @param array $templates An optional list of template candidates
- * @return string Full path to template file.
+ * @return string Full path to file.
  */
 function get_query_template( $type, $templates = array() ) {
 	$type = preg_replace( '|[^a-z0-9-]+|', '', $type );
@@ -34,7 +34,7 @@ function get_query_template( $type, $templates = array() ) {
 	 * -- minus the extension -- of the file to load. This hook also applies
 	 * to various types of files loaded as part of the Template Hierarchy.
 	 *
-	 * @since 1.5.0
+	 * @since 1.5.2
 	 *
 	 * @param string $template Path to the template. @see locate_template()
 	 */
@@ -44,13 +44,9 @@ function get_query_template( $type, $templates = array() ) {
 /**
  * Retrieve path of index template in current or parent template.
  *
- * The template path is filterable via the 'index_template' hook.
- *
  * @since 3.0.0
  *
- * @see get_query_template()
- *
- * @return string Full path to index template file.
+ * @return string
  */
 function get_index_template() {
 	return get_query_template('index');
@@ -59,13 +55,9 @@ function get_index_template() {
 /**
  * Retrieve path of 404 template in current or parent template.
  *
- * The template path is filterable via the '404_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to 404 template file.
+ * @return string
  */
 function get_404_template() {
 	return get_query_template('404');
@@ -74,13 +66,9 @@ function get_404_template() {
 /**
  * Retrieve path of archive template in current or parent template.
  *
- * The template path is filterable via the 'archive_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to archive template file.
+ * @return string
  */
 function get_archive_template() {
 	$post_types = array_filter( (array) get_query_var( 'post_type' ) );
@@ -99,13 +87,9 @@ function get_archive_template() {
 /**
  * Retrieve path of post type archive template in current or parent template.
  *
- * The template path is filterable via the 'archive_template' hook.
- *
  * @since 3.7.0
  *
- * @see get_archive_template()
- *
- * @return string Full path to archive template file.
+ * @return string
  */
 function get_post_type_archive_template() {
 	$post_type = get_query_var( 'post_type' );
@@ -122,13 +106,9 @@ function get_post_type_archive_template() {
 /**
  * Retrieve path of author template in current or parent template.
  *
- * The template path is filterable via the 'author_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to author template file.
+ * @return string
  */
 function get_author_template() {
 	$author = get_queried_object();
@@ -151,13 +131,10 @@ function get_author_template() {
  * trying category ID, for example 'category-1.php', and will finally fall back to category.php
  * template, if those files don't exist.
  *
- * The template path is filterable via the 'category_template' hook.
- *
  * @since 1.5.0
+ * @uses apply_filters() Calls 'category_template' on file path of category template.
  *
- * @see get_query_template()
- *
- * @return string Full path to category template file.
+ * @return string
  */
 function get_category_template() {
 	$category = get_queried_object();
@@ -180,13 +157,10 @@ function get_category_template() {
  * trying tag ID, for example 'tag-1.php', and will finally fall back to tag.php
  * template, if those files don't exist.
  *
- * The template path is filterable via the 'tag_template' hook.
- *
  * @since 2.3.0
+ * @uses apply_filters() Calls 'tag_template' on file path of tag template.
  *
- * @see get_query_template()
- *
- * @return string Full path to tag template file.
+ * @return string
  */
 function get_tag_template() {
 	$tag = get_queried_object();
@@ -214,13 +188,10 @@ function get_tag_template() {
  * template is used. If none of the files exist, then it will fall back on to
  * index.php.
  *
- * The template path is filterable via the 'taxonomy_template' hook.
- *
  * @since 2.5.0
+ * @uses apply_filters() Calls 'taxonomy_template' filter on found path.
  *
- * @see get_query_template()
- *
- * @return string Full path to taxonomy template file.
+ * @return string
  */
 function get_taxonomy_template() {
 	$term = get_queried_object();
@@ -240,13 +211,9 @@ function get_taxonomy_template() {
 /**
  * Retrieve path of date template in current or parent template.
  *
- * The template path is filterable via the 'date_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to date template file.
+ * @return string
  */
 function get_date_template() {
 	return get_query_template('date');
@@ -256,15 +223,13 @@ function get_date_template() {
  * Retrieve path of home template in current or parent template.
  *
  * This is the template used for the page containing the blog posts.
+ *
  * Attempts to locate 'home.php' first before falling back to 'index.php'.
  *
- * The template path is filterable via the 'home_template' hook.
- *
  * @since 1.5.0
+ * @uses apply_filters() Calls 'home_template' on file path of home template.
  *
- * @see get_query_template()
- *
- * @return string Full path to home template file.
+ * @return string
  */
 function get_home_template() {
 	$templates = array( 'home.php', 'index.php' );
@@ -275,14 +240,12 @@ function get_home_template() {
 /**
  * Retrieve path of front-page template in current or parent template.
  *
- * Looks for 'front-page.php'. The template path is filterable via the
- * 'front_page_template' hook.
+ * Looks for 'front-page.php'.
  *
  * @since 3.0.0
+ * @uses apply_filters() Calls 'front_page_template' on file path of template.
  *
- * @see get_query_template()
- *
- * @return string Full path to front page template file.
+ * @return string
  */
 function get_front_page_template() {
 	$templates = array('front-page.php');
@@ -297,13 +260,9 @@ function get_front_page_template() {
  * Then will search for 'page-{slug}.php', followed by 'page-{id}.php',
  * and finally 'page.php'.
  *
- * The template path is filterable via the 'page_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to page template file.
+ * @return string
  */
 function get_page_template() {
 	$id = get_queried_object_id();
@@ -332,13 +291,9 @@ function get_page_template() {
 /**
  * Retrieve path of paged template in current or parent template.
  *
- * The template path is filterable via the 'paged_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to paged template file.
+ * @return string
  */
 function get_paged_template() {
 	return get_query_template('paged');
@@ -347,13 +302,9 @@ function get_paged_template() {
 /**
  * Retrieve path of search template in current or parent template.
  *
- * The template path is filterable via the 'search_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to search template file.
+ * @return string
  */
 function get_search_template() {
 	return get_query_template('search');
@@ -362,13 +313,9 @@ function get_search_template() {
 /**
  * Retrieve path of single template in current or parent template.
  *
- * The template path is filterable via the 'single_template' hook.
- *
  * @since 1.5.0
  *
- * @see get_query_template()
- *
- * @return string Full path to single template file.
+ * @return string
  */
 function get_single_template() {
 	$object = get_queried_object();
@@ -393,13 +340,9 @@ function get_single_template() {
  * Some examples for the 'text/plain' mime type are 'text.php', 'plain.php', and
  * finally 'text_plain.php'.
  *
- * The template path is filterable via the 'attachment_template' hook.
- *
  * @since 2.0.0
  *
- * @see get_query_template()
- *
- * @return string Full path to attachment template file.
+ * @return string
  */
 function get_attachment_template() {
 	global $posts;
@@ -428,13 +371,10 @@ function get_attachment_template() {
  * Checks for comment popup template in current template, if it exists or in the
  * parent template.
  *
- * The template path is filterable via the 'comments_popup_template' hook.
- *
  * @since 1.5.0
+ * @uses apply_filters() Calls 'comments_popup_template' filter on path.
  *
- * @see get_query_template()
- *
- * @return string Full path to comments popup template file.
+ * @return string
  */
 function get_comments_popup_template() {
 	$template = get_query_template( 'comments_popup', array( 'comments-popup.php' ) );

@@ -1,8 +1,6 @@
-/* global ajaxurl, wpAjax, tagsl10n, showNotice, validateForm */
-
 jQuery(document).ready(function($) {
 
-	$( '#the-list' ).on( 'click', '.delete-tag', function() {
+	$('#the-list').on('click', '.delete-tag', function(e){
 		var t = $(this), tr = t.parents('tr'), r = true, data;
 		if ( 'undefined' != showNotice )
 			r = showNotice.warn();
@@ -31,36 +29,34 @@ jQuery(document).ready(function($) {
 	$('#submit').click(function(){
 		var form = $(this).parents('form');
 
-		if ( ! validateForm( form ) )
+		if ( !validateForm( form ) )
 			return false;
 
 		$.post(ajaxurl, $('#addtag').serialize(), function(r){
-			var res, parent, term, indent, i;
-
 			$('#ajax-response').empty();
-			res = wpAjax.parseAjaxResponse( r, 'ajax-response' );
+			var res = wpAjax.parseAjaxResponse(r, 'ajax-response');
 			if ( ! res || res.errors )
 				return;
 
-			parent = form.find( 'select#parent' ).val();
+			var parent = form.find('select#parent').val();
 
 			if ( parent > 0 && $('#tag-' + parent ).length > 0 ) // If the parent exists on this page, insert it below. Else insert it at the top of the list.
-				$( '.tags #tag-' + parent ).after( res.responses[0].supplemental.noparents ); // As the parent exists, Insert the version with - - - prefixed
+				$('.tags #tag-' + parent).after( res.responses[0].supplemental['noparents'] ); // As the parent exists, Insert the version with - - - prefixed
 			else
-				$( '.tags' ).prepend( res.responses[0].supplemental.parents ); // As the parent is not visible, Insert the version with Parent - Child - ThisTerm
+				$('.tags').prepend( res.responses[0].supplemental['parents'] ); // As the parent is not visible, Insert the version with Parent - Child - ThisTerm
 
 			$('.tags .no-items').remove();
 
 			if ( form.find('select#parent') ) {
 				// Parents field exists, Add new term to the list.
-				term = res.responses[1].supplemental;
+				var term = res.responses[1].supplemental;
 
 				// Create an indent for the Parent field
-				indent = '';
-				for ( i = 0; i < res.responses[1].position; i++ )
+				var indent = '';
+				for ( var i = 0; i < res.responses[1].position; i++ )
 					indent += '&nbsp;&nbsp;&nbsp;';
 
-				form.find( 'select#parent option:selected' ).after( '<option value="' + term.term_id + '">' + indent + term.name + '</option>' );
+				form.find('select#parent option:selected').after('<option value="' + term['term_id'] + '">' + indent + term['name'] + '</option>');
 			}
 
 			$('input[type="text"]:visible, textarea:visible', form).val('');

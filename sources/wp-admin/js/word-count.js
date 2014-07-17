@@ -1,5 +1,3 @@
-/* global wordCountL10n */
-var wpWordCount;
 (function($,undefined) {
 	wpWordCount = {
 
@@ -36,7 +34,7 @@ var wpWordCount;
 				setTimeout( function() { t.block = 0; }, 2000 );
 			}, 1 );
 		}
-	};
+	}
 
 	$(document).bind( 'wpcountwords', function(e, txt) {
 		wpWordCount.wc(txt);

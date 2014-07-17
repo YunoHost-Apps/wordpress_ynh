@@ -52,7 +52,7 @@ add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
  * @return void
  */
 function wpmu_delete_blog( $blog_id, $drop = false ) {
-	global $wpdb;
+	global $wpdb, $current_site;
 
 	$switch = false;
 	if ( get_current_blog_id() != $blog_id ) {
@@ -81,8 +81,6 @@ function wpmu_delete_blog( $blog_id, $drop = false ) {
 	}
 
 	update_blog_status( $blog_id, 'deleted', 1 );
-
-	$current_site = get_current_site();
 
 	// Don't destroy the initial, main, or root blog.
 	if ( $drop && ( 1 == $blog_id || is_main_site( $blog_id ) || ( $blog->path == $current_site->path && $blog->domain == $current_site->domain ) ) )
@@ -204,7 +202,13 @@ function wpmu_delete_user( $id ) {
 
 	clean_user_cache( $user );
 
-	/** This action is documented in wp-admin/includes/user.php */
+	/**
+	 * Fires after the user is deleted from the network.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param int $id ID of the user that was deleted from the network.
+	 */
 	do_action( 'deleted_user', $id );
 
 	return true;
@@ -259,7 +263,7 @@ All at ###SITENAME###
 	$content = str_replace( '###SITENAME###', get_site_option( 'site_name' ), $content );
 	$content = str_replace( '###SITEURL###', network_home_url(), $content );
 
-	wp_mail( $value, sprintf( __( '[%s] New Admin Email Address' ), wp_specialchars_decode( get_option( 'blogname' ) ) ), $content );
+	wp_mail( $value, sprintf( __( '[%s] New Admin Email Address' ), get_option( 'blogname' ) ), $content );
 }
 add_action( 'update_option_new_admin_email', 'update_option_new_admin_email', 10, 2 );
 add_action( 'add_option_new_admin_email', 'update_option_new_admin_email', 10, 2 );
@@ -328,7 +332,7 @@ All at ###SITENAME###
 		$content = str_replace( '###SITENAME###', get_site_option( 'site_name' ), $content );
 		$content = str_replace( '###SITEURL###', network_home_url(), $content );
 
-		wp_mail( $_POST['email'], sprintf( __( '[%s] New Email Address' ), wp_specialchars_decode( get_option( 'blogname' ) ) ), $content );
+		wp_mail( $_POST['email'], sprintf( __( '[%s] New Email Address' ), get_option( 'blogname' ) ), $content );
 		$_POST['email'] = $current_user->user_email;
 	}
 }
@@ -536,13 +540,15 @@ function _access_denied_splash() {
 	$output .= '<table>';
 
 	foreach ( $blogs as $blog ) {
-		$output .= '<tr>';
-		$output .= "<td>{$blog->blogname}</td>";
-		$output .= '<td><a href="' . esc_url( get_admin_url( $blog->userblog_id ) ) . '">' . __( 'Visit Dashboard' ) . '</a> | ' .
-			'<a href="' . esc_url( get_home_url( $blog->userblog_id ) ). '">' . __( 'View Site' ) . '</a></td>';
-		$output .= '</tr>';
+		$output .= "<tr>";
+		$output .= "<td valign='top'>";
+		$output .= "{$blog->blogname}";
+		$output .= "</td>";
+		$output .= "<td valign='top'>";
+		$output .= "<a href='" . esc_url( get_admin_url( $blog->userblog_id ) ) . "'>" . __( 'Visit Dashboard' ) . "</a> | <a href='" . esc_url( get_home_url( $blog->userblog_id ) ). "'>" . __( 'View Site' ) . "</a>" ;
+		$output .= "</td>";
+		$output .= "</tr>";
 	}
-
 	$output .= '</table>';
 
 	wp_die( $output );
@@ -686,14 +692,13 @@ function choose_primary_blog() {
  *
  * @since 3.0.0
  * @param int $user_id ID of the user to be granted Super Admin privileges.
- * @return bool True on success, false on failure. This can fail when the user is
- *              already a super admin or when the $super_admins global is defined.
  */
 function grant_super_admin( $user_id ) {
+	global $super_admins;
+
 	// If global super_admins override is defined, there is nothing to do here.
-	if ( isset( $GLOBALS['super_admins'] ) ) {
+	if ( isset( $super_admins ) )
 		return false;
-	}
 
 	/**
 	 * Fires before the user is granted Super Admin privileges.
@@ -730,14 +735,13 @@ function grant_super_admin( $user_id ) {
  *
  * @since 3.0.0
  * @param int $user_id ID of the user Super Admin privileges to be revoked from.
- * @return bool True on success, false on failure. This can fail when the user's email
- *              is the network admin email or when the $super_admins global is defined.
  */
 function revoke_super_admin( $user_id ) {
+	global $super_admins;
+
 	// If global super_admins override is defined, there is nothing to do here.
-	if ( isset( $GLOBALS['super_admins'] ) ) {
+	if ( isset( $super_admins ) )
 		return false;
-	}
 
 	/**
 	 * Fires before the user's Super Admin privileges are revoked.
@@ -752,7 +756,7 @@ function revoke_super_admin( $user_id ) {
 	$super_admins = get_site_option( 'site_admins', array( 'admin' ) );
 
 	$user = get_userdata( $user_id );
-	if ( $user && 0 !== strcasecmp( $user->user_email, get_site_option( 'admin_email' ) ) ) {
+	if ( $user && $user->user_email != get_site_option( 'admin_email' ) ) {
 		if ( false !== ( $key = array_search( $user->user_login, $super_admins ) ) ) {
 			unset( $super_admins[$key] );
 			update_site_option( 'site_admins', $super_admins );

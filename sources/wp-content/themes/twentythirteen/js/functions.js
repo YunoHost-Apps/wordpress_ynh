@@ -16,12 +16,11 @@
 	$( function() {
 		if ( body.is( '.sidebar' ) ) {
 			var sidebar   = $( '#secondary .widget-area' ),
-			    secondary = ( 0 === sidebar.length ) ? -40 : sidebar.height(),
+			    secondary = ( 0 == sidebar.length ) ? -40 : sidebar.height(),
 			    margin    = $( '#tertiary .widget-area' ).height() - $( '#content' ).height() - secondary;
 
-			if ( margin > 0 && _window.innerWidth() > 999 ) {
+			if ( margin > 0 && _window.innerWidth() > 999 )
 				$( '#colophon' ).css( 'margin-top', margin + 'px' );
-			}
 		}
 	} );
 
@@ -30,14 +29,12 @@
 	 */
 	( function() {
 		var nav = $( '#site-navigation' ), button, menu;
-		if ( ! nav ) {
+		if ( ! nav )
 			return;
-		}
 
 		button = nav.find( '.menu-toggle' );
-		if ( ! button ) {
+		if ( ! button )
 			return;
-		}
 
 		// Hide button if menu is missing or empty.
 		menu = nav.find( '.nav-menu' );
@@ -46,13 +43,8 @@
 			return;
 		}
 
-		button.on( 'click.twentythirteen', function() {
+		$( '.menu-toggle' ).on( 'click.twentythirteen', function() {
 			nav.toggleClass( 'toggled-on' );
-		} );
-
-		// Better focus for hidden submenu items for accessibility.
-		menu.find( 'a' ).on( 'focus.twentythirteen blur.twentythirteen', function() {
-			$( this ).parents( '.menu-item, .page_item' ).toggleClass( 'focus' );
 		} );
 	} )();
 
@@ -66,9 +58,8 @@
 		var element = document.getElementById( location.hash.substring( 1 ) );
 
 		if ( element ) {
-			if ( ! /^(?:a|select|input|button|textarea)$/i.test( element.tagName ) ) {
+			if ( ! /^(?:a|select|input|button|textarea)$/i.test( element.tagName ) )
 				element.tabIndex = -1;
-			}
 
 			element.focus();
 		}

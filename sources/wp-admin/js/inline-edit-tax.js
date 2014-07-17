@@ -1,6 +1,4 @@
-/* global inlineEditL10n, ajaxurl */
 
-var inlineEditTax;
 (function($) {
 inlineEditTax = {
 
@@ -16,49 +14,34 @@ inlineEditTax = {
 		});
 
 		// prepare the edit row
-		row.keyup( function( e ) {
-			if ( e.which === 27 ) {
-				return inlineEditTax.revert();
-			}
-		});
+		row.keyup(function(e) { if(e.which == 27) return inlineEditTax.revert(); });
 
-		$( 'a.cancel', row ).click( function() {
-			return inlineEditTax.revert();
-		});
-		$( 'a.save', row ).click( function() {
-			return inlineEditTax.save(this);
-		});
-		$( 'input, select', row ).keydown( function( e ) {
-			if ( e.which === 13 ) {
-				return inlineEditTax.save( this );
-			}
-		});
+		$('a.cancel', row).click(function() { return inlineEditTax.revert(); });
+		$('a.save', row).click(function() { return inlineEditTax.save(this); });
+		$('input, select', row).keydown(function(e) { if(e.which == 13) return inlineEditTax.save(this); });
 
-		$( '#posts-filter input[type="submit"]' ).mousedown( function() {
+		$('#posts-filter input[type="submit"]').mousedown(function(e){
 			t.revert();
 		});
 	},
 
 	toggle : function(el) {
 		var t = this;
-		$(t.what+t.getId(el)).css('display') === 'none' ? t.revert() : t.edit(el);
+		$(t.what+t.getId(el)).css('display') == 'none' ? t.revert() : t.edit(el);
 	},
 
 	edit : function(id) {
-		var editRow, rowData,
-			t = this;
+		var t = this, editRow;
 		t.revert();
 
-		if ( typeof(id) === 'object' ) {
+		if ( typeof(id) == 'object' )
 			id = t.getId(id);
-		}
 
 		editRow = $('#inline-edit').clone(true), rowData = $('#inline_'+id);
 		$('td', editRow).attr('colspan', $('.widefat:first thead th:visible').length);
 
-		if ( $( t.what + id ).hasClass( 'alternate' ) ) {
+		if ( $(t.what+id).hasClass('alternate') )
 			$(editRow).addClass('alternate');
-		}
 
 		$(t.what+id).hide().after(editRow);
 
@@ -74,9 +57,8 @@ inlineEditTax = {
 	save : function(id) {
 		var params, fields, tax = $('input[name="taxonomy"]').val() || '';
 
-		if( typeof(id) === 'object' ) {
+		if( typeof(id) == 'object' )
 			id = this.getId(id);
-		}
 
 		$('table.widefat .spinner').show();
 
@@ -87,7 +69,7 @@ inlineEditTax = {
 			taxonomy: tax
 		};
 
-		fields = $('#edit-'+id).find(':input').serialize();
+		fields = $('#edit-'+id+' :input').serialize();
 		params = fields + '&' + $.param(params);
 
 		// make ajax request
@@ -97,23 +79,20 @@ inlineEditTax = {
 				$('table.widefat .spinner').hide();
 
 				if (r) {
-					if ( -1 !== r.indexOf( '<tr' ) ) {
+					if ( -1 != r.indexOf('<tr') ) {
 						$(inlineEditTax.what+id).remove();
 						new_id = $(r).attr('id');
 
 						$('#edit-'+id).before(r).remove();
 						row = new_id ? $('#'+new_id) : $(inlineEditTax.what+id);
 						row.hide().fadeIn();
-					} else {
+					} else
 						$('#edit-'+id+' .inline-edit-save .error').html(r).show();
-					}
-				} else {
+				} else
 					$('#edit-'+id+' .inline-edit-save .error').html(inlineEditL10n.error).show();
-				}
 
-				if ( $( row ).prev( 'tr' ).hasClass( 'alternate' ) ) {
+				if ($(row).prev('tr').hasClass('alternate'))
 					$(row).removeClass('alternate');
-				}
 			}
 		);
 		return false;
@@ -133,7 +112,7 @@ inlineEditTax = {
 	},
 
 	getId : function(o) {
-		var id = o.tagName === 'TR' ? o.id : $(o).parents('tr').attr('id'), parts = id.split('-');
+		var id = o.tagName == 'TR' ? o.id : $(o).parents('tr').attr('id'), parts = id.split('-');
 		return parts[parts.length - 1];
 	}
 };

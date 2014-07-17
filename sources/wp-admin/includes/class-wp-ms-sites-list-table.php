@@ -21,9 +21,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 	}
 
 	function prepare_items() {
-		global $s, $mode, $wpdb;
-
-		$current_site = get_current_site();
+		global $s, $mode, $wpdb, $current_site;
 
 		$mode = ( empty( $_REQUEST['mode'] ) ) ? 'list' : $_REQUEST['mode'];
 
@@ -156,14 +154,6 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 		if ( has_filter( 'wpmublogsaction' ) )
 			$sites_columns['plugins'] = __( 'Actions' );
 
-		/**
-		 * Filter the displayed site columns in Sites list table.
-		 *
-		 * @since MU
-		 *
-		 * @param array $sites_columns An array of displayed site columns. Default 'cb',
-		 *                             'blogname', 'lastupdated', 'registered', 'users'.
-		 */
 		$sites_columns = apply_filters( 'wpmu_blogs_columns', $sites_columns );
 
 		return $sites_columns;
@@ -178,7 +168,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 	}
 
 	function display_rows() {
-		global $mode;
+		global $current_site, $mode;
 
 		$status_list = array(
 			'archived' => array( 'site-archived', __( 'Archived' ) ),
@@ -212,7 +202,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 			}
 			echo "<tr class='$class'>";
 
-			$blogname = ( is_subdomain_install() ) ? str_replace( '.' . get_current_site()->domain, '', $blog['domain'] ) : $blog['path'];
+			$blogname = ( is_subdomain_install() ) ? str_replace( '.'.$current_site->domain, '', $blog['domain'] ) : $blog['path'];
 
 			list( $columns, $hidden ) = $this->get_column_info();
 
@@ -233,7 +223,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 					break;
 
 					case 'id':?>
-						<th scope="row">
+						<th valign="top" scope="row">
 							<?php echo $blog['blog_id'] ?>
 						</th>
 					<?php
@@ -261,7 +251,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 
 							$actions['edit']	= '<span class="edit"><a href="' . esc_url( network_admin_url( 'site-info.php?id=' . $blog['blog_id'] ) ) . '">' . __( 'Edit' ) . '</a></span>';
 							$actions['backend']	= "<span class='backend'><a href='" . esc_url( get_admin_url( $blog['blog_id'] ) ) . "' class='edit'>" . __( 'Dashboard' ) . '</a></span>';
-							if ( get_current_site()->blog_id != $blog['blog_id'] ) {
+							if ( $current_site->blog_id != $blog['blog_id'] ) {
 								if ( get_blog_status( $blog['blog_id'], 'deleted' ) == '1' )
 									$actions['activate']	= '<span class="activate"><a href="' . esc_url( wp_nonce_url( network_admin_url( 'sites.php?action=confirm&amp;action2=activateblog&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( 'You are about to activate the site %s' ), $blogname ) ) ), 'confirm' ) ) . '">' . __( 'Activate' ) . '</a></span>';
 								else
@@ -283,21 +273,6 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 
 							$actions['visit']	= "<span class='view'><a href='" . esc_url( get_home_url( $blog['blog_id'], '/' ) ) . "' rel='permalink'>" . __( 'Visit' ) . '</a></span>';
 
-							/**
-							 * Filter the action links displayed for each site in the Sites list table.
-							 *
-							 * The 'Edit', 'Dashboard', 'Delete', and 'Visit' links are displayed by
-							 * default for each site. The site's status determines whether to show the
-							 * 'Activate' or 'Deactivate' link, 'Unarchive' or 'Archive' links, and
-							 * 'Not Spam' or 'Spam' link for each site.
-							 *
-							 * @since 3.1.0
-							 *
-							 * @param array  $actions  An array of action links to be displayed.
-							 * @param int    $blog_id  The site ID.
-							 * @param string $blogname Site path, formatted depending on whether it is a sub-domain
-							 *                         or subdirectory multisite install.
-							 */
 							$actions = apply_filters( 'manage_sites_action_links', array_filter( $actions ), $blog['blog_id'], $blogname );
 							echo $this->row_actions( $actions );
 					?>
@@ -306,7 +281,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 					break;
 
 					case 'lastupdated':
-						echo "<td class='$column_name column-$column_name'$style>";
+						echo "<td valign='top' class='$column_name column-$column_name'$style>";
 							if ( 'list' == $mode )
 								$date = 'Y/m/d';
 							else
@@ -316,7 +291,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 					<?php
 					break;
 				case 'registered':
-						echo "<td class='$column_name column-$column_name'$style>";
+						echo "<td valign='top' class='$column_name column-$column_name'$style>";
 						if ( $blog['registered'] == '0000-00-00 00:00:00' )
 							echo '&#x2014;';
 						else
@@ -326,7 +301,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 					<?php
 					break;
 				case 'users':
-						echo "<td class='$column_name column-$column_name'$style>";
+						echo "<td valign='top' class='$column_name column-$column_name'$style>";
 							$blogusers = get_users( array( 'blog_id' => $blog['blog_id'], 'number' => 6) );
 							if ( is_array( $blogusers ) ) {
 								$blogusers_warning = '';
@@ -350,16 +325,7 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 
 				case 'plugins': ?>
 					<?php if ( has_filter( 'wpmublogsaction' ) ) {
-					echo "<td class='$column_name column-$column_name'$style>";
-						/**
-						 * Fires inside the auxiliary 'Actions' column of the Sites list table.
-						 *
-						 * By default this column is hidden unless something is hooked to the action.
-						 *
-						 * @since MU
-						 *
-						 * @param int $blog_id The site ID.
-						 */
+					echo "<td valign='top' class='$column_name column-$column_name'$style>";
 						do_action( 'wpmublogsaction', $blog['blog_id'] ); ?>
 					</td>
 					<?php }
@@ -367,14 +333,6 @@ class WP_MS_Sites_List_Table extends WP_List_Table {
 
 				default:
 					echo "<td class='$column_name column-$column_name'$style>";
-					/**
-					 * Fires for each registered custom column in the Sites list table.
-					 *
-					 * @since 3.1.0
-					 *
-					 * @param string $column_name The name of the column to display.
-					 * @param int    $blog_id     The site ID.
-					 */
 					do_action( 'manage_sites_custom_column', $column_name, $blog['blog_id'] );
 					echo "</td>";
 					break;

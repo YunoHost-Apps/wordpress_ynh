@@ -65,7 +65,7 @@ function _walk_bookmarks($bookmarks, $args = '' ) {
 			$bookmark->recently_updated = false;
 		$output .= $before;
 		if ( $show_updated && $bookmark->recently_updated )
-			$output .= '<em>';
+			$output .= get_option('links_recently_updated_prepend');
 
 		$the_link = '#';
 		if ( !empty($bookmark->link_url) )
@@ -116,7 +116,7 @@ function _walk_bookmarks($bookmarks, $args = '' ) {
 		$output .= '</a>';
 
 		if ( $show_updated && $bookmark->recently_updated )
-			$output .= '</em>';
+			$output .= get_option('links_recently_updated_append');
 
 		if ( $show_description && '' != $desc )
 			$output .= $between . $desc;
@@ -233,7 +233,7 @@ function wp_list_bookmarks($args = '') {
 			 *
 			 * @since 2.2.0
 			 *
-			 * @param string $cat_name The category name of bookmarks.
+			 * @param string $cat->name The category name of bookmarks.
 			 */
 			$catname = apply_filters( 'link_category', $cat->name );
 

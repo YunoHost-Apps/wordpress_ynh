@@ -1,19 +1,18 @@
-/* global postboxes:true, commentL10n:true */
 jQuery(document).ready( function($) {
 
 	postboxes.add_postbox_toggles('comment');
 
 	var stamp = $('#timestamp').html();
 	$('.edit-timestamp').click(function () {
-		if ($('#timestampdiv').is(':hidden')) {
-			$('#timestampdiv').slideDown('normal');
+		if ($('#timestampdiv').is(":hidden")) {
+			$('#timestampdiv').slideDown("normal");
 			$('.edit-timestamp').hide();
 		}
 		return false;
 	});
 
 	$('.cancel-timestamp').click(function() {
-		$('#timestampdiv').slideUp('normal');
+		$('#timestampdiv').slideUp("normal");
 		$('#mm').val($('#hidden_mm').val());
 		$('#jj').val($('#hidden_jj').val());
 		$('#aa').val($('#hidden_aa').val());
@@ -35,7 +34,7 @@ jQuery(document).ready( function($) {
 			$('.timestamp-wrap', '#timestampdiv').removeClass('form-invalid');
 		}
 
-		$('#timestampdiv').slideUp('normal');
+		$('#timestampdiv').slideUp("normal");
 		$('.edit-timestamp').show();
 		$('#timestamp').html(
 			commentL10n.submittedOn + ' <b>' +

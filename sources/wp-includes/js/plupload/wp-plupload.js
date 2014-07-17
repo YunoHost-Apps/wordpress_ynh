@@ -1,15 +1,12 @@
-/* global pluploadL10n, plupload, _wpPluploadSettings */
-
 window.wp = window.wp || {};
 
-( function( exports, $ ) {
+(function( exports, $ ) {
 	var Uploader;
 
-	if ( typeof _wpPluploadSettings === 'undefined' ) {
+	if ( typeof _wpPluploadSettings === 'undefined' )
 		return;
-	}
 
-	/**
+	/*
 	 * An object that helps create a WordPress uploader using plupload.
 	 *
 	 * @param options - object - The options passed to the new plupload instance.
@@ -25,7 +22,6 @@ window.wp = window.wp || {};
 	 */
 	Uploader = function( options ) {
 		var self = this,
-			isIE = navigator.userAgent.indexOf('Trident/') != -1 || navigator.userAgent.indexOf('MSIE ') != -1,
 			elements = {
 				container: 'container',
 				browser:   'browse_button',
@@ -39,9 +35,8 @@ window.wp = window.wp || {};
 
 		this.supported = this.supports.upload;
 
-		if ( ! this.supported ) {
+		if ( ! this.supported )
 			return;
-		}
 
 		// Use deep extend to ensure that multipart_params and other objects are cloned.
 		this.plupload = $.extend( true, { multipart_params: {} }, Uploader.defaults );
@@ -55,17 +50,15 @@ window.wp = window.wp || {};
 
 		// Proxy all methods so this always refers to the current instance.
 		for ( key in this ) {
-			if ( $.isFunction( this[ key ] ) ) {
+			if ( $.isFunction( this[ key ] ) )
 				this[ key ] = $.proxy( this[ key ], this );
-			}
 		}
 
 		// Ensure all elements are jQuery elements and have id attributes
 		// Then set the proper plupload arguments to the ids.
 		for ( key in elements ) {
-			if ( ! this[ key ] ) {
+			if ( ! this[ key ] )
 				continue;
-			}
 
 			this[ key ] = $( this[ key ] ).first();
 
@@ -74,25 +67,14 @@ window.wp = window.wp || {};
 				continue;
 			}
 
-			if ( ! this[ key ].prop('id') ) {
+			if ( ! this[ key ].prop('id') )
 				this[ key ].prop( 'id', '__wp-uploader-id-' + Uploader.uuid++ );
-			}
-
 			this.plupload[ elements[ key ] ] = this[ key ].prop('id');
 		}
 
 		// If the uploader has neither a browse button nor a dropzone, bail.
-		if ( ! ( this.browser && this.browser.length ) && ! ( this.dropzone && this.dropzone.length ) ) {
+		if ( ! ( this.browser && this.browser.length ) && ! ( this.dropzone && this.dropzone.length ) )
 			return;
-		}
-
-		// Make sure flash sends cookies (seems in IE it does without switching to urlstream mode)
-		if ( ! isIE && 'flash' === plupload.predictRuntime( this.plupload ) &&
-			( ! this.plupload.required_features || ! this.plupload.required_features.hasOwnProperty( 'send_binary_string' ) ) ) {
-
-			this.plupload.required_features = this.plupload.required_features || {};
-			this.plupload.required_features.send_binary_string = true;
-		}
 
 		this.uploader = new plupload.Uploader( this.plupload );
 		delete this.plupload;
@@ -102,9 +84,8 @@ window.wp = window.wp || {};
 		delete this.params;
 
 		error = function( message, data, file ) {
-			if ( file.attachment ) {
+			if ( file.attachment )
 				file.attachment.destroy();
-			}
 
 			Uploader.errors.unshift({
 				message: message || pluploadL10n.default_error,
@@ -115,39 +96,36 @@ window.wp = window.wp || {};
 			self.error( message, data, file );
 		};
 
-		this.uploader.bind( 'init', function( uploader ) {
-			var timer, active, dragdrop,
-				dropzone = self.dropzone;
+		this.uploader.init();
 
-			dragdrop = self.supports.dragdrop = uploader.features.dragdrop && ! Uploader.browser.mobile;
+		this.supports.dragdrop = this.uploader.features.dragdrop && ! Uploader.browser.mobile;
 
-			// Generate drag/drop helper classes.
-			if ( ! dropzone ) {
+		// Generate drag/drop helper classes.
+		(function( dropzone, supported ) {
+			var timer, active;
+
+			if ( ! dropzone )
 				return;
-			}
 
-			dropzone.toggleClass( 'supports-drag-drop', !! dragdrop );
+			dropzone.toggleClass( 'supports-drag-drop', !! supported );
 
-			if ( ! dragdrop ) {
+			if ( ! supported )
 				return dropzone.unbind('.wp-uploader');
-			}
 
 			// 'dragenter' doesn't fire correctly,
 			// simulate it with a limited 'dragover'
-			dropzone.bind( 'dragover.wp-uploader', function() {
-				if ( timer ) {
+			dropzone.bind( 'dragover.wp-uploader', function(){
+				if ( timer )
 					clearTimeout( timer );
-				}
 
-				if ( active ) {
+				if ( active )
 					return;
-				}
 
 				dropzone.trigger('dropzone:enter').addClass('drag-over');
 				active = true;
 			});
 
-			dropzone.bind('dragleave.wp-uploader, drop.wp-uploader', function() {
+			dropzone.bind('dragleave.wp-uploader, drop.wp-uploader', function(){
 				// Using an instant timer prevents the drag-over class from
 				// being quickly removed and re-added when elements inside the
 				// dropzone are repositioned.
@@ -158,11 +136,7 @@ window.wp = window.wp || {};
 					dropzone.trigger('dropzone:leave').removeClass('drag-over');
 				}, 0 );
 			});
-
-			$(self).trigger( 'uploader:ready' );
-		});
-
-		this.uploader.init();
+		}( this.dropzone, this.supports.dragdrop ));
 
 		if ( this.browser ) {
 			this.browser.on( 'mouseenter', this.refresh );
@@ -177,9 +151,8 @@ window.wp = window.wp || {};
 				var attributes, image;
 
 				// Ignore failed uploads.
-				if ( plupload.FAILED === file.status ) {
+				if ( plupload.FAILED === file.status )
 					return;
-				}
 
 				// Generate attributes for a new `Attachment` model.
 				attributes = _.extend({
@@ -259,11 +232,8 @@ window.wp = window.wp || {};
 			for ( key in Uploader.errorMap ) {
 				if ( pluploadError.code === plupload[ key ] ) {
 					message = Uploader.errorMap[ key ];
-
-					if ( _.isFunction( message ) ) {
+					if ( _.isFunction( message ) )
 						message = message( pluploadError.file, pluploadError );
-					}
-
 					break;
 				}
 			}
@@ -272,9 +242,7 @@ window.wp = window.wp || {};
 			up.refresh();
 		});
 
-		this.uploader.bind( 'PostInit', function() {
-			self.init();
-		});
+		this.init();
 	};
 
 	// Adds the 'defaults' and 'browser' properties.
@@ -312,9 +280,8 @@ window.wp = window.wp || {};
 		 *    Sets values for a map of data.
 		 */
 		param: function( key, value ) {
-			if ( arguments.length === 1 && typeof key === 'string' ) {
+			if ( arguments.length === 1 && typeof key === 'string' )
 				return this.uploader.settings.multipart_params[ key ];
-			}
 
 			if ( arguments.length > 1 ) {
 				this.uploader.settings.multipart_params[ key ] = value;

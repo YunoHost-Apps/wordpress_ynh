@@ -85,7 +85,7 @@ You\'ve been invited to join \'%1$s\' at
 
 Please click the following link to confirm the invite:
 %4$s' );
-			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ), sprintf( $message, get_option( 'blogname' ), home_url(), wp_specialchars_decode( translate_user_role( $role['name'] ) ), home_url( "/newbloguser/$newuser_key/" ) ) );
+			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), wp_specialchars_decode( get_option( 'blogname' ) ) ), sprintf( $message, get_option( 'blogname' ), home_url(), wp_specialchars_decode( translate_user_role( $role['name'] ) ), home_url( "/newbloguser/$newuser_key/" ) ) );
 			$redirect = add_query_arg( array('update' => 'add'), 'user-new.php' );
 		}
 	}
@@ -117,11 +117,11 @@ Please click the following link to confirm the invite:
 			$add_user_errors = $user_details[ 'errors' ];
 		} else {
 			/**
-			 * Filter the user_login, aka the username, before it is added to the site.
+			 * Filter the user_login, also known as the username, before it is added to the site.
 			 *
-			 * @since 3.0.0
+			 * @since 2.0.3
 			 *
-			 * @param string $_REQUEST['user_login'] The sanitized username.
+			 * @param string $user_login The sanitized username.
 			 */
 			$new_user_login = apply_filters( 'pre_user_login', sanitize_user( wp_unslash( $_REQUEST['user_login'] ), true ) );
 			if ( isset( $_POST[ 'noconfirmation' ] ) && is_super_admin() ) {
@@ -182,18 +182,18 @@ get_current_screen()->add_help_tab( array(
 get_current_screen()->set_help_sidebar(
     '<p><strong>' . __('For more information:') . '</strong></p>' .
     '<p>' . __('<a href="http://codex.wordpress.org/Users_Add_New_Screen" target="_blank">Documentation on Adding New Users</a>') . '</p>' .
-    '<p>' . __('<a href="http://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
+    '<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 );
 
 wp_enqueue_script('wp-ajax-response');
 wp_enqueue_script('user-profile');
 
 /**
- * Allows you to enable user auto-complete for non-super admins in multisite.
+ * Filter whether to enable user auto-complete for non-super admins in Multisite.
  *
  * @since 3.4.0
  *
- * @param bool True or false, based on if you enable auto-complete for non-super admins. Default is false.
+ * @param bool $enable Whether to enable auto-complete for non-super admins. Default false.
  */
 if ( is_multisite() && current_user_can( 'promote_users' ) && ! wp_is_large_network( 'users' )
 	&& ( is_super_admin() || apply_filters( 'autocomplete_users_for_site_admins', false ) )
@@ -233,7 +233,6 @@ if ( isset($_GET['update']) ) {
 }
 ?>
 <div class="wrap">
-<?php screen_icon(); ?>
 <h2 id="add-new-user"> <?php
 if ( current_user_can( 'create_users' ) ) {
 	echo _x( 'Add New User', 'user' );
@@ -287,7 +286,7 @@ if ( is_multisite() ) {
  * @since 3.0.0
  */
 ?>
-<form action="" method="post" name="adduser" id="adduser" class="validate"<?php do_action('user_new_form_tag');?>>
+<form action="" method="post" name="adduser" id="adduser" class="validate"<?php do_action( 'user_new_form_tag' );?>>
 <input name="action" type="hidden" value="adduser" />
 <?php wp_nonce_field( 'add-user', '_wpnonce_add-user' ) ?>
 
@@ -320,7 +319,7 @@ if ( is_multisite() ) {
  *
  * @since 3.7.0
  *
- * @param string A contextual string specifying which type of new user form the hook follows.
+ * @param string $type A contextual string specifying which type of new user form the hook follows.
  */
 do_action( 'user_new_form', 'add-existing-user' );
 ?>
@@ -334,10 +333,8 @@ if ( current_user_can( 'create_users') ) {
 		echo '<h3 id="create-new-user">' . __( 'Add New User' ) . '</h3>';
 ?>
 <p><?php _e('Create a brand new user and add them to this site.'); ?></p>
-<?php
-/** This action is documented in wp-admin/user-new.php */
-?>
-<form action="" method="post" name="createuser" id="createuser" class="validate"<?php do_action('user_new_form_tag');?>>
+<?php /** This action is documented in wp-admin/user-new.php */ ?>
+<form action="" method="post" name="createuser" id="createuser" class="validate"<?php do_action( 'user_new_form_tag' );?>>
 <input name="action" type="hidden" value="createuser" />
 <?php wp_nonce_field( 'create-user', '_wpnonce_create-user' ); ?>
 <?php
@@ -382,7 +379,7 @@ foreach ( array( 'user_login' => 'login', 'first_name' => 'firstname', 'last_nam
  *
  * @since 1.5.1
  *
- * @param bool True or false, based on if you want to show the password fields. Default is true.
+ * @param bool $show Whether to show the password fields. Default true.
  */
 if ( apply_filters( 'show_password_fields', true ) ) : ?>
 	<tr class="form-field form-required">
@@ -398,12 +395,12 @@ if ( apply_filters( 'show_password_fields', true ) ) : ?>
 		<input name="pass2" type="password" id="pass2" autocomplete="off" />
 		<br />
 		<div id="pass-strength-result"><?php _e('Strength indicator'); ?></div>
-		<p class="description indicator-hint"><?php _e('Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers and symbols like ! " ? $ % ^ &amp; ).'); ?></p>
+		<p class="description indicator-hint"><?php _e('Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers, and symbols like ! " ? $ % ^ &amp; ).'); ?></p>
 		</td>
 	</tr>
 	<tr>
 		<th scope="row"><label for="send_password"><?php _e('Send Password?') ?></label></th>
-		<td><label for="send_password"><input type="checkbox" name="send_password" id="send_password" <?php checked( $new_user_send_password ); ?> /> <?php _e('Send this password to the new user by email.'); ?></label></td>
+		<td><label for="send_password"><input type="checkbox" name="send_password" id="send_password" value="1" <?php checked( $new_user_send_password ); ?> /> <?php _e('Send this password to the new user by email.'); ?></label></td>
 	</tr>
 <?php endif; ?>
 <?php } // !is_multisite ?>

@@ -27,17 +27,15 @@ if ( ! current_user_can( 'manage_sites' ) )
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
 	'<p>' . __('<a href="http://codex.wordpress.org/Network_Admin_Sites_Screen" target="_blank">Documentation on Site Management</a>') . '</p>' .
-	'<p>' . __('<a href="http://wordpress.org/support/forum/multisite/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://wordpress.org/support/forum/multisite/" target="_blank">Support Forums</a>') . '</p>'
 );
 
 if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 	check_admin_referer( 'add-blog', '_wpnonce_add-blog' );
 
-	if ( ! current_user_can( 'manage_sites' ) )
-		wp_die( __( 'You do not have permission to access this page.' ) );
-
 	if ( ! is_array( $_POST['blog'] ) )
 		wp_die( __( 'Can&#8217;t create an empty site.' ) );
+
 	$blog = $_POST['blog'];
 	$domain = '';
 	if ( preg_match( '|^([a-zA-Z0-9-])+$|', $blog['domain'] ) )
@@ -45,6 +43,7 @@ if ( isset($_REQUEST['action']) && 'add-site' == $_REQUEST['action'] ) {
 
 	// If not a subdomain install, make sure the domain isn't a reserved word
 	if ( ! is_subdomain_install() ) {
+		/** This filter is documented in wp-includes/ms-functions.php */
 		$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ) );
 		if ( in_array( $domain, $subdirectory_reserved_names ) )
 			wp_die( sprintf( __('The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>' ), implode( '</code>, <code>', $subdirectory_reserved_names ) ) );
@@ -107,12 +106,13 @@ if ( isset($_GET['update']) ) {
 $title = __('Add New Site');
 $parent_file = 'sites.php';
 
+wp_enqueue_script( 'user-suggest' );
+
 require( ABSPATH . 'wp-admin/admin-header.php' );
 
 ?>
 
 <div class="wrap">
-<?php screen_icon('ms-admin'); ?>
 <h2 id="add-new-site"><?php _e('Add New Site') ?></h2>
 <?php
 if ( ! empty( $messages ) ) {
@@ -140,7 +140,7 @@ if ( ! empty( $messages ) ) {
 		</tr>
 		<tr class="form-field form-required">
 			<th scope="row"><?php _e( 'Admin Email' ) ?></th>
-			<td><input name="blog[email]" type="text" class="regular-text" title="<?php esc_attr_e( 'Email' ) ?>"/></td>
+			<td><input name="blog[email]" type="text" class="regular-text wp-suggest-user" data-autocomplete-type="search" data-autocomplete-field="user_email" title="<?php esc_attr_e( 'Email' ) ?>"/></td>
 		</tr>
 		<tr class="form-field">
 			<td colspan="2"><?php _e( 'A new user will be created if the above email address is not in the database.' ) ?><br /><?php _e( 'The username and password will be mailed to this email address.' ) ?></td>

@@ -90,10 +90,10 @@
 			preview.send( 'synced' );
 		});
 
-	 	preview.bind( 'active', function() {
-	 		if ( api.settings.nonce )
-	 			preview.send( 'nonce', api.settings.nonce );
-	 	});
+        preview.bind( 'active', function() {
+            if ( api.settings.nonce )
+                preview.send( 'nonce', api.settings.nonce );
+        });
 
 		preview.send( 'ready' );
 
@@ -107,11 +107,6 @@
 				head = $('head'),
 				style = $('#custom-background-css'),
 				update;
-
-			// If custom backgrounds are active and we can't find the
-			// default output, bail.
-			if ( body.hasClass('custom-background') && ! style.length )
-				return;
 
 			update = function() {
 				var css = '';

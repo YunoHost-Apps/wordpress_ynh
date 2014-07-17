@@ -114,7 +114,7 @@ class WP_Links_List_Table extends WP_List_Table {
 
 			$edit_link = get_edit_bookmark_link( $link );
 ?>
-		<tr id="link-<?php echo $link->link_id; ?>" valign="middle" <?php echo $style; ?>>
+		<tr id="link-<?php echo $link->link_id; ?>" <?php echo $style; ?>>
 <?php
 
 			list( $columns, $hidden ) = $this->get_column_info();
@@ -175,6 +175,14 @@ class WP_Links_List_Table extends WP_List_Table {
 	 					?><td <?php echo $attributes ?>><?php echo $rating; ?></td><?php
 						break;
 					default:
+						/**
+						 * Fires for each registered custom link column.
+						 *
+						 * @since 2.1.0
+						 *
+						 * @param string $column_name Name of the custom column.
+						 * @param int    $link_id     Link ID.
+						 */
 						?>
 						<td <?php echo $attributes ?>><?php do_action( 'manage_link_custom_column', $column_name, $link->link_id ); ?></td>
 						<?php

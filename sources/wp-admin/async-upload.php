@@ -6,6 +6,10 @@
  * @subpackage Administration
  */
 
+if ( isset( $_REQUEST['action'] ) && 'upload-attachment' === $_REQUEST['action'] ) {
+	define( 'DOING_AJAX', true );
+}
+
 define('WP_ADMIN', true);
 
 if ( defined('ABSPATH') )
@@ -32,7 +36,6 @@ if ( !current_user_can('upload_files') )
 header('Content-Type: text/html; charset=' . get_option('blog_charset'));
 
 if ( isset( $_REQUEST['action'] ) && 'upload-attachment' === $_REQUEST['action'] ) {
-	define( 'DOING_AJAX', true );
 	include ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
 	send_nosniff_header();
@@ -94,5 +97,16 @@ if ( $_REQUEST['short'] ) {
 } else {
 	// long form response - big chunk o html
 	$type = $_REQUEST['type'];
-	echo apply_filters("async_upload_{$type}", $id);
+
+	/**
+	 * Filter the returned ID of an uploaded attachment.
+	 *
+	 * The dynamic portion of the hook name, $type, refers to the attachment type,
+	 * such as 'image', 'audio', 'video', 'file', etc.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param int $id Uploaded attachment ID.
+	 */
+	echo apply_filters( "async_upload_{$type}", $id );
 }

@@ -48,7 +48,24 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 
 		$nonmenu_tabs = array( 'theme-information' ); // Valid actions to perform which do not have a Menu item.
 
+		/**
+		 * Filter the tabs shown on the Install Themes screen.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $tabs The tabs shown on the Install Themes screen. Defaults are
+		 *                    'dashboard', 'search', 'upload', 'featured', 'new', and 'updated'.
+		 */
 		$tabs = apply_filters( 'install_themes_tabs', $tabs );
+
+		/**
+		 * Filter tabs not associated with a menu item on the Install Themes screen.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $nonmenu_tabs The tabs that don't have a menu item on
+		 *                            the Install Themes screen.
+		 */
 		$nonmenu_tabs = apply_filters( 'install_themes_nonmenu_tabs', $nonmenu_tabs );
 
 		// If a non-valid menu tab has been selected, And it's not a non-menu action.
@@ -93,6 +110,17 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 				break;
 		}
 
+		/**
+		 * Filter API request arguments for each Install Themes screen tab.
+		 *
+		 * The dynamic portion of the hook name, $tab, refers to the theme install
+		 * tabs. Default tabs are 'dashboard', 'search', 'upload', 'featured',
+		 * 'new', and 'updated'.
+		 *
+		 * @since 3.7.0
+		 *
+		 * @param array $args An array of themes API arguments.
+		 */
 		$args = apply_filters( 'install_themes_table_api_args_' . $tab, $args );
 
 		if ( ! $args )
@@ -107,7 +135,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 
 		$this->set_pagination_args( array(
 			'total_items' => $api->info['results'],
-			'per_page' => $per_page,
+			'per_page' => $args['per_page'],
 			'infinite_scroll' => true,
 		) );
 	}
@@ -134,7 +162,14 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 ?>
 		<div class="tablenav top themes">
 			<div class="alignleft actions">
-				<?php do_action( 'install_themes_table_header' ); ?>
+				<?php
+				/**
+				 * Fires in the Install Themes list table header.
+				 *
+				 * @since 2.8.0
+				 */
+				do_action( 'install_themes_table_header' );
+				?>
 			</div>
 			<?php $this->pagination( 'top' ); ?>
 			<br class="clear" />
@@ -160,7 +195,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		$this->theme_installer();
 	}
 
-	/*
+	/**
 	 * Prints a theme from the WordPress.org API.
 	 *
 	 * @param object $theme An object that contains theme data returned by the WordPress.org API.
@@ -192,7 +227,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		$preview_url   = add_query_arg( array(
 			'tab'   => 'theme-information',
 			'theme' => $theme->slug,
-		) );
+		), self_admin_url( 'theme-install.php' ) );
 
 		$actions = array();
 
@@ -224,6 +259,15 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 
 		$actions[] = '<a class="install-theme-preview" href="' . esc_url( $preview_url ) . '" title="' . esc_attr( sprintf( __( 'Preview %s' ), $name ) ) . '">' . __( 'Preview' ) . '</a>';
 
+		/**
+		 * Filter the install action links for a theme in the Install Themes list table.
+		 *
+		 * @since 3.4.0
+		 *
+		 * @param array    $actions An array of theme action hyperlinks. Defaults are
+		 *                          links to Install Now, Preview, and Details.
+		 * @param WP_Theme $theme   Theme object.
+		 */
 		$actions = apply_filters( 'theme_install_actions', $actions, $theme );
 
 		?>
@@ -247,7 +291,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		$this->install_theme_info( $theme );
 	}
 
-	/*
+	/**
 	 * Prints the wrapper for the theme installer.
 	 */
 	function theme_installer() {
@@ -255,13 +299,14 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		<div id="theme-installer" class="wp-full-overlay expanded">
 			<div class="wp-full-overlay-sidebar">
 				<div class="wp-full-overlay-header">
-					<a href="#" class="close-full-overlay"><?php _e( '&larr; Close' ); ?></a>
+					<a href="#" class="close-full-overlay button-secondary"><?php _e( 'Close' ); ?></a>
+					<span class="theme-install"></span>
 				</div>
 				<div class="wp-full-overlay-sidebar-content">
 					<div class="install-theme-info"></div>
 				</div>
 				<div class="wp-full-overlay-footer">
-					<a href="#" class="collapse-sidebar button-secondary" title="<?php esc_attr_e('Collapse Sidebar'); ?>">
+					<a href="#" class="collapse-sidebar" title="<?php esc_attr_e('Collapse Sidebar'); ?>">
 						<span class="collapse-sidebar-label"><?php _e('Collapse'); ?></span>
 						<span class="collapse-sidebar-arrow"></span>
 					</a>
@@ -272,7 +317,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		<?php
 	}
 
-	/*
+	/**
 	 * Prints the wrapper for the theme installer with a provided theme's data.
 	 * Used to make the theme installer work for no-js.
 	 *
@@ -291,7 +336,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 		<?php
 	}
 
-	/*
+	/**
 	 * Prints the info for a theme (to be used in the theme installer modal).
 	 *
 	 * @param object $theme - A WordPress.org Theme API object.
@@ -340,9 +385,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 				<img class="theme-screenshot" src="<?php echo esc_url( $theme->screenshot_url ); ?>" />
 			<?php endif; ?>
 			<div class="theme-details">
-				<div class="star-holder" title="<?php echo esc_attr( $num_ratings ); ?>">
-					<div class="star-rating" style="width:<?php echo esc_attr( intval( $theme->rating ) . 'px' ); ?>;"></div>
-				</div>
+				<?php wp_star_rating( array( 'rating' => $theme->rating, 'type' => 'percent', 'number' => $theme->num_ratings ) ); ?>
 				<div class="theme-version">
 					<strong><?php _e('Version:') ?> </strong>
 					<?php echo wp_kses( $theme->version, $themes_allowedtags ); ?>
@@ -359,7 +402,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 	/**
 	 * Send required variables to JavaScript land
 	 *
-	 * @since 3.4
+	 * @since 3.4.0
 	 * @access private
 	 *
 	 * @uses $tab Global; current tab within Themes->Install screen
@@ -373,7 +416,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 	/**
 	 * Check to see if the theme is already installed.
 	 *
-	 * @since 3.4
+	 * @since 3.4.0
 	 * @access private
 	 *
 	 * @param object $theme - A WordPress.org Theme API object.

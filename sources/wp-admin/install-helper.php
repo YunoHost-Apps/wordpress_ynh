@@ -43,7 +43,8 @@ if ( ! function_exists('maybe_create_table') ) :
  * Create database table, if it doesn't already exist.
  *
  * @since 1.0.0
- *
+ * @package WordPress
+ * @subpackage Plugin
  * @uses $wpdb
  *
  * @param string $table_name Database table name.
@@ -74,7 +75,8 @@ if ( ! function_exists('maybe_add_column') ) :
  * Add column to database table, if column doesn't already exist in table.
  *
  * @since 1.0.0
- *
+ * @package WordPress
+ * @subpackage Plugin
  * @uses $wpdb
  *
  * @param string $table_name Database table name
@@ -106,7 +108,8 @@ endif;
  * Drop column from database table, if it exists.
  *
  * @since 1.0.0
- *
+ * @package WordPress
+ * @subpackage Plugin
  * @uses $wpdb
  *
  * @param string $table_name Table name
@@ -149,6 +152,8 @@ function maybe_drop_column($table_name, $column_name, $drop_ddl) {
  *      Extra
  *
  * @since 1.0.0
+ * @package WordPress
+ * @subpackage Plugin
  *
  * @param string $table_name Table name
  * @param string $col_name Column name

@@ -1,4 +1,5 @@
-var addComment = {
+
+addComment = {
 	moveForm : function(commId, parentId, respondId, postId) {
 		var t = this, div, comm = t.I(commId), respond = t.I(respondId), cancel = t.I('cancel-comment-reply-link'), parent = t.I('comment_parent'), post = t.I('comment_post_ID');
 
@@ -33,7 +34,7 @@ var addComment = {
 			this.style.display = 'none';
 			this.onclick = null;
 			return false;
-		};
+		}
 
 		try { t.I('comment').focus(); }
 		catch(e) {}
@@ -44,4 +45,4 @@ var addComment = {
 	I : function(e) {
 		return document.getElementById(e);
 	}
-};
+}

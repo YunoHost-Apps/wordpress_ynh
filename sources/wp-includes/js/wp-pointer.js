@@ -1,4 +1,3 @@
-/* global wpPointerL10n */
 /**
  * Pointer jQuery widget.
  */
@@ -6,11 +5,11 @@
 	var identifier = 0,
 		zindex = 9999;
 
-	$.widget('wp.pointer', {
+	$.widget("wp.pointer", {
 		options: {
 			pointerClass: 'wp-pointer',
 			pointerWidth: 320,
-			content: function() {
+			content: function( respond, event, t ) {
 				return $(this).text();
 			},
 			buttons: function( event, t ) {
@@ -61,11 +60,11 @@
 				tip = this.pointer;
 
 			// Handle document transfer
-			if ( key === 'document' && value !== o.document ) {
+			if ( key === "document" && value !== o.document ) {
 				tip.detach().appendTo( value.body );
 
 			// Handle class change
-			} else if ( key === 'pointerClass' ) {
+			} else if ( key === "pointerClass" ) {
 				tip.removeClass( o.pointerClass ).addClass( value );
 			}
 
@@ -73,11 +72,11 @@
 			$.Widget.prototype._setOption.apply( this, arguments );
 
 			// Reposition automatically
-			if ( key === 'position' ) {
+			if ( key === "position" ) {
 				this.reposition();
 
 			// Update content automatically if pointer is open
-			} else if ( key === 'content' && this.active ) {
+			} else if ( key === "content" && this.active ) {
 				this.update();
 			}
 		},
@@ -102,7 +101,7 @@
 
 			dfd.done( function( content ) {
 				self._update( event, content );
-			});
+			})
 
 			// Either o.content is a string...
 			if ( typeof o.content === 'string' ) {
@@ -236,11 +235,11 @@
 
 			this.active = true;
 
-			this._trigger( 'open', event, this._handoff() );
+			this._trigger( "open", event, this._handoff() );
 
-			this._trigger( 'show', event, this._handoff({
+			this._trigger( "show", event, this._handoff({
 				opened: function() {
-					self._trigger( 'opened', event, self._handoff() );
+					self._trigger( "opened", event, self._handoff() );
 				}
 			}));
 		},
@@ -252,15 +251,15 @@
 			var self = this;
 			this.active = false;
 
-			this._trigger( 'close', event, this._handoff() );
-			this._trigger( 'hide', event, this._handoff({
+			this._trigger( "close", event, this._handoff() );
+			this._trigger( "hide", event, this._handoff({
 				closed: function() {
-					self._trigger( 'closed', event, self._handoff() );
+					self._trigger( "closed", event, self._handoff() );
 				}
 			}));
 		},
 
-		sendToTop: function() {
+		sendToTop: function( event ) {
 			if ( this.active )
 				this.pointer.css( 'z-index', zindex++ );
 		},

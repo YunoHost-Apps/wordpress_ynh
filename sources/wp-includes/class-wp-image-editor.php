@@ -82,17 +82,13 @@ abstract class WP_Image_Editor {
 	/**
 	 * Resizes current image.
 	 *
-	 * At minimum, either a height or width must be provided.
-	 * If one of the two is set to null, the resize will
-	 * maintain aspect ratio according to the provided dimension.
-	 *
 	 * @since 3.5.0
 	 * @access public
 	 * @abstract
 	 *
-	 * @param  int|null $max_w Image width.
-	 * @param  int|null $max_h Image height.
-	 * @param  boolean  $crop
+	 * @param int $max_w
+	 * @param int $max_h
+	 * @param boolean $crop
 	 * @return boolean|WP_Error
 	 */
 	abstract public function resize( $max_w, $max_h, $crop = false );
@@ -209,49 +205,19 @@ abstract class WP_Image_Editor {
 	 * @access public
 	 *
 	 * @param int $quality Compression Quality. Range: [1,100]
-	 * @return boolean|WP_Error True if set successfully; WP_Error on failure.
+	 * @return boolean
 	 */
-	public function set_quality( $quality = null ) {
-		if ( $quality == null ) {
-			$quality = $this->quality;
-		}
-
+	public function set_quality( $quality ) {
 		/**
-		 * Filter the default image compression quality setting.
+		 * Filter the default quality setting.
 		 *
 		 * @since 3.5.0
 		 *
-		 * @param int    $quality   Quality level between 1 (low) and 100 (high).
-		 * @param string $mime_type Image mime type.
+		 * @param int $quality Quality level between 0 (low) and 100 (high).
 		 */
-		$quality = apply_filters( 'wp_editor_set_quality', $quality, $this->mime_type );
+		$this->quality = apply_filters( 'wp_editor_set_quality', $quality );
 
-		if ( 'image/jpeg' == $this->mime_type ) {
-			/**
-			 * Filter the JPEG compression quality for backward-compatibility.
-			 *
-			 * The filter is evaluated under two contexts: 'image_resize', and 'edit_image',
-			 * (when a JPEG image is saved to file).
-			 *
-			 * @since 2.5.0
-			 *
-			 * @param int    $quality Quality level between 0 (low) and 100 (high) of the JPEG.
-			 * @param string $context Context of the filter.
-			 */
-			$quality = apply_filters( 'jpeg_quality', $quality, 'image_resize' );
-
-			// Allow 0, but squash to 1 due to identical images in GD, and for backwards compatibility.
-			if ( $quality == 0 ) {
-				$quality = 1;
-			}
-		}
-
-		if ( ( $quality >= 1 ) && ( $quality <= 100 ) ){
-			$this->quality = $quality;
-			return true;
-		} else {
-			return new WP_Error( 'invalid_image_quality', __('Attempted to set image quality outside of the range [1,100].') );
-		}
+		return ( (bool) $this->quality );
 	}
 
 	/**

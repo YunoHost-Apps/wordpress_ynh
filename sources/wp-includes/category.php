@@ -85,11 +85,10 @@ function get_categories( $args = '' ) {
  * @param int|object $category Category ID or Category row object
  * @param string $output Optional. Constant OBJECT, ARRAY_A, or ARRAY_N
  * @param string $filter Optional. Default is raw or no WordPress defined filter will applied.
- * @return object|array|WP_Error|null Category data in type defined by $output parameter. WP_Error if $category is empty, null if it does not exist.
+ * @return mixed Category data in type defined by $output parameter.
  */
 function get_category( $category, $output = OBJECT, $filter = 'raw' ) {
 	$category = get_term( $category, 'category', $output, $filter );
-
 	if ( is_wp_error( $category ) )
 		return $category;
 
@@ -302,7 +301,7 @@ function get_tags( $args = '' ) {
  * @param int|object $tag
  * @param string $output Optional. Constant OBJECT, ARRAY_A, or ARRAY_N
  * @param string $filter Optional. Default is raw or no WordPress defined filter will applied.
- * @return object|array|WP_Error|null Tag data in type defined by $output parameter. WP_Error if $tag is empty, null if it does not exist.
+ * @return object|array Return type based on $output value.
  */
 function get_tag( $tag, $output = OBJECT, $filter = 'raw' ) {
 	return get_term( $tag, 'post_tag', $output, $filter );

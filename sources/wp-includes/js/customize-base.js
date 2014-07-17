@@ -129,14 +129,14 @@ window.wp = window.wp || {};
 			return this;
 		},
 
-		bind: function( id ) {
+		bind: function( id, callback ) {
 			this.topics = this.topics || {};
 			this.topics[ id ] = this.topics[ id ] || $.Callbacks();
 			this.topics[ id ].add.apply( this.topics[ id ], slice.call( arguments, 1 ) );
 			return this;
 		},
 
-		unbind: function( id ) {
+		unbind: function( id, callback ) {
 			if ( this.topics && this.topics[ id ] )
 				this.topics[ id ].remove.apply( this.topics[ id ], slice.call( arguments, 1 ) );
 			return this;
@@ -209,12 +209,12 @@ window.wp = window.wp || {};
 			return value;
 		},
 
-		bind: function() {
+		bind: function( callback ) {
 			this.callbacks.add.apply( this.callbacks, arguments );
 			return this;
 		},
 
-		unbind: function() {
+		unbind: function( callback ) {
 			this.callbacks.remove.apply( this.callbacks, arguments );
 			return this;
 		},
@@ -532,11 +532,6 @@ window.wp = window.wp || {};
 			// Check to make sure the origin is valid.
 			if ( this.origin() && event.origin !== this.origin() )
 				return;
-
-			// Ensure we have a string that's JSON.parse-able
-			if ( typeof event.data !== 'string' || event.data[0] !== '{' ) {
-				return;
-			}
 
 			message = JSON.parse( event.data );
 

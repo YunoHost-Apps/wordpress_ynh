@@ -1,4 +1,3 @@
-/* global zxcvbn */
 window.wp = window.wp || {};
 
 var passwordStrength;
@@ -41,7 +40,7 @@ var passwordStrength;
 			for ( i = 0; i < userInputFieldsLength; i++ ) {
 				currentField = $( '#' + userInputFields[ i ] );
 
-				if ( 0 === currentField.length ) {
+				if ( 0 == currentField.length ) {
 					continue;
 				}
 
@@ -59,7 +58,7 @@ var passwordStrength;
 
 			// Remove empty values, short words, and duplicates. Short words are likely to cause many false positives.
 			blacklist = $.grep( blacklist, function( value, key ) {
-				if ( '' === value || 4 > value.length ) {
+				if ( '' == value || 4 > value.length ) {
 					return false;
 				}
 
@@ -68,7 +67,7 @@ var passwordStrength;
 
 			return blacklist;
 		}
-	};
+	}
 
 	// Backwards compatibility.
 	passwordStrength = wp.passwordStrength.meter;

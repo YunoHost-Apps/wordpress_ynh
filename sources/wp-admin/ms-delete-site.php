@@ -32,7 +32,6 @@ $parent_file = 'tools.php';
 require_once( ABSPATH . 'wp-admin/admin-header.php' );
 
 echo '<div class="wrap">';
-screen_icon();
 echo '<h2>' . esc_html( $title ) . '</h2>';
 
 if ( isset( $_POST['action'] ) && $_POST['action'] == 'deleteblog' && isset( $_POST['confirmdelete'] ) && $_POST['confirmdelete'] == '1' ) {
@@ -69,7 +68,7 @@ Webmaster
 	$content = str_replace( '###URL_DELETE###', $url_delete, $content );
 	$content = str_replace( '###SITE_NAME###', $current_site->site_name, $content );
 
-	wp_mail( get_option( 'admin_email' ), "[ " . get_option( 'blogname' ) . " ] ".__( 'Delete My Site' ), $content );
+	wp_mail( get_option( 'admin_email' ), "[ " . wp_specialchars_decode( get_option( 'blogname' ) ) . " ] ".__( 'Delete My Site' ), $content );
 	?>
 
 	<p><?php _e( 'Thank you. Please check your email for a link to confirm your action. Your site will not be deleted until this link is clicked. ') ?></p>

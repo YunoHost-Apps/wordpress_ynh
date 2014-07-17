@@ -378,6 +378,15 @@ class WP_Role {
 	 * @return bool True, if user has capability. False, if doesn't have capability.
 	 */
 	function has_cap( $cap ) {
+		/**
+		 * Filter which capabilities a role has.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array  $capabilities Array of role capabilities.
+		 * @param string $cap          Capability name.
+		 * @param string $name         Role name.
+		 */
 		$capabilities = apply_filters( 'role_has_cap', $this->capabilities, $cap, $this->name );
 		if ( !empty( $capabilities[$cap] ) )
 			return $capabilities[$cap];
@@ -684,7 +693,7 @@ class WP_User {
 		return $this->__isset( $key );
 	}
 
-	/*
+	/**
 	 * Return an array representation.
 	 *
 	 * @since 3.5.0
@@ -822,6 +831,17 @@ class WP_User {
 		update_user_meta( $this->ID, $this->cap_key, $this->caps );
 		$this->get_role_caps();
 		$this->update_user_level_from_caps();
+
+		/**
+		 * Fires after the user's role has changed.
+		 *
+		 * @since 2.9.0
+		 * @since 3.6.0 Added $old_roles to include an array of the user's previous roles.
+		 *
+		 * @param int    $user_id   The user ID.
+		 * @param string $role      The new role.
+		 * @param array  $old_roles An array of the user's previous roles.
+		 */
 		do_action( 'set_user_role', $this->ID, $role, $old_roles );
 	}
 
@@ -942,6 +962,17 @@ class WP_User {
 			return true;
 		}
 
+		/**
+		 * Dynamically filter a user's capabilities.
+		 *
+		 * @since 2.0.0
+		 * @since 3.7.0 Added the user object.
+		 *
+		 * @param array   $allcaps An array of all the role's capabilities.
+		 * @param array   $caps    Actual capabilities for meta capability.
+		 * @param array   $args    Optional parameters passed to has_cap(), typically object ID.
+		 * @param WP_User $user    The user object.
+		 */
 		// Must have ALL requested caps
 		$capabilities = apply_filters( 'user_has_cap', $this->allcaps, $caps, $args, $this );
 		$capabilities['exist'] = true; // Everyone is allowed to exist
@@ -1040,20 +1071,15 @@ function map_meta_cap( $cap, $user_id ) {
 			break;
 		}
 
-		$post_author_id = $post->post_author;
-
-		// If no author set yet, default to current user for cap checks.
-		if ( ! $post_author_id )
-			$post_author_id = $user_id;
-
-		// If the user is the author...
-		if ( $user_id == $post_author_id ) {
+		// If the post author is set and the user is the author...
+		if ( $post->post_author && $user_id == $post->post_author ) {
 			// If the post is published...
 			if ( 'publish' == $post->post_status ) {
 				$caps[] = $post_type->cap->delete_published_posts;
 			} elseif ( 'trash' == $post->post_status ) {
-				if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
+				if ( 'publish' == get_post_meta( $post->ID, '_wp_trash_meta_status', true ) ) {
 					$caps[] = $post_type->cap->delete_published_posts;
+				}
 			} else {
 				// If the post is draft...
 				$caps[] = $post_type->cap->delete_posts;
@@ -1062,10 +1088,11 @@ function map_meta_cap( $cap, $user_id ) {
 			// The user is trying to edit someone else's post.
 			$caps[] = $post_type->cap->delete_others_posts;
 			// The post is published, extra cap required.
-			if ( 'publish' == $post->post_status )
+			if ( 'publish' == $post->post_status ) {
 				$caps[] = $post_type->cap->delete_published_posts;
-			elseif ( 'private' == $post->post_status )
+			} elseif ( 'private' == $post->post_status ) {
 				$caps[] = $post_type->cap->delete_private_posts;
+			}
 		}
 		break;
 		// edit_post breaks down to edit_posts, edit_published_posts, or
@@ -1090,20 +1117,15 @@ function map_meta_cap( $cap, $user_id ) {
 			break;
 		}
 
-		$post_author_id = $post->post_author;
-
-		// If no author set yet, default to current user for cap checks.
-		if ( ! $post_author_id )
-			$post_author_id = $user_id;
-
-		// If the user is the author...
-		if ( $user_id == $post_author_id ) {
+		// If the post author is set and the user is the author...
+		if ( $post->post_author && $user_id == $post->post_author ) {
 			// If the post is published...
 			if ( 'publish' == $post->post_status ) {
 				$caps[] = $post_type->cap->edit_published_posts;
 			} elseif ( 'trash' == $post->post_status ) {
-				if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
+				if ( 'publish' == get_post_meta( $post->ID, '_wp_trash_meta_status', true ) ) {
 					$caps[] = $post_type->cap->edit_published_posts;
+				}
 			} else {
 				// If the post is draft...
 				$caps[] = $post_type->cap->edit_posts;
@@ -1112,10 +1134,11 @@ function map_meta_cap( $cap, $user_id ) {
 			// The user is trying to edit someone else's post.
 			$caps[] = $post_type->cap->edit_others_posts;
 			// The post is published, extra cap required.
-			if ( 'publish' == $post->post_status )
+			if ( 'publish' == $post->post_status ) {
 				$caps[] = $post_type->cap->edit_published_posts;
-			elseif ( 'private' == $post->post_status )
+			} elseif ( 'private' == $post->post_status ) {
 				$caps[] = $post_type->cap->edit_private_posts;
+			}
 		}
 		break;
 	case 'read_post':
@@ -1142,18 +1165,13 @@ function map_meta_cap( $cap, $user_id ) {
 			break;
 		}
 
-		$post_author_id = $post->post_author;
-
-		// If no author set yet, default to current user for cap checks.
-		if ( ! $post_author_id )
-			$post_author_id = $user_id;
-
-		if ( $user_id == $post_author_id )
+		if ( $post->post_author && $user_id == $post->post_author ) {
 			$caps[] = $post_type->cap->read;
-		elseif ( $status_obj->private )
+		} elseif ( $status_obj->private ) {
 			$caps[] = $post_type->cap->read_private_posts;
-		else
+		} else {
 			$caps = map_meta_cap( 'edit_post', $user_id, $post->ID );
+		}
 		break;
 	case 'publish_post':
 		$post = get_post( $args[0] );
@@ -1170,6 +1188,21 @@ function map_meta_cap( $cap, $user_id ) {
 		$meta_key = isset( $args[ 1 ] ) ? $args[ 1 ] : false;
 
 		if ( $meta_key && has_filter( "auth_post_meta_{$meta_key}" ) ) {
+			/**
+			 * Filter whether the user is allowed to add post meta to a post.
+			 *
+			 * The dynamic portion of the hook name, $meta_key, refers to the
+			 * meta key passed to map_meta_cap().
+			 *
+			 * @since 3.3.0
+			 *
+			 * @param bool   $allowed  Whether the user can add the post meta. Default false.
+			 * @param string $meta_key The meta key.
+			 * @param int    $post_id  Post ID.
+			 * @param int    $user_id  User ID.
+			 * @param string $cap      Capability name.
+			 * @param array  $caps     User capabilities.
+			 */
 			$allowed = apply_filters( "auth_post_meta_{$meta_key}", false, $meta_key, $post->ID, $user_id, $cap, $caps );
 			if ( ! $allowed )
 				$caps[] = $cap;
@@ -1271,7 +1304,17 @@ function map_meta_cap( $cap, $user_id ) {
 		$caps[] = $cap;
 	}
 
-	return apply_filters('map_meta_cap', $caps, $cap, $user_id, $args);
+	/**
+	 * Filter a user's capabilities depending on specific context and/or privilege.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array  $caps    Returns the user's actual capabilities.
+	 * @param string $cap     Capability name.
+	 * @param int    $user_id The user ID.
+	 * @param array  $args    Adds the context to the cap. Typically the object ID.
+	 */
+	return apply_filters( 'map_meta_cap', $caps, $cap, $user_id, $args );
 }
 
 /**

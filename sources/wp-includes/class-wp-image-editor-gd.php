@@ -77,7 +77,7 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 	 * @since 3.5.0
 	 * @access protected
 	 *
-	 * @return boolean|\WP_Error
+	 * @return boolean|WP_Error True if loaded successfully; WP_Error on failure.
 	 */
 	public function load() {
 		if ( $this->image )
@@ -86,8 +86,17 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 		if ( ! is_file( $this->file ) && ! preg_match( '|^https?://|', $this->file ) )
 			return new WP_Error( 'error_loading_image', __('File doesn&#8217;t exist?'), $this->file );
 
+		/**
+		 * Filter the memory limit allocated for image manipulation.
+		 *
+		 * @since 3.5.0
+		 *
+		 * @param int|string $limit Maximum memory limit to allocate for images. Default WP_MAX_MEMORY_LIMIT.
+		 *                          Accepts an integer (bytes), or a shorthand string notation, such as '256M'.
+		 */
 		// Set artificially high because GD uses uncompressed images in memory
 		@ini_set( 'memory_limit', apply_filters( 'image_memory_limit', WP_MAX_MEMORY_LIMIT ) );
+
 		$this->image = @imagecreatefromstring( file_get_contents( $this->file ) );
 
 		if ( ! is_resource( $this->image ) )
@@ -105,7 +114,7 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 		$this->update_size( $size[0], $size[1] );
 		$this->mime_type = $size['mime'];
 
-		return true;
+		return $this->set_quality( $this->quality );
 	}
 
 	/**
@@ -131,12 +140,16 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 	 * Resizes current image.
 	 * Wraps _resize, since _resize returns a GD Resource.
 	 *
+	 * At minimum, either a height or width must be provided.
+	 * If one of the two is set to null, the resize will
+	 * maintain aspect ratio according to the provided dimension.
+	 *
 	 * @since 3.5.0
 	 * @access public
 	 *
-	 * @param int $max_w
-	 * @param int $max_h
-	 * @param boolean $crop
+	 * @param  int|null $max_w Image width.
+	 * @param  int|null $max_h Image height.
+	 * @param  boolean  $crop
 	 * @return boolean|WP_Error
 	 */
 	public function resize( $max_w, $max_h, $crop = false ) {
@@ -183,24 +196,37 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 	 * @param array $sizes {
 	 *     An array of image size arrays. Default sizes are 'small', 'medium', 'large'.
 	 *
+	 *     Either a height or width must be provided.
+	 *     If one of the two is set to null, the resize will
+	 *     maintain aspect ratio according to the provided dimension.
+	 *
 	 *     @type array $size {
-	 *         @type int  $width  Image width.
-	 *         @type int  $height Image height.
-	 *         @type bool $crop   Optional. Whether to crop the image. Default false.
+	 *         @type int  ['width']  Optional. Image width.
+	 *         @type int  ['height'] Optional. Image height.
+	 *         @type bool ['crop']   Optional. Whether to crop the image. Default false.
 	 *     }
 	 * }
-	 * @return array An array of resized images metadata by size.
+	 * @return array An array of resized images' metadata by size.
 	 */
 	public function multi_resize( $sizes ) {
 		$metadata = array();
 		$orig_size = $this->size;
 
 		foreach ( $sizes as $size => $size_data ) {
-			if ( ! ( isset( $size_data['width'] ) && isset( $size_data['height'] ) ) )
+			if ( ! isset( $size_data['width'] ) && ! isset( $size_data['height'] ) ) {
 				continue;
+			}
 
-			if ( ! isset( $size_data['crop'] ) )
+			if ( ! isset( $size_data['width'] ) ) {
+				$size_data['width'] = null;
+			}
+			if ( ! isset( $size_data['height'] ) ) {
+				$size_data['height'] = null;
+			}
+
+			if ( ! isset( $size_data['crop'] ) ) {
 				$size_data['crop'] = false;
+			}
 
 			$image = $this->_resize( $size_data['width'], $size_data['height'], $size_data['crop'] );
 
@@ -361,7 +387,7 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 				return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
 		}
 		elseif ( 'image/jpeg' == $mime_type ) {
-			if ( ! $this->make_image( $filename, 'imagejpeg', array( $image, $filename, apply_filters( 'jpeg_quality', $this->quality, 'image_resize' ) ) ) )
+			if ( ! $this->make_image( $filename, 'imagejpeg', array( $image, $filename, $this->quality ) ) )
 				return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
 		}
 		else {
@@ -373,12 +399,19 @@ class WP_Image_Editor_GD extends WP_Image_Editor {
 		$perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
 		@ chmod( $filename, $perms );
 
+		/**
+		 * Filter the name of the saved image file.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param string $filename Name of the file.
+		 */
 		return array(
-			'path' => $filename,
-			'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
-			'width' => $this->size['width'],
-			'height' => $this->size['height'],
-			'mime-type'=> $mime_type,
+			'path'      => $filename,
+			'file'      => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
+			'width'     => $this->size['width'],
+			'height'    => $this->size['height'],
+			'mime-type' => $mime_type,
 		);
 	}
 

@@ -16,7 +16,7 @@ if ( false ) {
 	<title>Error: PHP is not running</title>
 </head>
 <body class="wp-core-ui">
-	<h1 id="logo"><a href="http://wordpress.org/">WordPress</a></h1>
+	<h1 id="logo"><a href="https://wordpress.org/">WordPress</a></h1>
 	<h2>Error: PHP is not running</h2>
 	<p>WordPress requires that your web server is running PHP. Your server does not have PHP installed, or PHP is turned off.</p>
 </body>
@@ -47,8 +47,6 @@ $step = isset( $_GET['step'] ) ? (int) $_GET['step'] : 0;
  * Display install header.
  *
  * @since 2.5.0
- * @package WordPress
- * @subpackage Installer
  */
 function display_header() {
 	header( 'Content-Type: text/html; charset=utf-8' );
@@ -56,6 +54,7 @@ function display_header() {
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
 <head>
+	<meta name="viewport" content="width=device-width" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title><?php _e( 'WordPress &rsaquo; Installation' ); ?></title>
 	<?php
@@ -63,7 +62,7 @@ function display_header() {
 	?>
 </head>
 <body class="wp-core-ui<?php if ( is_rtl() ) echo ' rtl'; ?>">
-<h1 id="logo"><a href="<?php echo esc_url( __( 'http://wordpress.org/' ) ); ?>"><?php _e( 'WordPress' ); ?></a></h1>
+<h1 id="logo"><a href="<?php echo esc_url( __( 'https://wordpress.org/' ) ); ?>"><?php _e( 'WordPress' ); ?></a></h1>
 
 <?php
 } // end display_header()
@@ -72,8 +71,6 @@ function display_header() {
  * Display installer setup form.
  *
  * @since 2.8.0
- * @package WordPress
- * @subpackage Installer
  */
 function display_setup_form( $error = null ) {
 	global $wpdb;
@@ -105,6 +102,7 @@ function display_setup_form( $error = null ) {
 			<?php
 			if ( $user_table ) {
 				_e('User(s) already exists.');
+				echo '<input name="user_name" type="hidden" value="admin" />';
 			} else {
 				?><input name="user_name" type="text" id="user_login" size="25" value="<?php echo esc_attr( sanitize_user( $user_name, true ) ); ?>" />
 				<p><?php _e( 'Usernames can have only alphanumeric characters, spaces, underscores, hyphens, periods and the @ symbol.' ); ?></p>
@@ -122,7 +120,7 @@ function display_setup_form( $error = null ) {
 				<input name="admin_password" type="password" id="pass1" size="25" value="" />
 				<p><input name="admin_password2" type="password" id="pass2" size="25" value="" /></p>
 				<div id="pass-strength-result"><?php _e('Strength indicator'); ?></div>
-				<p><?php _e('Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers and symbols like ! " ? $ % ^ &amp; ).'); ?></p>
+				<p><?php _e('Hint: The password should be at least seven characters long. To make it stronger, use upper and lower case letters, numbers, and symbols like ! " ? $ % ^ &amp; ).'); ?></p>
 			</td>
 		</tr>
 		<?php endif; ?>
@@ -220,7 +218,7 @@ switch($step) {
 
 		if ( $error === false ) {
 			$wpdb->show_errors();
-			$result = wp_install($weblog_title, $user_name, $admin_email, $public, '', $admin_password);
+			$result = wp_install($weblog_title, $user_name, $admin_email, $public, '', wp_slash( $admin_password ) );
 			extract( $result, EXTR_SKIP );
 ?>
 
@@ -249,8 +247,10 @@ switch($step) {
 		}
 		break;
 }
+if ( !wp_is_mobile() ) {
 ?>
 <script type="text/javascript">var t = document.getElementById('weblog_title'); if (t){ t.focus(); }</script>
+<?php } ?>
 <?php wp_print_scripts( 'user-profile' ); ?>
 </body>
 </html>

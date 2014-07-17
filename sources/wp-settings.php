@@ -20,6 +20,13 @@ define( 'WPINC', 'wp-includes' );
 // Include files required for initialization.
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
+
+/*
+ * These can't be directly globalized in version.php. When updating,
+ * we're including version.php from another install and don't want
+ * these values to be overridden if already set.
+ */
+global $wp_version, $wp_db_version, $tinymce_version, $required_php_version, $required_mysql_version;
 require( ABSPATH . WPINC . '/version.php' );
 
 // Set initial default constants including WP_MEMORY_LIMIT, WP_MAX_MEMORY_LIMIT, WP_DEBUG, WP_CONTENT_DIR and WP_CACHE.
@@ -157,6 +164,8 @@ if ( is_multisite() ) {
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
 wp_plugin_directory_constants();
 
+$GLOBALS['wp_plugin_paths'] = array();
+
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
 	include_once( $mu_plugin );
@@ -166,6 +175,7 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
+		wp_register_plugin_realpath( $network_plugin );
 		include_once( $network_plugin );
 	}
 	unset( $network_plugin );
@@ -199,8 +209,10 @@ create_initial_post_types();
 register_theme_directory( get_theme_root() );
 
 // Load active plugins.
-foreach ( wp_get_active_and_valid_plugins() as $plugin )
+foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
+	wp_register_plugin_realpath( $plugin );
 	include_once( $plugin );
+}
 unset( $plugin );
 
 // Load pluggable functions.
@@ -219,7 +231,7 @@ if ( WP_CACHE && function_exists( 'wp_cache_postload' ) )
  *
  * Pluggable functions are also available at this point in the loading order.
  *
- * @since 1.5.2
+ * @since 1.5.0
  */
 do_action( 'plugins_loaded' );
 
@@ -241,7 +253,7 @@ do_action( 'sanitize_comment_cookies' );
  * @global object $wp_the_query
  * @since 2.0.0
  */
-$wp_the_query = new WP_Query();
+$GLOBALS['wp_the_query'] = new WP_Query();
 
 /**
  * Holds the reference to @see $wp_the_query
@@ -249,7 +261,7 @@ $wp_the_query = new WP_Query();
  * @global object $wp_query
  * @since 1.5.0
  */
-$wp_query = $wp_the_query;
+$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
 
 /**
  * Holds the WordPress Rewrite object for creating pretty URLs
@@ -263,7 +275,7 @@ $GLOBALS['wp_rewrite'] = new WP_Rewrite();
  * @global object $wp
  * @since 2.0.0
  */
-$wp = new WP();
+$GLOBALS['wp'] = new WP();
 
 /**
  * WordPress Widget Factory Object
@@ -324,7 +336,7 @@ if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 do_action( 'after_setup_theme' );
 
 // Set up current user.
-$wp->init();
+$GLOBALS['wp']->init();
 
 /**
  * Fires after WordPress has finished loading but before any headers are sent.
@@ -335,7 +347,7 @@ $wp->init();
  *
  * If you wish to plug an action once WP is loaded, use the wp_loaded hook below.
  *
- * @since 1.5.2
+ * @since 1.5.0
  */
 do_action( 'init' );
 

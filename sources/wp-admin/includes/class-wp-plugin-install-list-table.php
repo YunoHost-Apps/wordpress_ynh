@@ -129,7 +129,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 
 		$this->set_pagination_args( array(
 			'total_items' => $api->info['results'],
-			'per_page' => $per_page,
+			'per_page' => $args['per_page'],
 		) );
 	}
 
@@ -245,7 +245,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 						break;
 					case 'update_available':
 						if ( $status['url'] )
-							$action_links[] = '<a href="' . $status['url'] . '" title="' . esc_attr( sprintf( __( 'Update to version %s' ), $status['version'] ) ) . '">' . sprintf( __( 'Update Now' ), $status['version'] ) . '</a>';
+							$action_links[] = '<a href="' . $status['url'] . '" title="' . esc_attr( sprintf( __( 'Update to version %s' ), $status['version'] ) ) . '">' . __( 'Update Now' ) . '</a>';
 						break;
 					case 'latest_installed':
 					case 'newer_installed':
@@ -270,9 +270,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 			</td>
 			<td class="vers column-version"<?php echo $style['version']; ?>><?php echo $version; ?></td>
 			<td class="vers column-rating"<?php echo $style['rating']; ?>>
-				<div class="star-holder" title="<?php printf( _n( '(based on %s rating)', '(based on %s ratings)', $plugin['num_ratings'] ), number_format_i18n( $plugin['num_ratings'] ) ) ?>">
-					<div class="star star-rating" style="width: <?php echo esc_attr( str_replace( ',', '.', $plugin['rating'] ) ); ?>px"></div>
-				</div>
+				<?php wp_star_rating( array( 'rating' => $plugin['rating'], 'type' => 'percent', 'number' => $plugin['num_ratings'] ) ); ?>
 			</td>
 			<td class="desc column-description"<?php echo $style['description']; ?>><?php echo $description, $author; ?></td>
 		</tr>

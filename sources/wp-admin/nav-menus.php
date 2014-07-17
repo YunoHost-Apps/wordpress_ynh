@@ -476,7 +476,7 @@ if ( ! current_theme_supports( 'menus' ) && ! $num_locations )
 
 if ( ! $locations_screen ) : // Main tab
 	$overview  = '<p>' . __( 'This screen is used for managing your custom navigation menus.' ) . '</p>';
-	$overview .= '<p>' . sprintf( __( 'Menus can be displayed in locations defined by your theme, even used in sidebars by adding a &#8220;Custom Menu&#8221; widget on the <a href="%1$s">Widgets</a> screen. If your theme does not support the custom menus feature (the default themes, %2$s and %3$s, do), you can learn about adding this support by following the Documentation link to the side.' ), admin_url( 'widgets.php' ), 'Twenty Thirteen', 'Twenty Twelve' ) . '</p>';
+	$overview .= '<p>' . sprintf( __( 'Menus can be displayed in locations defined by your theme, even used in sidebars by adding a &#8220;Custom Menu&#8221; widget on the <a href="%1$s">Widgets</a> screen. If your theme does not support the custom menus feature (the default themes, %2$s and %3$s, do), you can learn about adding this support by following the Documentation link to the side.' ), admin_url( 'widgets.php' ), 'Twenty Fourteen', 'Twenty Thirteen' ) . '</p>';
 	$overview .= '<p>' . __( 'From this screen you can:' ) . '</p>';
 	$overview .= '<ul><li>' . __( 'Create, edit, and delete menus' ) . '</li>';
 	$overview .= '<li>' . __( 'Add, organize, and modify individual menu items' ) . '</li></ul>';
@@ -526,14 +526,13 @@ endif;
 get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
 	'<p>' . __('<a href="http://codex.wordpress.org/Appearance_Menus_Screen" target="_blank">Documentation on Menus</a>') . '</p>' .
-	'<p>' . __('<a href="http://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
+	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 );
 
 // Get the admin header
 require_once( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
 <div class="wrap">
-	<?php screen_icon(); ?>
 	<h2 class="nav-tab-wrapper">
 		<a href="<?php echo admin_url( 'nav-menus.php' ); ?>" class="nav-tab<?php if ( ! isset( $_GET['action'] ) || isset( $_GET['action'] ) && 'locations' != $_GET['action'] ) echo ' nav-tab-active'; ?>"><?php esc_html_e( 'Edit Menus' ); ?></a>
 		<?php if ( $num_locations && $menu_count ) : ?>
@@ -551,7 +550,7 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 	?>
 	<div id="menu-locations-wrap">
 		<form method="post" action="<?php echo esc_url( add_query_arg( array( 'action' => 'locations' ), admin_url( 'nav-menus.php' ) ) ); ?>">
-			<table class="widefat fixed" cellspacing="0" id="menu-locations-table">
+			<table class="widefat fixed" id="menu-locations-table">
 				<thead>
 				<tr>
 					<th scope="col" class="manage-column column-locations"><?php _e( 'Theme Location' ); ?></th>
@@ -602,7 +601,13 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 			<input type="hidden" name="menu" id="nav-menu-meta-object-id" value="<?php echo esc_attr( $nav_menu_selected_id ); ?>" />
 		</form>
 	</div><!-- #menu-locations-wrap -->
-	<?php do_action( 'after_menu_locations_table' ); ?>
+	<?php
+	/**
+	 * Fires after the menu locations table is displayed.
+	 *
+	 * @since 3.6.0
+	 */
+	do_action( 'after_menu_locations_table' ); ?>
 	<?php else : ?>
 	<div class="manage-menus">
  		<?php if ( $menu_count < 2 ) : ?>
@@ -625,21 +630,33 @@ require_once( ABSPATH . 'wp-admin/admin-header.php' );
 						if ( ! empty( $menu_locations ) && in_array( $_nav_menu->term_id, $menu_locations ) ) {
 							$locations_assigned_to_this_menu = array();
 							foreach ( array_keys( $menu_locations, $_nav_menu->term_id ) as $menu_location_key ) {
-								 $locations_assigned_to_this_menu[] = $locations[ $menu_location_key ];
+								if ( isset( $locations[ $menu_location_key ] ) ) {
+									$locations_assigned_to_this_menu[] = $locations[ $menu_location_key ];
+								}
 							}
+
+							/**
+							 * Filter the number of locations listed per menu in the drop-down select.
+							 *
+							 * @since 3.6.0
+							 *
+							 * @param int $locations Number of menu locations to list. Default 3.
+							 */
 							$assigned_locations = array_slice( $locations_assigned_to_this_menu, 0, absint( apply_filters( 'wp_nav_locations_listed_per_menu', 3 ) ) );
 
 							// Adds ellipses following the number of locations defined in $assigned_locations
-							printf( ' (%1$s%2$s)',
-								implode( ', ', $assigned_locations ),
-								count( $locations_assigned_to_this_menu ) > count( $assigned_locations ) ? ' &hellip;' : ''
-							);
+							if ( ! empty( $assigned_locations ) ) {
+								printf( ' (%1$s%2$s)',
+									implode( ', ', $assigned_locations ),
+									count( $locations_assigned_to_this_menu ) > count( $assigned_locations ) ? ' &hellip;' : ''
+								);
+							}
 						}
 						?>
 					</option>
 				<?php endforeach; ?>
 			</select>
-			<span class="submit-btn"><input type="submit" class="button-secondary" value="<?php _e( 'Select' ); ?>"></span>
+			<span class="submit-btn"><input type="submit" class="button-secondary" value="<?php esc_attr_e( 'Select' ); ?>"></span>
 			<span class="add-new-menu-action">
 				<?php printf( __( 'or <a href="%s">create a new menu</a>.' ), esc_url( add_query_arg( array( 'action' => 'edit', 'menu' => 0 ), admin_url( 'nav-menus.php' ) ) ) ); ?>
 			</span><!-- /add-new-menu-action -->

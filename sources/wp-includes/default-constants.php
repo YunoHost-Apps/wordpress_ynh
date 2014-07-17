@@ -160,7 +160,8 @@ function wp_plugin_directory_constants() {
 function wp_cookie_constants() {
 	/**
 	 * Used to guarantee unique hash cookies
-	 * @since 1.5
+	 *
+	 * @since 1.5.0
 	 */
 	if ( !defined( 'COOKIEHASH' ) ) {
 		$siteurl = get_site_option( 'siteurl' );
@@ -311,6 +312,6 @@ function wp_templating_constants() {
 	 * @since 3.0.0
 	 */
 	if ( !defined('WP_DEFAULT_THEME') )
-		define( 'WP_DEFAULT_THEME', 'twentythirteen' );
+		define( 'WP_DEFAULT_THEME', 'twentyfourteen' );
 
 }

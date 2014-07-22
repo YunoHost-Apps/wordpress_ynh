@@ -86,7 +86,7 @@ do
 	let loop_number++
 done
 
-if [ $is_public = "No" ];
+if [ "$is_public" = "No" ];
 then
 	sudo yunohost app setting wordpress skipped_uris -d
 	sudo yunohost app ssowatconf

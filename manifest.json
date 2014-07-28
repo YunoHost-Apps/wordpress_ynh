@@ -34,7 +34,7 @@
                 "name": "admin",
                 "ask": {
                     "en": "Choose the Wordpress administrator (must be an existing YunoHost user)",
-                    "fr": "Administrateur du site (doit être un utilisateur Yunohost existant)"
+                    "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
                 },
                 "example": "homer"
             },

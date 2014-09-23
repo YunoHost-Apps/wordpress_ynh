@@ -5,6 +5,7 @@
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
     },
+    "licence": "GNU GPL-2",
     "developer": {
         "name": "beudbeud",
         "email": "beudbeud@beudibox.fr",

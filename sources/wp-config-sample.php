@@ -68,16 +68,6 @@ define('NONCE_SALT',       'put your unique phrase here');
  */
 $table_prefix  = 'wp_';
 
-/**
- * Langue de localisation de WordPress, par défaut en Anglais.
- *
- * Modifiez cette valeur pour localiser WordPress. Un fichier MO correspondant
- * au langage choisi doit être installé dans le dossier wp-content/languages.
- * Par exemple, pour mettre en place une traduction française, mettez le fichier
- * fr_FR.mo dans wp-content/languages, et réglez l'option ci-dessous à "fr_FR".
- */
-define('WPLANG', 'fr_FR');
-
 /** 
  * Pour les développeurs : le mode deboguage de WordPress.
  * 

@@ -54,8 +54,9 @@ do
     fi
     sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
 done
-sudo sed -i "s/I18NTOCHANGE/$language/g" $final_path/wp-config.php
+
 sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
+sudo sed -i "s/I18NTOCHANGE/$language/g" ../conf/*.sql
 
 # Set permissions to wordpress directory
 sudo chown -R www-data: $final_path

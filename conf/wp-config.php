@@ -21,9 +21,6 @@ define('NONCE_SALT',       'KEY8');
 // Prefix
 $table_prefix  = 'wp_';
 
-// i18n
-define('WPLANG', 'I18NTOCHANGE');
-
 // Debug mode
 define('WP_DEBUG', false); 
 

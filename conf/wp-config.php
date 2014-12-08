@@ -24,6 +24,15 @@ $table_prefix  = 'wp_';
 // Debug mode
 define('WP_DEBUG', false); 
 
+// Multisite
+//--MULTISITE1--define('WP_ALLOW_MULTISITE', true);
+//--MULTISITE2--define('MULTISITE', true);
+//--MULTISITE2--define('SUBDOMAIN_INSTALL', false);
+//--MULTISITE2--define('DOMAIN_CURRENT_SITE', '__DOMAIN__');
+//--MULTISITE2--define('PATH_CURRENT_SITE', '__PATH__/');
+//--MULTISITE2--define('SITE_ID_CURRENT_SITE', 1);
+//--MULTISITE2--define('BLOG_ID_CURRENT_SITE', 1);
+
 // Path
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__) . '/');
@@ -32,4 +41,4 @@ if ( !defined('ABSPATH') )
 require_once(ABSPATH . 'wp-settings.php');
 
 // Force https redirect
-//define('FORCE_SSL_ADMIN', true);
+//--PUBLIC--define('FORCE_SSL_ADMIN', true);

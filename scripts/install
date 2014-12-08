@@ -5,7 +5,8 @@ domain=$1
 path=$2
 admin_wordpress=$3
 language=$4
-is_public=$5
+multisite=$5
+is_public=$6
 
 # Check if admin exists
 sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\""
@@ -13,12 +14,14 @@ if [[ ! $? -eq 0 ]]; then
     echo "Wrong admin"
     exit 1
 fi
-sudo yunohost app setting wordpress admin -v $admin_wordpress
-sudo yunohost app setting wordpress language -v $language
-sudo yunohost app setting wordpress is_public -v $is_public
+
+# Add settings to YunoHost
+sudo yunohost app setting wordpressms admin -v $admin_wordpress
+sudo yunohost app setting wordpressms language -v $language
+sudo yunohost app setting wordpressms is_public -v $is_public
 
 # Check domain/path availability
-sudo yunohost app checkurl $domain$path -a wordpress
+sudo yunohost app checkurl $domain$path -a wordpressms
 if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
@@ -26,23 +29,29 @@ fi
 # Generate random password
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
 
-# Use 'wordpress' as database name and user
-db_user=wordpress
+# Use 'wordpressms' as database name and user
+db_user=wordpressms
 
 # Initialize database and store mysql password for upgrade
 sudo yunohost app initdb $db_user -p $db_pwd
-sudo yunohost app setting wordpress mysqlpwd -v $db_pwd
+sudo yunohost app setting wordpressms mysqlpwd -v $db_pwd
 
 # Copy files to the right place
-final_path=/var/www/wordpress
+final_path=/var/www/wordpressms
 sudo mkdir -p $final_path
-sudo cp -a ../sources/* $final_path
+sudo cp -a ../sources/wordpress/* $final_path
+sudo cp -a ../sources/ajouts/* $final_path
+
 sudo cp ../conf/wp-config.php $final_path/wp-config.php
 
 # Change variables in Wordpress configuration
 sudo sed -i "s/yunouser/$db_user/g" $final_path/wp-config.php
 sudo sed -i "s/yunopass/$db_pwd/g" $final_path/wp-config.php
 sudo sed -i "s/yunobase/$db_user/g" $final_path/wp-config.php
+sudo sed -i "s/__DOMAIN__/$domain/g" $final_path/wp-config.php
+sudo sed -i "s@__PATH__@$path@g" $final_path/wp-config.php
+
+
 for i in 1 2 3 4 5 6 7 8
 do
     j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
@@ -55,20 +64,18 @@ do
     sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
 done
 
-sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/*.sql
-sudo sed -i "s/I18NTOCHANGE/$language/g" ../conf/*.sql
-
 # Set permissions to wordpress directory
 sudo chown -R www-data: $final_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf*
-sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf*
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
+sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpressms.conf
 
 # Reload Nginx and regenerate SSOwat conf
 sudo service nginx reload
-sudo yunohost app setting wordpress skipped_uris -v "/"
+# Donne un accès public pour curl
+sudo yunohost app setting wordpressms skipped_uris -v "/"
 sudo yunohost app ssowatconf
 
 # Wordpress installation
@@ -85,14 +92,59 @@ do
 	let loop_number++
 done
 
+# Replace variables in sql scripts
+sudo sed -i "s@URLWORDPRESS@$domain$path@g" ../conf/sql/*.sql
+sudo sed -i "s/I18NTOCHANGE/$language/g" ../conf/sql/*.sql
+sudo sed -i "s/__DATE__/$(date +%s)/g" ../conf/sql/*.sql
+
+# Charge les commandes sql communes à tous les scripts.
+mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+
+if [ "$multisite" = "Yes" ];
+then
+	# Installation de php5-cli pour wp-cli
+	sudo apt-get install php5-cli -qy
+
+    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+    # Autorise le multisite wordpress
+    sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
+
+	# Active le multisite via wp-cli.
+  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/
+	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
+
+    # Active le multisite wordpress
+    sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
+
+    # Charge les commandes sql pour les plugins
+    if [ "$is_public" = "No" ];
+    then
+		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
+    else
+		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
+    fi
+	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
+else
+	if [ "$is_public" = "No" ];
+	then
+		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
+	else
+		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
+		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
+	fi
+	# Charge les commandes sql pour les plugins
+	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
+fi
+
 if [ "$is_public" = "No" ];
 then
-	sudo yunohost app setting wordpress skipped_uris -d
+	# Retire l'accès public
+	sudo yunohost app setting wordpressms skipped_uris -d
 	sudo yunohost app ssowatconf
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/private.sql
-else
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/public.sql
-	sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
-	sudo service nginx reload
-	sudo sed -i "s@//define('FORCE_SSL_ADMIN@define('FORCE_SSL_ADMIN@g" $final_path/wp-config.php
 fi
+
+sudo service nginx reload
+# wp-cli me semble un peu trop permissif... Il a terminer son travail...
+sudo rm $final_path/wp-cli.phar

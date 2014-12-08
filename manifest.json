@@ -1,6 +1,6 @@
 {
-    "name": "WordPress",
-    "id": "wordpress",
+    "name": "WordPress MultiSite",
+    "id": "wordpressms",
     "description": {
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
@@ -49,13 +49,21 @@
                 "default": "en_EN"
             },
             {
+                "name": "multisite",
+                "ask": {
+                    "en": "Enable multisite option ?",
+                    "fr": "Activer l'option multisite ?"
+                },
+                "choices": ["Yes", "No"],
+                "default": "No"
+            },
+            {
                 "name": "public_site",
                 "ask": {
-                    "en": "Is it a public WordPress site?",
+                    "en": "Is it a public WordPress site ?",
                     "fr": "Est-ce un site public ?"
                 },
                 "choices": ["Yes", "No"],
-                "default": "Yes"
             }
 
 

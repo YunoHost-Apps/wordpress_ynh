@@ -63,10 +63,8 @@
                     "en": "Is it a public WordPress site ?",
                     "fr": "Est-ce un site public ?"
                 },
-                "choices": ["Yes", "No"],
+                "choices": ["Yes", "No"]
             }
-
-
         ]
     }
 }

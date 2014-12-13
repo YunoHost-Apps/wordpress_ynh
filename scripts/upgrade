@@ -1,17 +1,18 @@
 #!/bin/bash
 
 # Retrieve arguments
-domain=$(sudo yunohost app setting wordpress domain)
-path=$(sudo yunohost app setting wordpress path)
-admin_wordpress=$(sudo yunohost app setting wordpress admin)
-language=$(sudo yunohost app setting wordpress language)
-is_public=$(sudo yunohost app setting wordpress is_public)
+domain=$(sudo yunohost app setting wordpressms domain)
+path=$(sudo yunohost app setting wordpressms path)
+admin_wordpress=$(sudo yunohost app setting wordpressms admin)
+language=$(sudo yunohost app setting wordpressms language)
+is_public=$(sudo yunohost app setting wordpressms is_public)
+multisite=$(sudo yunohost app setting wordpressms multisite)
 
 root_pwd=$(sudo cat /etc/yunohost/mysql)
 
-final_path=/var/www/wordpress
+final_path=/var/www/wordpressms
 
-db_name=wordpress
+db_name=wordpressms
 
 if [[ "$admin_wordpress" = "" ]];
 then
@@ -46,12 +47,12 @@ fi
 
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf*
-sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf*
+sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
+sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
+
 
 if [ $is_public = "Yes" ];
 then
-    sudo cp ../conf/nginx.conf-public /etc/nginx/conf.d/$domain.d/wordpress.conf
     grep -q "define('FORCE_SSL_ADMIN', true);" $final_path/wp-config.php
     if [[ ! $? -eq 0 ]];
     then
@@ -60,8 +61,15 @@ then
         sudo sed -i "s@//define('FORCE_SSL_ADMIN@define('FORCE_SSL_ADMIN@g" $final_path/wp-config.php
     fi
 else
-    sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpress.conf
+	sudo sed -i "s@#--PRIVATE--@@g" ../conf/nginx.conf
 fi
+
+if [ "$multisite" = "Yes" ];
+then
+    sudo sed -i "s@#--MULTISITE--@@g" ../conf/nginx.conf
+fi
+
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/wordpressms.conf
 
 # Reload Nginx
 sudo service nginx reload

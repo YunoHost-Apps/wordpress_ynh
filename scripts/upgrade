@@ -6,6 +6,7 @@ path=$(sudo yunohost app setting wordpressms path)
 admin_wordpress=$(sudo yunohost app setting wordpressms admin)
 language=$(sudo yunohost app setting wordpressms language)
 is_public=$(sudo yunohost app setting wordpressms is_public)
+multisite=$(sudo yunohost app setting wordpressms multisite)
 
 root_pwd=$(sudo cat /etc/yunohost/mysql)
 
@@ -56,7 +57,7 @@ then
     if [[ ! $? -eq 0 ]];
     then
         echo "define('FORCE_SSL_ADMIN', true);" | sudo tee -a $final_path/wp-config.php
-    else 
+    else
         sudo sed -i "s@//define('FORCE_SSL_ADMIN@define('FORCE_SSL_ADMIN@g" $final_path/wp-config.php
     fi
 else

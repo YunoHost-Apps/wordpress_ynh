@@ -5,11 +5,11 @@
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
     },
-    "licence": "GNU GPL-2",
-    "developer": {
-        "name": "beudbeud",
-        "email": "beudbeud@beudibox.fr",
-        "url": "http://wordpress.org/"
+	"version": "4.0",
+	"url": "https://wordpress.org/",
+    "maintainer": {
+        "name": "Maniack Crudelis",
+        "email": "maniackc_dev@crudelis.fr"
     },
     "multi_instance": "true",
     "arguments": {
@@ -63,10 +63,8 @@
                     "en": "Is it a public WordPress site ?",
                     "fr": "Est-ce un site public ?"
                 },
-                "choices": ["Yes", "No"],
+                "choices": ["Yes", "No"]
             }
-
-
         ]
     }
 }

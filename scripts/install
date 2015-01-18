@@ -19,6 +19,8 @@ fi
 sudo yunohost app setting wordpressms admin -v $admin_wordpress
 sudo yunohost app setting wordpressms language -v $language
 sudo yunohost app setting wordpressms is_public -v $is_public
+sudo yunohost app setting wordpressms multisite -v $multisite
+
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a wordpressms

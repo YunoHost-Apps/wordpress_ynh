@@ -1,10 +1,10 @@
 #!/bin/bash
 
-db_user=wordpress
-db_name=wordpress
+db_user=wordpressms
+db_name=wordpressms
 root_pwd=$(sudo cat /etc/yunohost/mysql)
-domain=$(sudo yunohost app setting wordpress domain)
+domain=$(sudo yunohost app setting wordpressms domain)
 
 mysql -u root -p$root_pwd -e "DROP DATABASE $db_name ; DROP USER $db_user@localhost ;"
-sudo rm -rf /var/www/wordpress
-sudo rm -f /etc/nginx/conf.d/$domain.d/wordpress.conf
+sudo rm -rf /var/www/wordpressms
+sudo rm -f /etc/nginx/conf.d/$domain.d/wordpressms.conf

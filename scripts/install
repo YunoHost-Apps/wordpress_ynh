@@ -41,7 +41,8 @@ sudo yunohost app setting wordpressms mysqlpwd -v $db_pwd
 # Copy files to the right place
 final_path=/var/www/wordpressms
 sudo mkdir -p $final_path
-sudo cp -a ../sources/wordpress/* $final_path
+tar -xf ../sources/wordpress.tar.gz
+sudo cp -a wordpress/.* $final_path
 sudo cp -a ../sources/ajouts/* $final_path
 
 sudo cp ../conf/wp-config.php $final_path/wp-config.php
@@ -148,5 +149,5 @@ then
 fi
 
 sudo service nginx reload
-# wp-cli me semble un peu trop permissif... Il a terminer son travail...
+# wp-cli me semble un peu trop permissif... Il a terminé son travail...
 sudo rm $final_path/wp-cli.phar

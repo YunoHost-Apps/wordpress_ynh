@@ -1,9 +1,9 @@
 <?php
 
 // Database
-define('DB_NAME', 'yunobase');
-define('DB_USER', 'yunouser');
-define('DB_PASSWORD', 'yunopass');
+define('DB_NAME', '__DB_USER__');
+define('DB_USER', '__DB_USER__');
+define('DB_PASSWORD', '__DB_PWD__');
 define('DB_HOST', 'localhost');
 define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');

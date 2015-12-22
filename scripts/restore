@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Récupère les infos de l'application.
+app=wordpressms
+final_path=$(sudo yunohost app setting $app final_path)
+domain=$(sudo yunohost app setting $app domain)
+
+# The parameter $1 is the uncompressed restore directory location
+backup_dir=$1/apps/$app
+
+# Restore sources & data
+sudo cp -a $backup_dir/sources/. $final_path
+
+# Restore Nginx and YunoHost parameters
+sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
+sudo cp -a $backup_dir/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# Copy dedicated php-fpm process from backup folder to the right location
+sudo cp -a $backup_dir/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+sudo cp -a $backup_dir/php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
+# And restart service
+sudo service php5-fpm reload
+
+# Restart webserver
+sudo service nginx reload

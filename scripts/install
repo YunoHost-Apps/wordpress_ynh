@@ -46,7 +46,7 @@ sudo yunohost app setting $app multisite -v $multisite
 
 
 # Génère un mot de passe aléatoire.
-db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
+db_pwd=$(cat /dev/urandom | head -n20 | tr -c -d 'A-Za-z0-9' | head -c20)
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
 # Initialise la base de donnée et stocke le mot de passe mysql.

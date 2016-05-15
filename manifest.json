@@ -1,6 +1,7 @@
 {
     "name": "WordPress MultiSite",
     "id": "wordpressms",
+    "packaging_format": 1,
     "description": {
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
@@ -13,6 +14,11 @@
         "email": "maniackc_dev@crudelis.fr"
     },
     "multi_instance": "true",
+    "services": [
+        "nginx",
+        "php5-fpm",
+        "mysql"
+    ],
     "arguments": {
         "install" : [
             {

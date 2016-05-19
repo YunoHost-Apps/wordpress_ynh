@@ -1,27 +1,56 @@
 #!/bin/bash
 
-app=wordpressms
-
 # Récupère les infos de l'application.
-root_pwd=$(sudo cat /etc/yunohost/mysql)
+ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+if [ $ynh_version = "2.4" ]; then
+	app=$YNH_APP_INSTANCE_NAME
+
+	# Source app helpers
+	. /usr/share/yunohost/helpers
+else
+	app=wordpressms
+	MYSQL_ROOT_PWD_FILE="/etc/yunohost/mysql"
+fi
 domain=$(sudo yunohost app setting $app domain)
 
+# Suppression de la base de donnée et de l'utilisateur associé.
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
-mysql -u root -p$root_pwd -e "DROP DATABASE $db_user ; DROP USER $db_user@localhost ;"
+if mysqlshow -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) | grep -q "^| $db_user"; then
+	echo "Delete db"
+	if [ $ynh_version = "2.4" ]; then
+		ynh_mysql_drop_db $db_user
+		ynh_mysql_drop_user $db_user
+	else
+		mysql -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) -e "DROP DATABASE $db_user ; DROP USER $db_user@localhost ;"
+	fi
+fi
 
 # Suppression du dossier de l'application
-sudo rm -rf /var/www/$app
+if [ -e "/var/www/$app" ]; then	# Delete final_path
+	echo "Delete app dir"
+	sudo rm -r "/var/www/$app"
+fi
 
 # Suppression de la configuration nginx
-sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
+if [ -e "/etc/nginx/conf.d/$domain.d/$app.conf" ]; then	# Delete nginx config
+	echo "Delete nginx config"
+	sudo rm "/etc/nginx/conf.d/$domain.d/$app.conf"
+	sudo service nginx reload
+fi
 
 # Suppression de la configuration du pool php-fpm
-sudo rm -f /etc/php5/fpm/pool.d/$app.conf
-sudo rm -f /etc/php5/fpm/conf.d/20-$app.ini
-
-# Recharge la configuration Nginx et php5-fpm
-sudo service nginx reload
+if [ -e "/etc/php5/fpm/pool.d/$app.conf" ]; then	# Delete fpm config
+	echo "Delete fpm config"
+	sudo rm "/etc/php5/fpm/pool.d/$app.conf"
+fi
+if [ -e "/etc/php5/fpm/conf.d/20-$app.ini" ]; then	# Delete php config
+	echo "Delete php config"
+	sudo rm "/etc/php5/fpm/conf.d/20-$app.ini"
+fi
 sudo service php5-fpm reload
+
 # Régénère la configuration de SSOwat
 sudo yunohost app ssowatconf
+
+echo -e "\e[0m"	# Restore normal color

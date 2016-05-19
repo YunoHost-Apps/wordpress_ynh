@@ -2,9 +2,6 @@
     "name": "WordPress MultiSite",
     "id": "wordpressms",
     "packaging_format": 1,
-    "requirements": {
-        "yunohost": ">= 2.4"
-    },
     "description": {
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"

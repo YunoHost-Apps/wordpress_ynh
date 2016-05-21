@@ -42,3 +42,8 @@ require_once(ABSPATH . 'wp-settings.php');
 
 // Force https redirect
 //--PUBLIC--define('FORCE_SSL_ADMIN', true);
+
+// Auto update
+define('WP_AUTO_UPDATE_CORE', 'minor');
+add_filter( 'auto_update_plugin', '__return_true' );
+add_filter( 'auto_update_theme', '__return_true' );

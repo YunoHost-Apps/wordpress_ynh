@@ -49,13 +49,13 @@ if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
 fi
 
 # Décompresse la source
-tar -x -f ../sources/wordpress.tar.gz
+#tar -x -f ../sources/wordpress.tar.gz
 # Copie les fichiers sources
-sudo cp -a wordpress/. "$final_path"
+#sudo cp -a wordpress/. "$final_path"
 # Copie les fichiers additionnels ou modifiés.
-sudo cp -a ../sources/ajouts/. "$final_path"
+#sudo cp -a ../sources/ajouts/. "$final_path"
 # Et copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+#sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 
 # Modifie les variables dans le fichier de configuration nginx
@@ -111,5 +111,5 @@ sudo service nginx reload
 sudo yunohost app ssowatconf
 
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
-sudo rm $final_path/wp-cli.phar
+#sudo rm $final_path/wp-cli.phar
 

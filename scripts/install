@@ -22,7 +22,7 @@ else
 	language=$4
 	multisite=$5
 	is_public=$6
-	app=wordpressms
+	app=wordpress
 fi
 
 
@@ -156,7 +156,7 @@ done
 sudo chown -R www-data: $final_path
 
 # Donne un accès public pour curl
-sudo yunohost app setting wordpressms skipped_uris -v "/"
+sudo yunohost app setting $app skipped_uris -v "/"
 # Recharge la configuration Nginx et php5-fpm
 sudo service nginx reload
 sudo service php5-fpm reload
@@ -194,7 +194,7 @@ then
 	sudo apt-get update
 	sudo apt-get install php5-cli -qy
 
-    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
     # Autorise le multisite wordpress
     sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
 
@@ -216,11 +216,11 @@ then
 else
 	if [ "$is_public" = "No" ];
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
-		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
 	fi
 	# Charge les commandes sql pour les plugins
@@ -240,7 +240,7 @@ sudo chown -R www-data:root $final_path/wp-content
 if [ "$is_public" = "No" ];
 then
 	# Retire l'accès public
-	sudo yunohost app setting wordpressms skipped_uris -d
+	sudo yunohost app setting $app skipped_uris -d
 	sudo yunohost app ssowatconf
 fi
 

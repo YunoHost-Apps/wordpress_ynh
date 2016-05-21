@@ -8,7 +8,7 @@ if [ $ynh_version = "2.4" ]; then
 	# Source app helpers
 	. /usr/share/yunohost/helpers
 else
-	app=wordpressms
+	app=wordpress
 	MYSQL_ROOT_PWD_FILE="/etc/yunohost/mysql"
 fi
 domain=$(sudo yunohost app setting $app domain)

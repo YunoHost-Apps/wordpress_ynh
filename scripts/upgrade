@@ -5,14 +5,48 @@ ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' 
 if [ $ynh_version = "2.4" ]; then
 	app=$YNH_APP_INSTANCE_NAME
 else
-	app=wordpressms
+	app=wordpress
 fi
 domain=$(sudo yunohost app setting $app domain)
 path=$(sudo yunohost app setting $app path)
+admin_wordpress=$(sudo yunohost app setting $app admin)
+language=$(sudo yunohost app setting $app language)
 is_public=$(sudo yunohost app setting $app is_public)
 multisite=$(sudo yunohost app setting $app multisite)
 final_path=$(sudo yunohost app setting $app final_path)
 
+root_pwd=$(sudo cat /etc/yunohost/mysql)
+db_name=$app
+if [[ "$admin_wordpress" = "" ]];
+then
+    mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
+    admin_wordpress=$(cat /tmp/wordpressuser)
+    sudo rm -f /tmp/wordpressuser
+fi
+
+if [[ "$language" = "" ]];
+then
+    language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
+fi
+
+if [[ "$is_public" = "" ]];
+then
+    mysql -u root -p$root_pwd $db_name -e "select option_value from wp_options WHERE option_name='active_plugins' INTO OUTFILE '/tmp/wordpressispublic';"
+    grep -q http-authentication /tmp/wordpressispublic
+    if [[ $? -eq 0 ]];
+    then
+        is_public=Yes
+    else
+        is_public=No
+    fi
+    sudo rm -f /tmp/wordpressispublic
+fi
+
+# Check if admin is not null
+if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
+    echo "Unable to upgrade, please contact support"
+    exit 1
+fi
 
 # Décompresse la source
 tar -x -f ../sources/wordpress.tar.gz
@@ -43,11 +77,11 @@ sudo service php5-fpm reload
 
 if [ "$multisite" = "Yes" ];
 then
-    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
 else
 	if [ "$is_public" = "No" ];
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 	fi
@@ -66,14 +100,13 @@ sudo chown -R www-data:root $final_path/wp-content
 if [ "$is_public" = "No" ];
 then
 	# Retire l'accès public
-	sudo yunohost app setting wordpressms skipped_uris -d
+	sudo yunohost app setting $app skipped_uris -d
 	sudo yunohost app ssowatconf
 fi
 
 
-# Recharge la configuration Nginx et php5-fpm
+# Recharge la configuration Nginx
 sudo service nginx reload
-sudo service php5-fpm reload
 # Régénère la configuration de SSOwat
 sudo yunohost app ssowatconf
 

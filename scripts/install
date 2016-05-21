@@ -32,6 +32,9 @@ EXIT_PROPERLY () {
 	echo -e "\e[91m \e[1m"	# Shell in light red bold
 	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
 
+	# Clean hosts
+	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
+
 	if [ $ynh_version = "2.2" ]; then
 		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
 	fi

@@ -78,6 +78,10 @@ then
     touch /force_stop
 fi
 
+if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
+    echo "Multisite option of wordpress doesn't work at root of domain."
+	touch /force_stop
+fi
 
 # Enregistre les infos dans la config YunoHost
 sudo yunohost app setting $app domain -v $domain
@@ -118,7 +122,7 @@ sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Modifie les variables dans le fichier de configuration nginx
 sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__FINALPATH__@$final_path/@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Créer le fichier de configuration du pool php-fpm et le configure.
@@ -159,7 +163,7 @@ done
 sudo chown -R www-data: $final_path
 
 # Donne un accès public pour curl
-sudo yunohost app setting $app skipped_uris -v "/"
+sudo yunohost app setting $app unprotected_uris -v "/"
 # Recharge la configuration Nginx et php5-fpm
 sudo service nginx reload
 sudo service php5-fpm reload
@@ -172,13 +176,13 @@ echo "127.0.0.1 $domain #wordpress_yunohost" | sudo tee -a /etc/hosts
 curl -kL --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
 sleep 5
-mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 result=$?
 loop_number=1
 while [ $result != 0 ] && [ $loop_number -lt 5 ];
 do
 	sleep 5
-	mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+	mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 	let result=$?
 	let loop_number++
 done
@@ -188,10 +192,7 @@ sudo sed -i "s@__DOMAIN_PATH__@$domain$path@g" ../conf/sql/*.sql
 sudo sed -i "s/__LANGUAGE__/$language/g" ../conf/sql/*.sql
 sudo sed -i "s/__DATE__/$(date +%s)/g" ../conf/sql/*.sql
 
-# Charge les commandes sql communes à tous les scripts.
-mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
-
-if [ "$multisite" = "Yes" ];
+if [ "$multisite" = "Yes" ]
 then
 	# Installation de php5-cli pour wp-cli
 	sudo apt-get update
@@ -208,27 +209,33 @@ then
     # Active le multisite wordpress
     sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
 
-    # Charge les commandes sql pour les plugins
-    if [ "$is_public" = "No" ];
-    then
-		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
-    else
-		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
-    fi
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
+    # Charge les commandes sql pour activer les plugins
+#     if [ "$is_public" = "No" ];
+#     then
+# 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
+#     else
+# 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
+#     fi
+	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
 else
 	if [ "$is_public" = "No" ];
 	then
 		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
-		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
+# 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
-		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
+# 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
 	fi
-	# Charge les commandes sql pour les plugins
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
+	# Charge les commandes sql pour activer les plugins
+	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
 fi
+
+# Charge les commandes sql communes à tous les scripts.
+mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+
+# Décommente les add_filter, qui aurait provoqué une erreur avec wp-cli
+sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
 
 # Configure les droits d'accès au fichiers
 # -rw-r--r-- sur les fichiers
@@ -243,7 +250,7 @@ sudo chown -R www-data:root $final_path/wp-content
 if [ "$is_public" = "No" ];
 then
 	# Retire l'accès public
-	sudo yunohost app setting $app skipped_uris -d
+	sudo yunohost app setting $app unprotected_uris -d
 	sudo yunohost app ssowatconf
 fi
 
@@ -252,4 +259,4 @@ sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
 
 sudo service nginx reload
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
-sudo rm $final_path/wp-cli.phar
+sudo rm -f $final_path/wp-cli.phar

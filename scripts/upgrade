@@ -22,11 +22,19 @@ then
     mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
     admin_wordpress=$(cat /tmp/wordpressuser)
     sudo rm -f /tmp/wordpressuser
+	sudo yunohost app setting $app admin -v $admin_wordpress
+fi
+
+if [[ "$final_path" = "" ]];
+then
+    final_path=/var/www/$app
+	sudo yunohost app setting $app final_path -v $final_path
 fi
 
 if [[ "$language" = "" ]];
 then
     language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
+	sudo yunohost app setting $app language -v $language
 fi
 
 if [[ "$is_public" = "" ]];
@@ -40,6 +48,7 @@ then
         is_public=No
     fi
     sudo rm -f /tmp/wordpressispublic
+	sudo yunohost app setting $app is_public -v $is_public
 fi
 
 # Check if admin is not null
@@ -48,22 +57,14 @@ if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
     exit 1
 fi
 
-# Décompresse la source
-#tar -x -f ../sources/wordpress.tar.gz
-# Copie les fichiers sources
-#sudo cp -a wordpress/. "$final_path"
-# Copie les fichiers additionnels ou modifiés.
-#sudo cp -a ../sources/ajouts/. "$final_path"
-# Et copie le fichier de config nginx
-#sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-
-
+# Copie le fichier de config nginx
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 # Modifie les variables dans le fichier de configuration nginx
 sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Créer le fichier de configuration du pool php-fpm et le configure.
+# Copie le fichier de configuration du pool php-fpm et le configure.
 sed -i "s@__NAMETOCHANGE__@$app@g" ../conf/php-fpm.conf
 sed -i "s@__FINALPATH__@$final_path@g" ../conf/php-fpm.conf
 finalphpconf=/etc/php5/fpm/pool.d/$app.conf
@@ -79,6 +80,7 @@ if [ "$multisite" = "Yes" ];
 then
     sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
 else
+	multisite="No"
 	if [ "$is_public" = "No" ];
 	then
 		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
@@ -86,6 +88,7 @@ else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 	fi
 fi
+sudo yunohost app setting $app multisite -v $multisite
 
 # Configure les droits d'accès au fichiers
 # -rw-r--r-- sur les fichiers
@@ -97,19 +100,17 @@ sudo chown -R root: $final_path
 # Sauf le dossier wp-content qui appartient à www-data
 sudo chown -R www-data:root $final_path/wp-content
 
-if [ "$is_public" = "No" ];
-then
-	# Retire l'accès public
-	sudo yunohost app setting $app skipped_uris -d
-	sudo yunohost app ssowatconf
+
+sudo yunohost app setting $app skipped_uris -d	# Retire le skipped_uris si il existe encore.
+if [ "$is_public" = "No" ]; then	# Retire l'accès public
+	sudo yunohost app setting $app unprotected_uris -d
+else	# Ou remplace le skipped_uris par unprotected_uris le cas échéant.
+	sudo yunohost app setting $app unprotected_uris -v "/"
 fi
+sudo yunohost app ssowatconf
 
 
 # Recharge la configuration Nginx
 sudo service nginx reload
 # Régénère la configuration de SSOwat
 sudo yunohost app ssowatconf
-
-# wp-cli me semble un peu trop permissif... Il a terminé son travail...
-#sudo rm $final_path/wp-cli.phar
-

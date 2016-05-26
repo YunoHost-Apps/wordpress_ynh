@@ -203,29 +203,21 @@ then
     sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
-  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/
-	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
+  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/ > /dev/null 2>&1
+# 	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
 
     # Active le multisite wordpress
     sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
 
     # Charge les commandes sql pour activer les plugins
-#     if [ "$is_public" = "No" ];
-#     then
-# 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
-#     else
-# 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
-#     fi
 	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
 else
 	if [ "$is_public" = "No" ];
 	then
 		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
-# 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
-# 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
 	fi
 	# Charge les commandes sql pour activer les plugins
 	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
@@ -238,14 +230,10 @@ mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
 sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
 
 # Configure les droits d'accès au fichiers
-# -rw-r--r-- sur les fichiers
-sudo find $final_path -type f -print0 | xargs -0 sudo chmod 644
-# drwxr-xr-x sur les dossiers
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 755
-# Les fichiers appartiennent à root
-sudo chown -R root: $final_path
-# Sauf le dossier wp-content qui appartient à www-data
-sudo chown -R www-data:root $final_path/wp-content
+# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
+sudo chown -R www-data: $final_path
+# Sauf le fichier de config wp-config.php qui appartient à root
+sudo chown root: $final_path/wp-config.php
 
 if [ "$is_public" = "No" ];
 then
@@ -258,5 +246,6 @@ fi
 sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
 
 sudo service nginx reload
+
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
 sudo rm -f $final_path/wp-cli.phar

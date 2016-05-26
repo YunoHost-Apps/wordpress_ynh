@@ -36,7 +36,10 @@ sudo sed -i -e "s/'DB_USER', *'[^']*'/'DB_USER', '$app'/g" $final_path/wp-config
 sudo sed -i -e "s/'DB_NAME', *'[^']*'/'DB_NAME', '$app'/g" $final_path/wp-config.php
 
 # Set permissions
+# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
 sudo chown -R www-data: $final_path
+# Sauf le fichier de config wp-config.php qui appartient à root
+sudo chown root: $final_path/wp-config.php
 
 # Restore conf files
 conf=/etc/nginx/conf.d/$domain.d/$app.conf

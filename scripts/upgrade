@@ -37,20 +37,6 @@ then
 	sudo yunohost app setting $app language -v $language
 fi
 
-if [[ "$is_public" = "" ]];
-then
-    mysql -u root -p$root_pwd $db_name -e "select option_value from wp_options WHERE option_name='active_plugins' INTO OUTFILE '/tmp/wordpressispublic';"
-    grep -q http-authentication /tmp/wordpressispublic
-    if [[ $? -eq 0 ]];
-    then
-        is_public=Yes
-    else
-        is_public=No
-    fi
-    sudo rm -f /tmp/wordpressispublic
-	sudo yunohost app setting $app is_public -v $is_public
-fi
-
 # Check if admin is not null
 if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
     echo "Unable to upgrade, please contact support"
@@ -91,14 +77,10 @@ fi
 sudo yunohost app setting $app multisite -v $multisite
 
 # Configure les droits d'accès au fichiers
-# -rw-r--r-- sur les fichiers
-sudo find $final_path -type f -print0 | xargs -0 sudo chmod 644
-# drwxr-xr-x sur les dossiers
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 755
-# Les fichiers appartiennent à root
-sudo chown -R root: $final_path
-# Sauf le dossier wp-content qui appartient à www-data
-sudo chown -R www-data:root $final_path/wp-content
+# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
+sudo chown -R www-data: $final_path
+# Sauf le fichier de config wp-config.php qui appartient à root
+sudo chown root: $final_path/wp-config.php
 
 
 sudo yunohost app setting $app skipped_uris -d	# Retire le skipped_uris si il existe encore.

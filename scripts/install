@@ -192,6 +192,9 @@ sudo sed -i "s@__DOMAIN_PATH__@$domain$path@g" ../conf/sql/*.sql
 sudo sed -i "s/__LANGUAGE__/$language/g" ../conf/sql/*.sql
 sudo sed -i "s/__DATE__/$(date +%s)/g" ../conf/sql/*.sql
 
+# Charge les commandes sql communes à tous les scripts.
+mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+
 if [ "$multisite" = "Yes" ]
 then
 	# Installation de php5-cli pour wp-cli
@@ -210,23 +213,28 @@ then
     sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
 
     # Charge les commandes sql pour activer les plugins
+    if [ "$is_public" = "No" ];
+    then
+		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
+    else
+		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
+    fi
 	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
 else
 	if [ "$is_public" = "No" ];
 	then
 		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
+		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
+		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
 	fi
 	# Charge les commandes sql pour activer les plugins
 	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
 fi
 
-# Charge les commandes sql communes à tous les scripts.
-mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
-
-# Décommente les add_filter, qui aurait provoqué une erreur avec wp-cli
+# Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
 sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
 
 # Configure les droits d'accès au fichiers

@@ -1,24 +1,56 @@
 #!/bin/bash
+# This restore script is adapted to Yunohost >=2.4
 
-# Récupère les infos de l'application.
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-if [ $ynh_version = "2.4" ]; then
-	app=$YNH_APP_INSTANCE_NAME
-else
-	app=wordpressms
-fi
-final_path=$(sudo yunohost app setting $app final_path)
+# The parameter $1 is the backup directory location dedicated to the app
+backup_dir=$1
+
+# The parameter $2 is the id of the app instance ex: ynhexample__2
+app=$2
+
+# Get old parameter of the app
 domain=$(sudo yunohost app setting $app domain)
+path=$(sudo yunohost app setting $app path)
+is_public=$(sudo yunohost app setting $app is_public)
+final_path=$(sudo yunohost app setting $app final_path)
 
-# The parameter $1 is the uncompressed restore directory location
-backup_dir=$1/apps/$app
+# Check domain/path availability
+sudo yunohost app checkurl $domain$path -a $app
+if [[ ! $? -eq 0 ]]; then
+    echo "There is already an app on this URL : $domain$path" | sudo tee /dev/stderr
+    exit 1
+fi
 
-# Restore sources & data
-sudo cp -a $backup_dir/sources/. $final_path
+if [ -d $final_path ]; then
+    echo "There is already a directory: $final_path " | sudo tee /dev/stderr
+    exit 1
+fi
+sudo cp -a "${backup_dir}/var/www/$app" $final_path
 
-# Restore Nginx and YunoHost parameters
-sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
-sudo cp -a $backup_dir/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+db_pwd=$(sudo yunohost app setting $app mysqlpwd)
+db_user=$app
+sudo yunohost app initdb $db_user -p $db_pwd
+sudo su -c "mysql -u $db_user -p$db_pwd $app < ${backup_dir}/db.sql"
+sudo rm -f "${backup_dir}/db.sql"
+sudo sed -i -e "s/'DB_USER', *'[^']*'/'DB_USER', '$app'/g" $final_path/wp-config.php
+sudo sed -i -e "s/'DB_NAME', *'[^']*'/'DB_NAME', '$app'/g" $final_path/wp-config.php
+
+# Set permissions
+# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
+sudo chown -R www-data: $final_path
+# Sauf le fichier de config wp-config.php qui appartient à root
+sudo chown root: $final_path/wp-config.php
+
+# Restore conf files
+conf=/etc/nginx/conf.d/$domain.d/$app.conf
+if [ -f $conf ]; then
+    echo "There is already a nginx conf file at this path: $conf " | sudo tee /dev/stderr
+    exit 1
+fi
+sudo cp -a "${backup_dir}/conf/nginx.conf" $conf
+
+# Reload Nginx
+sudo service nginx reload
 
 # Copy dedicated php-fpm process from backup folder to the right location
 sudo cp -a $backup_dir/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
@@ -26,5 +58,9 @@ sudo cp -a $backup_dir/php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
 # And restart service
 sudo service php5-fpm reload
 
-# Restart webserver
-sudo service nginx reload
+# Set ssowat config
+if [ "$is_public" = "No" ];
+then
+	sudo yunohost app setting $app skipped_uris -d
+fi
+sudo yunohost app ssowatconf

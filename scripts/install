@@ -1,29 +1,16 @@
 #!/bin/bash
 
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-# Retrieve arguments
-if [ $ynh_version = "2.4" ]
-then
-	domain=$YNH_APP_ARG_DOMAIN
-	path=$YNH_APP_ARG_PATH
-	admin_wordpress=$YNH_APP_ARG_ADMIN
-	language=$YNH_APP_ARG_LANGUAGE
-	multisite=$YNH_APP_ARG_MULTISITE
-	is_public=$YNH_APP_ARG_IS_PUBLIC
+domain=$YNH_APP_ARG_DOMAIN
+path=$YNH_APP_ARG_PATH
+admin_wordpress=$YNH_APP_ARG_ADMIN
+language=$YNH_APP_ARG_LANGUAGE
+multisite=$YNH_APP_ARG_MULTISITE
+is_public=$YNH_APP_ARG_IS_PUBLIC
 
-	app=$YNH_APP_INSTANCE_NAME
+app=$YNH_APP_INSTANCE_NAME
 
-	# Source app helpers
-	. /usr/share/yunohost/helpers
-else
-	domain=$1
-	path=$2
-	admin_wordpress=$3
-	language=$4
-	multisite=$5
-	is_public=$6
-	app=wordpressms
-fi
+# Source app helpers
+. /usr/share/yunohost/helpers
 
 
 # Delete files and db if exit with an error
@@ -32,9 +19,9 @@ EXIT_PROPERLY () {
 	echo -e "\e[91m \e[1m"	# Shell in light red bold
 	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
 
-	if [ $ynh_version = "2.2" ]; then
-		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
-	fi
+	# Clean hosts
+	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
+
 	exit 1
 }
 TRAP_ON () {	# Activate signal capture
@@ -75,6 +62,10 @@ then
     touch /force_stop
 fi
 
+if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
+    echo "Multisite option of wordpress doesn't work at root of domain."
+	touch /force_stop
+fi
 
 # Enregistre les infos dans la config YunoHost
 sudo yunohost app setting $app domain -v $domain
@@ -90,11 +81,7 @@ db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
 # Initialise la base de donnée et stocke le mot de passe mysql.
-if [ $ynh_version = "2.4" ]; then
-	ynh_mysql_create_db $db_user $db_user $db_pwd
-else
-	sudo yunohost app initdb $db_user -p $db_pwd
-fi
+ynh_mysql_create_db $db_user $db_user $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 
@@ -156,7 +143,7 @@ done
 sudo chown -R www-data: $final_path
 
 # Donne un accès public pour curl
-sudo yunohost app setting wordpressms skipped_uris -v "/"
+sudo yunohost app setting $app unprotected_uris -v "/"
 # Recharge la configuration Nginx et php5-fpm
 sudo service nginx reload
 sudo service php5-fpm reload
@@ -169,13 +156,13 @@ echo "127.0.0.1 $domain #wordpress_yunohost" | sudo tee -a /etc/hosts
 curl -kL --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
 sleep 5
-mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 result=$?
 loop_number=1
 while [ $result != 0 ] && [ $loop_number -lt 5 ];
 do
 	sleep 5
-	mysql -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
+	mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 	let result=$?
 	let loop_number++
 done
@@ -186,61 +173,60 @@ sudo sed -i "s/__LANGUAGE__/$language/g" ../conf/sql/*.sql
 sudo sed -i "s/__DATE__/$(date +%s)/g" ../conf/sql/*.sql
 
 # Charge les commandes sql communes à tous les scripts.
-mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
 
-if [ "$multisite" = "Yes" ];
+if [ "$multisite" = "Yes" ]
 then
 	# Installation de php5-cli pour wp-cli
 	sudo apt-get update
 	sudo apt-get install php5-cli -qy
 
-    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
     # Autorise le multisite wordpress
     sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
-  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/
-	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
+  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/ > /dev/null 2>&1
+# 	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
 
     # Active le multisite wordpress
     sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
 
-    # Charge les commandes sql pour les plugins
+    # Charge les commandes sql pour activer les plugins
     if [ "$is_public" = "No" ];
     then
 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
     else
 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
     fi
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
+	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
 else
 	if [ "$is_public" = "No" ];
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
 		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
 	else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
-		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/wordpressms.conf
+		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
 		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
 	fi
-	# Charge les commandes sql pour les plugins
-	mysql -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
+	# Charge les commandes sql pour activer les plugins
+	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
 fi
 
+# Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
+sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
+
 # Configure les droits d'accès au fichiers
-# -rw-r--r-- sur les fichiers
-sudo find $final_path -type f -print0 | xargs -0 sudo chmod 644
-# drwxr-xr-x sur les dossiers
-sudo find $final_path -type d -print0 | xargs -0 sudo chmod 755
-# Les fichiers appartiennent à root
-sudo chown -R root: $final_path
-# Sauf le dossier wp-content qui appartient à www-data
-sudo chown -R www-data:root $final_path/wp-content
+# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
+sudo chown -R www-data: $final_path
+# Sauf le fichier de config wp-config.php qui appartient à root
+sudo chown root: $final_path/wp-config.php
 
 if [ "$is_public" = "No" ];
 then
 	# Retire l'accès public
-	sudo yunohost app setting wordpressms skipped_uris -d
+	sudo yunohost app setting $app unprotected_uris -d
 	sudo yunohost app ssowatconf
 fi
 
@@ -248,5 +234,6 @@ fi
 sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
 
 sudo service nginx reload
+
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
-sudo rm $final_path/wp-cli.phar
+sudo rm -f $final_path/wp-cli.phar

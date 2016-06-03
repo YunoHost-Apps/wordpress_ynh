@@ -1,6 +1,6 @@
 {
-    "name": "WordPress MultiSite",
-    "id": "wordpressms",
+    "name": "WordPress",
+    "id": "wordpress",
     "packaging_format": 1,
     "requirements": {
         "yunohost": ">= 2.4"
@@ -9,12 +9,12 @@
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
     },
-	"version": "4.4",
+	"version": "4.5.2",
 	"url": "https://wordpress.org/",
     "licence": "free",
     "maintainer": {
-        "name": "Maniack Crudelis",
-        "email": "maniackc_dev@crudelis.fr"
+        "name": "Maniack Crudelis et beudbeud",
+        "email": "maniackc_dev@crudelis.fr, beudbeud@beudibox.fr"
     },
     "multi_instance": "true",
     "services": [
@@ -47,7 +47,7 @@
                     "en": "Choose the WordPress administrator (must be an existing YunoHost user)",
                     "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
                 },
-                "example": "homer"
+                "example": "john"
             },
             {
                 "name": "language",
@@ -73,7 +73,8 @@
                     "en": "Is it a public WordPress site ?",
                     "fr": "Est-ce un site public ?"
                 },
-                "choices": ["Yes", "No"]
+                "choices": ["Yes", "No"],
+                "default": "Yes"
             }
         ]
     }

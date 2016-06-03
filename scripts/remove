@@ -1,16 +1,10 @@
 #!/bin/bash
 
 # Récupère les infos de l'application.
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-if [ $ynh_version = "2.4" ]; then
-	app=$YNH_APP_INSTANCE_NAME
+app=$YNH_APP_INSTANCE_NAME
 
-	# Source app helpers
-	. /usr/share/yunohost/helpers
-else
-	app=wordpress
-	MYSQL_ROOT_PWD_FILE="/etc/yunohost/mysql"
-fi
+# Source app helpers
+. /usr/share/yunohost/helpers
 domain=$(sudo yunohost app setting $app domain)
 
 # Suppression de la base de donnée et de l'utilisateur associé.
@@ -18,12 +12,8 @@ domain=$(sudo yunohost app setting $app domain)
 db_user=$app
 if mysqlshow -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) | grep -q "^| $db_user"; then
 	echo "Delete db"
-	if [ $ynh_version = "2.4" ]; then
-		ynh_mysql_drop_db $db_user
-		ynh_mysql_drop_user $db_user
-	else
-		mysql -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) -e "DROP DATABASE $db_user ; DROP USER $db_user@localhost ;"
-	fi
+	ynh_mysql_drop_db $db_user
+	ynh_mysql_drop_user $db_user
 fi
 
 # Suppression du dossier de l'application

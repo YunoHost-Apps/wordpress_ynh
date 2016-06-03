@@ -1,29 +1,16 @@
 #!/bin/bash
 
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-# Retrieve arguments
-if [ $ynh_version = "2.4" ]
-then
-	domain=$YNH_APP_ARG_DOMAIN
-	path=$YNH_APP_ARG_PATH
-	admin_wordpress=$YNH_APP_ARG_ADMIN
-	language=$YNH_APP_ARG_LANGUAGE
-	multisite=$YNH_APP_ARG_MULTISITE
-	is_public=$YNH_APP_ARG_IS_PUBLIC
+domain=$YNH_APP_ARG_DOMAIN
+path=$YNH_APP_ARG_PATH
+admin_wordpress=$YNH_APP_ARG_ADMIN
+language=$YNH_APP_ARG_LANGUAGE
+multisite=$YNH_APP_ARG_MULTISITE
+is_public=$YNH_APP_ARG_IS_PUBLIC
 
-	app=$YNH_APP_INSTANCE_NAME
+app=$YNH_APP_INSTANCE_NAME
 
-	# Source app helpers
-	. /usr/share/yunohost/helpers
-else
-	domain=$1
-	path=$2
-	admin_wordpress=$3
-	language=$4
-	multisite=$5
-	is_public=$6
-	app=wordpress
-fi
+# Source app helpers
+. /usr/share/yunohost/helpers
 
 
 # Delete files and db if exit with an error
@@ -35,9 +22,6 @@ EXIT_PROPERLY () {
 	# Clean hosts
 	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
 
-	if [ $ynh_version = "2.2" ]; then
-		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
-	fi
 	exit 1
 }
 TRAP_ON () {	# Activate signal capture
@@ -97,11 +81,7 @@ db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
 # Initialise la base de donnée et stocke le mot de passe mysql.
-if [ $ynh_version = "2.4" ]; then
-	ynh_mysql_create_db $db_user $db_user $db_pwd
-else
-	sudo yunohost app initdb $db_user -p $db_pwd
-fi
+ynh_mysql_create_db $db_user $db_user $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 

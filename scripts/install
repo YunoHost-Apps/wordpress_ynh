@@ -9,6 +9,14 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
+# Checks variables are not empty
+test -z "$domain" && (echo "domain not set" && touch /force_stop)
+test -z "$path" && (echo "path not set" && touch /force_stop)
+test -z "$admin_wordpress" && (echo "admin_wordpress not set" && touch /force_stop)
+test -z "$language" && (echo "language not set" && touch /force_stop)
+test -z "$multisite" && (echo "multisite not set" && touch /force_stop)
+test -z "$is_public" && (echo "is_public not set" && touch /force_stop)
+
 # Source app helpers
 source /usr/share/yunohost/helpers
 

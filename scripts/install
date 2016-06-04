@@ -37,11 +37,7 @@ TRAP_ON
 
 
 # Vérifie la validité de l'user admin
-sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\""
-if [[ ! $? -eq 0 ]]; then
-    echo "Wrong admin"
-    touch /force_stop
-fi
+sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" || (echo "Wrong admin" && touch /force_stop 2> /dev/null)
 
 # Vérifie la présence du / en début de path
 if [ $(echo $path | cut -c1) != "/" ]; then
@@ -50,21 +46,18 @@ fi
 
 # Vérifie la disponibilité du path et du domaine.
 sudo yunohost app checkurl $domain$path -a $app
-if [[ ! $? -eq 0 ]]; then
-    touch /force_stop
-fi
 
 # Vérifie que le dossier de destination n'est pas déjà utilisé.
 final_path=/var/www/$app
 if [ -e "$final_path" ]
 then
     echo "This path already contains a folder"
-    touch /force_stop
+    touch /force_stop 2> /dev/null
 fi
 
 if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
     echo "Multisite option of wordpress doesn't work at root of domain."
-	touch /force_stop
+	touch /force_stop 2> /dev/null
 fi
 
 # Enregistre les infos dans la config YunoHost

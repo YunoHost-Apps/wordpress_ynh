@@ -218,6 +218,10 @@ fi
 # Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
 sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
 
+# Enregistre la somme de contrôle du fichier de config
+sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
+
+
 # Configure les droits d'accès au fichiers
 # Les fichiers appartiennent à www-data, pour permettre les mises à jour.
 sudo chown -R www-data: $final_path

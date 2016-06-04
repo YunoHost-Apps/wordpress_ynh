@@ -10,7 +10,7 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 app=$YNH_APP_INSTANCE_NAME
 
 # Source app helpers
-. /usr/share/yunohost/helpers
+source /usr/share/yunohost/helpers
 
 
 # Delete files and db if exit with an error

@@ -45,7 +45,7 @@ sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" ||
 if [ "${path:0:1}" != "/" ]; then    # Si le premier caractère n'est pas un /
 	path="/$path"    # Ajoute un / en début de path
 fi
-if [ "${path:${#path}-1}" == "/" ]; then    # Si le dernier caractère est un /
+if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then    # Si le dernier caractère est un / et que ce n'est pas le seul caractère.
 	path="${path:0:${#path}-1}"	# Supprime le dernier caractère
 fi
 

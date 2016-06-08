@@ -74,6 +74,8 @@ else
 	fi
 fi
 sudo yunohost app setting $app multisite -v $multisite
+# Réenregistre la somme de contrôle du fichier de config.
+sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
 
 # Configure les droits d'accès au fichiers
 # Les fichiers appartiennent à www-data, pour permettre les mises à jour.

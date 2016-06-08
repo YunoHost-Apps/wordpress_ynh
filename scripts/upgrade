@@ -57,6 +57,10 @@ sudo chown root: $finalphpini
 sudo service php5-fpm reload
 
 
+config_file="$final_path/wp-config.php"
+if [ "$(sudo yunohost app setting $app wp-config.php_file_md5)" != $(md5sum "$config_file" | cut -d' ' -f1) ]; then
+	sudo cp -a "$config_file" "$config_file.backup.$(date '+%d.%m.%y_%Hh%M,%Ss')"	# Si le fichier de config a été modifié, créer un backup.
+fi
 if [ "$multisite" = "Yes" ];
 then
     sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
@@ -70,6 +74,8 @@ else
 	fi
 fi
 sudo yunohost app setting $app multisite -v $multisite
+# Réenregistre la somme de contrôle du fichier de config.
+sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
 
 # Configure les droits d'accès au fichiers
 # Les fichiers appartiennent à www-data, pour permettre les mises à jour.

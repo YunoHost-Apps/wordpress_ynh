@@ -9,8 +9,10 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
+test -z "$app" && (echo "app name not set" && false)
+
 # Source app helpers
-. /usr/share/yunohost/helpers
+source /usr/share/yunohost/helpers
 
 
 # Delete files and db if exit with an error
@@ -37,34 +39,30 @@ TRAP_ON
 
 
 # Vérifie la validité de l'user admin
-sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\""
-if [[ ! $? -eq 0 ]]; then
-    echo "Wrong admin"
-    touch /force_stop
-fi
+sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" || (echo "Wrong admin" && false)
 
-# Vérifie la présence du / en début de path
-if [ $(echo $path | cut -c1) != "/" ]; then
-    path="/$path"
+# Vérifie la présence du / en début de path. Et son absence à la fin.
+if [ "${path:0:1}" != "/" ]; then    # Si le premier caractère n'est pas un /
+	path="/$path"    # Ajoute un / en début de path
+fi
+if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then    # Si le dernier caractère est un / et que ce n'est pas le seul caractère.
+	path="${path:0:${#path}-1}"	# Supprime le dernier caractère
 fi
 
 # Vérifie la disponibilité du path et du domaine.
 sudo yunohost app checkurl $domain$path -a $app
-if [[ ! $? -eq 0 ]]; then
-    touch /force_stop
-fi
 
 # Vérifie que le dossier de destination n'est pas déjà utilisé.
 final_path=/var/www/$app
 if [ -e "$final_path" ]
 then
     echo "This path already contains a folder"
-    touch /force_stop
+    false
 fi
 
 if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
     echo "Multisite option of wordpress doesn't work at root of domain."
-	touch /force_stop
+	false
 fi
 
 # Enregistre les infos dans la config YunoHost
@@ -78,6 +76,7 @@ sudo yunohost app setting $app multisite -v $multisite
 
 # Génère un mot de passe aléatoire.
 db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
+test -z "$db_pwd" && (echo "db_pwd empty" && false)
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
 # Initialise la base de donnée et stocke le mot de passe mysql.
@@ -90,10 +89,14 @@ sudo mkdir "$final_path"
 sudo yunohost app setting $app final_path -v $final_path
 
 
+# Télécharge la source
+wget -nv --show-progress -i ../sources/source_url -O wordpress.tar.gz
+# Vérifie la somme de contrôle de la source téléchargée.
+md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false)
 # Décompresse la source
-tar -x -f ../sources/wordpress.tar.gz
+tar -x -f wordpress.tar.gz
 # Copie les fichiers sources
-sudo cp -a wordpress/. "$final_path"
+sudo cp -a $(cat ../sources/source_dir)/. "$final_path"
 # Copie les fichiers additionnels ou modifiés.
 sudo cp -a ../sources/ajouts/. "$final_path"
 # Et copie le fichier de config nginx
@@ -216,6 +219,10 @@ fi
 
 # Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
 sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
+
+# Enregistre la somme de contrôle du fichier de config
+sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
+
 
 # Configure les droits d'accès au fichiers
 # Les fichiers appartiennent à www-data, pour permettre les mises à jour.

@@ -4,7 +4,7 @@
 app=$YNH_APP_INSTANCE_NAME
 
 # Source app helpers
-. /usr/share/yunohost/helpers
+source /usr/share/yunohost/helpers
 domain=$(sudo yunohost app setting $app domain)
 
 # Suppression de la base de donnée et de l'utilisateur associé.

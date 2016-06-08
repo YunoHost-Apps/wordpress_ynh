@@ -9,13 +9,7 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
-# Checks variables are not empty
-test -z "$domain" && (echo "domain not set" && touch /force_stop)
-test -z "$path" && (echo "path not set" && touch /force_stop)
-test -z "$admin_wordpress" && (echo "admin_wordpress not set" && touch /force_stop)
-test -z "$language" && (echo "language not set" && touch /force_stop)
-test -z "$multisite" && (echo "multisite not set" && touch /force_stop)
-test -z "$is_public" && (echo "is_public not set" && touch /force_stop)
+test -z "$app" && (echo "app name not set" && false)
 
 # Source app helpers
 source /usr/share/yunohost/helpers
@@ -45,11 +39,14 @@ TRAP_ON
 
 
 # Vérifie la validité de l'user admin
-sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" || (echo "Wrong admin" && touch /force_stop 2> /dev/null)
+sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" || (echo "Wrong admin" && false)
 
-# Vérifie la présence du / en début de path
-if [ $(echo $path | cut -c1) != "/" ]; then
-    path="/$path"
+# Vérifie la présence du / en début de path. Et son absence à la fin.
+if [ "${path:0:1}" != "/" ]; then    # Si le premier caractère n'est pas un /
+	path="/$path"    # Ajoute un / en début de path
+fi
+if [ "${path:${#path}-1}" == "/" ]; then    # Si le dernier caractère est un /
+	path="${path:0:${#path}-1}"	# Supprime le dernier caractère
 fi
 
 # Vérifie la disponibilité du path et du domaine.
@@ -60,12 +57,12 @@ final_path=/var/www/$app
 if [ -e "$final_path" ]
 then
     echo "This path already contains a folder"
-    touch /force_stop 2> /dev/null
+    false
 fi
 
 if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
     echo "Multisite option of wordpress doesn't work at root of domain."
-	touch /force_stop 2> /dev/null
+	false
 fi
 
 # Enregistre les infos dans la config YunoHost
@@ -79,6 +76,7 @@ sudo yunohost app setting $app multisite -v $multisite
 
 # Génère un mot de passe aléatoire.
 db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
+test -z "$db_pwd" && (echo "db_pwd empty" && false)
 # Utilise '$app' comme nom d'utilisateur et de base de donnée
 db_user=$app
 # Initialise la base de donnée et stocke le mot de passe mysql.

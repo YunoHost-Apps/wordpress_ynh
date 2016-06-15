@@ -1,5 +1,15 @@
 #!/bin/bash
 
+source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+
+CLEAN_SETUP () {
+# Nettoyage des résidus d'installation non pris en charge par le script remove.
+	# Clean hosts
+	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
+}
+TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
+
+# Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN
 path=$YNH_APP_ARG_PATH
 admin_wordpress=$YNH_APP_ARG_ADMIN
@@ -9,56 +19,19 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
-test -z "$app" && (echo "app name not set" && false)
-
 # Source app helpers
 source /usr/share/yunohost/helpers
 
-
-# Delete files and db if exit with an error
-EXIT_PROPERLY () {
-	trap '' ERR
-	echo -e "\e[91m \e[1m"	# Shell in light red bold
-	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
-
-	# Clean hosts
-	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
-
-	exit 1
-}
-TRAP_ON () {	# Activate signal capture
-	trap EXIT_PROPERLY ERR	# Capturing exit signals on error
-}
-TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
-# Pour une raison que j'ignore, la fonction TRAP_ON fonctionne très bien.
-# Mais pas la fonction TRAP_OFF...
-# Utiliser directement `trap '' ERR` dans le code pour l'utiliser, à la place de la fonction.
-	trap '' ERR	# Ignoring exit signals
-}
-TRAP_ON
+# Vérifie que les variables ne sont pas vides.
+CHECK_VAR "$app" "app name not set"
 
 
-# Vérifie la validité de l'user admin
-sudo yunohost user list --json | grep -q "\"username\": \"$admin_wordpress\"" || (echo "Wrong admin" && false)
+CHECK_USER "$admin"	# Vérifie la validité de l'user admin
 
-# Vérifie la présence du / en début de path. Et son absence à la fin.
-if [ "${path:0:1}" != "/" ]; then    # Si le premier caractère n'est pas un /
-	path="/$path"    # Ajoute un / en début de path
-fi
-if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then    # Si le dernier caractère est un / et que ce n'est pas le seul caractère.
-	path="${path:0:${#path}-1}"	# Supprime le dernier caractère
-fi
+CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
 
-# Vérifie la disponibilité du path et du domaine.
-sudo yunohost app checkurl $domain$path -a $app
-
-# Vérifie que le dossier de destination n'est pas déjà utilisé.
-final_path=/var/www/$app
-if [ -e "$final_path" ]
-then
-    echo "This path already contains a folder"
-    false
-fi
+CHECK_FINALPATH	# Vérifie que le dossier de destination n'est pas déjà utilisé.
 
 if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
     echo "Multisite option of wordpress doesn't work at root of domain."
@@ -73,15 +46,7 @@ sudo yunohost app setting $app is_public -v $is_public
 sudo yunohost app setting $app language -v $language
 sudo yunohost app setting $app multisite -v $multisite
 
-
-# Génère un mot de passe aléatoire.
-db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
-test -z "$db_pwd" && (echo "db_pwd empty" && false)
-# Utilise '$app' comme nom d'utilisateur et de base de donnée
-db_user=$app
-# Initialise la base de donnée et stocke le mot de passe mysql.
-ynh_mysql_create_db $db_user $db_user $db_pwd
-sudo yunohost app setting $app mysqlpwd -v $db_pwd
+GENERATE_DB	# Créer une base de données et un utilisateur dédié au nom de l'app.
 
 
 # Crée le repertoire de destination et stocke son emplacement.
@@ -89,16 +54,8 @@ sudo mkdir "$final_path"
 sudo yunohost app setting $app final_path -v $final_path
 
 
-# Télécharge la source
-wget -nv --show-progress -i ../sources/source_url -O wordpress.tar.gz
-# Vérifie la somme de contrôle de la source téléchargée.
-md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false)
-# Décompresse la source
-tar -x -f wordpress.tar.gz
-# Copie les fichiers sources
-sudo cp -a $(cat ../sources/source_dir)/. "$final_path"
-# Copie les fichiers additionnels ou modifiés.
-sudo cp -a ../sources/ajouts/. "$final_path"
+SETUP_SOURCE "wordpress.tar.gz"	# Télécharge la source, décompresse et copie dans $final_path
+
 # Et copie le fichier de config nginx
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
@@ -108,17 +65,7 @@ sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Créer le fichier de configuration du pool php-fpm et le configure.
-sed -i "s@__NAMETOCHANGE__@$app@g" ../conf/php-fpm.conf
-sed -i "s@__FINALPATH__@$final_path@g" ../conf/php-fpm.conf
-finalphpconf=/etc/php5/fpm/pool.d/$app.conf
-sudo cp ../conf/php-fpm.conf $finalphpconf
-sudo chown root: $finalphpconf
-finalphpini=/etc/php5/fpm/conf.d/20-$app.ini
-sudo cp ../conf/php-fpm.ini $finalphpini
-sudo chown root: $finalphpini
-sudo service php5-fpm reload
-
+POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
 
 
 sudo cp ../conf/wp-config.php $final_path/wp-config.php
@@ -147,9 +94,8 @@ sudo chown -R www-data: $final_path
 
 # Donne un accès public pour curl
 sudo yunohost app setting $app unprotected_uris -v "/"
-# Recharge la configuration Nginx et php5-fpm
+# Recharge la configuration Nginx
 sudo service nginx reload
-sudo service php5-fpm reload
 # Régénère la configuration de SSOwat
 sudo yunohost app ssowatconf
 
@@ -220,8 +166,7 @@ fi
 # Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
 sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
 
-# Enregistre la somme de contrôle du fichier de config
-sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
+STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Enregistre la somme de contrôle du fichier de config
 
 
 # Configure les droits d'accès au fichiers

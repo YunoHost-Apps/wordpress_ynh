@@ -1,0 +1,178 @@
+#!/bin/bash
+
+YNH_VERSION () {	# Renvoi le numéro de version de la moulinette Yunohost
+	ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+}
+
+CHECK_VAR () {	# Vérifie que la variable n'est pas vide.
+# $1 = Variable à vérifier
+# $2 = Texte à afficher en cas d'erreur
+	test -n "$1" || (echo "$2" && false)
+}
+
+EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les résidus.
+	trap '' ERR
+	echo -e "\e[91m \e[1m"	# Shell in light red bold
+	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
+
+	CLEAN_SETUP	# Appel la fonction de nettoyage spécifique du script install.
+
+	if [ $ynh_version = "2.2" ]; then
+		/bin/bash $script_dir/remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
+	fi
+
+	exit 1
+}
+
+TRAP_ON () {	# Activate signal capture
+	trap EXIT_PROPERLY ERR	# Capturing exit signals on error
+}
+
+TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
+	# Pour une raison que j'ignore, la fonction TRAP_ON fonctionne très bien.
+	# Mais pas la fonction TRAP_OFF...
+	# Utiliser directement `trap '' ERR` dans le code pour l'utiliser, à la place de la fonction.
+	trap '' ERR	# Ignoring exit signals
+}
+
+CHECK_USER () {	# Vérifie la validité de l'user admin
+# $1 = Variable de l'user admin.
+	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" && false)
+}
+
+CHECK_PATH () {	# Vérifie la présence du / en début de path. Et son absence à la fin.
+	if [ "${path:0:1}" != "/" ]; then    # Si le premier caractère n'est pas un /
+		path="/$path"    # Ajoute un / en début de path
+	fi
+	if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then    # Si le dernier caractère est un / et que ce n'est pas le seul caractère.
+		path="${path:0:${#path}-1}"	# Supprime le dernier caractère
+	fi
+}
+
+CHECK_DOMAINPATH () {	# Vérifie la disponibilité du path et du domaine.
+	sudo yunohost app checkurl $domain$path -a $app
+}
+
+CHECK_FINALPATH () {	# Vérifie que le dossier de destination n'est pas déjà utilisé.
+	final_path=/var/www/$app
+	if [ -e "$final_path" ]
+	then
+		echo "This path already contains a folder"
+		false
+	fi
+}
+
+GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom de l'app.
+	# Génère un mot de passe aléatoire.
+	db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
+	CHECK_VAR "$db_pwd" "db_pwd empty"
+	# Utilise '$app' comme nom d'utilisateur et de base de donnée
+	db_user=$app
+	# Initialise la base de donnée et stocke le mot de passe mysql.
+	ynh_mysql_create_db $db_user $db_user $db_pwd
+	sudo yunohost app setting $app mysqlpwd -v $db_pwd
+}
+
+SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_path
+# $1 = Nom de l'archive téléchargée.
+	wget -nv --show-progress -i ../sources/source_url -O $1
+	# Vérifie la somme de contrôle de la source téléchargée.
+	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false)
+	# Décompresse la source
+	if [ "$(echo ${1##*.})" == "gz" ]; then
+		tar -x -f $1
+	elif [ "$(echo ${1##*.})" == "zip" ]; then
+		unzip -q $1
+	else
+		false	# Format d'archive non pris en charge.
+	fi
+	# Copie les fichiers sources
+	sudo cp -a $(cat ../sources/source_dir)/. "$final_path"
+	# Copie les fichiers additionnels ou modifiés.
+	sudo cp -a ../sources/ajouts/. "$final_path"
+}
+
+POOL_FPM () {	# Créer le fichier de configuration du pool php-fpm et le configure.
+	sed -i "s@__NAMETOCHANGE__@$app@g" ../conf/php-fpm.conf
+	sed -i "s@__FINALPATH__@$final_path@g" ../conf/php-fpm.conf
+	finalphpconf=/etc/php5/fpm/pool.d/$app.conf
+	sudo cp ../conf/php-fpm.conf $finalphpconf
+	sudo chown root: $finalphpconf
+	finalphpini=/etc/php5/fpm/conf.d/20-$app.ini
+	sudo cp ../conf/php-fpm.ini $finalphpini
+	sudo chown root: $finalphpini
+	sudo service php5-fpm reload
+}
+
+STORE_MD5_CONFIG () {	# Enregistre la somme de contrôle du fichier de config
+# $1 = Nom du fichier de conf pour le stockage dans settings.yml
+# $2 = Nom complet et chemin du fichier de conf.
+	sudo yunohost app setting $app $1_file_md5 -v $(md5sum "$2" | cut -d' ' -f1)
+}
+
+CHECK_MD5_CONFIG () {	# Créé un backup du fichier de config si il a été modifié.
+# $1 = Nom du fichier de conf pour le stockage dans settings.yml
+# $2 = Nom complet et chemin du fichier de conf.
+	if [ "$(sudo yunohost app setting $app $1_file_md5)" != $(md5sum "$2" | cut -d' ' -f1) ]; then
+		sudo cp -a "$2" "$2.backup.$(date '+%d.%m.%y_%Hh%M,%Ss')"	# Si le fichier de config a été modifié, créer un backup.
+	fi
+}
+
+FIND_PORT () {	# Cherche un port libre.
+# $1 = Numéro de port pour débuter la recherche.
+	port=$1
+	while ! sudo yunohost app checkport $port ; do
+		port=$((port+1))
+	done
+	CHECK_VAR "$port" "port empty"
+}
+
+
+### REMOVE SCRIPT
+
+REMOVE_NGINX_CONF () {	# Suppression de la configuration nginx
+	if [ -e "/etc/nginx/conf.d/$domain.d/$app.conf" ]; then	# Delete nginx config
+		echo "Delete nginx config"
+		sudo rm "/etc/nginx/conf.d/$domain.d/$app.conf"
+		sudo service nginx reload
+	fi
+}
+
+REMOVE_FPM_CONF () {	# Suppression de la configuration du pool php-fpm
+	if [ -e "/etc/php5/fpm/pool.d/$app.conf" ]; then	# Delete fpm config
+		echo "Delete fpm config"
+		sudo rm "/etc/php5/fpm/pool.d/$app.conf"
+	fi
+	if [ -e "/etc/php5/fpm/conf.d/20-$app.ini" ]; then	# Delete php config
+		echo "Delete php config"
+		sudo rm "/etc/php5/fpm/conf.d/20-$app.ini"
+	fi
+	sudo service php5-fpm reload
+}
+
+REMOVE_LOGROTATE_CONF () {	# Suppression de la configuration de logrotate
+	if [ -e "/etc/logrotate.d/$app" ]; then
+		echo "Delete logrotate config"
+		sudo rm "/etc/logrotate.d/$app"
+	fi
+}
+
+REMOVE_APP_DIR () {	# Suppression du dossier de l'application
+	if [ test -n "$app" ]
+	then	# Supprime le dossier seulement si $app n'est pas vide.
+		if [ -e "/var/www/$app" ]; then	# Delete final_path
+			echo "Delete app dir"
+			sudo rm -r "/var/www/$app"
+		fi
+	fi
+}
+
+REMOVE_BDD () {	# Suppression de la base de donnée et de l'utilisateur associé.
+	# Utilise '$app' comme nom d'utilisateur et de base de donnée
+	db_user=$app
+	if mysqlshow -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) | grep -q "^| $db_user"; then
+		echo "Delete db"
+		ynh_mysql_drop_db $db_user
+		ynh_mysql_drop_user $db_user
+	fi
+}

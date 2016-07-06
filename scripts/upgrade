@@ -48,17 +48,7 @@ sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Copie le fichier de configuration du pool php-fpm et le configure.
-sed -i "s@__NAMETOCHANGE__@$app@g" ../conf/php-fpm.conf
-sed -i "s@__FINALPATH__@$final_path@g" ../conf/php-fpm.conf
-finalphpconf=/etc/php5/fpm/pool.d/$app.conf
-sudo cp ../conf/php-fpm.conf $finalphpconf
-sudo chown root: $finalphpconf
-finalphpini=/etc/php5/fpm/conf.d/20-$app.ini
-sudo cp ../conf/php-fpm.ini $finalphpini
-sudo chown root: $finalphpini
-sudo service php5-fpm reload
-
+POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
 
 CHECK_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
 if [ "$multisite" = "Yes" ];

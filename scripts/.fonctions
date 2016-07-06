@@ -7,15 +7,18 @@ YNH_VERSION () {	# Renvoi le numéro de version de la moulinette Yunohost
 CHECK_VAR () {	# Vérifie que la variable n'est pas vide.
 # $1 = Variable à vérifier
 # $2 = Texte à afficher en cas d'erreur
-	test -n "$1" || (echo "$2" && false)
+	test -n "$1" || (echo "$2" && false >&2)
 }
 
 EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les résidus.
 	trap '' ERR
 	echo -e "\e[91m \e[1m"	# Shell in light red bold
-	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
+	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!" >&2
 
 	CLEAN_SETUP	# Appel la fonction de nettoyage spécifique du script install.
+
+	# Compense le bug de ssowat qui ne supprime pas l'entrée de l'app en cas d'erreur d'installation.
+	sudo sed -i "\@\"$domain$path/\":@d" /etc/ssowat/conf.json
 
 	if [ $ynh_version = "2.2" ]; then
 		/bin/bash $script_dir/remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
@@ -37,7 +40,7 @@ TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
 
 CHECK_USER () {	# Vérifie la validité de l'user admin
 # $1 = Variable de l'user admin.
-	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" && false)
+	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" && false >&2)
 }
 
 CHECK_PATH () {	# Vérifie la présence du / en début de path. Et son absence à la fin.
@@ -57,17 +60,18 @@ CHECK_FINALPATH () {	# Vérifie que le dossier de destination n'est pas déjà u
 	final_path=/var/www/$app
 	if [ -e "$final_path" ]
 	then
-		echo "This path already contains a folder"
+		echo "This path already contains a folder" >&2
 		false
 	fi
 }
 
 GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom de l'app.
+# $1 = Nom de la base de donnée
 	# Génère un mot de passe aléatoire.
+	db_user=$1
 	db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
 	CHECK_VAR "$db_pwd" "db_pwd empty"
 	# Utilise '$app' comme nom d'utilisateur et de base de donnée
-	db_user=$app
 	# Initialise la base de donnée et stocke le mot de passe mysql.
 	ynh_mysql_create_db $db_user $db_user $db_pwd
 	sudo yunohost app setting $app mysqlpwd -v $db_pwd
@@ -77,7 +81,7 @@ SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_pa
 # $1 = Nom de l'archive téléchargée.
 	wget -nv --show-progress -i ../sources/source_url -O $1
 	# Vérifie la somme de contrôle de la source téléchargée.
-	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false)
+	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false >&2)
 	# Décompresse la source
 	if [ "$(echo ${1##*.})" == "gz" ]; then
 		tar -x -f $1
@@ -158,7 +162,7 @@ REMOVE_LOGROTATE_CONF () {	# Suppression de la configuration de logrotate
 }
 
 REMOVE_APP_DIR () {	# Suppression du dossier de l'application
-	if [ test -n "$app" ]
+	if test -n "$app"
 	then	# Supprime le dossier seulement si $app n'est pas vide.
 		if [ -e "/var/www/$app" ]; then	# Delete final_path
 			echo "Delete app dir"
@@ -168,8 +172,9 @@ REMOVE_APP_DIR () {	# Suppression du dossier de l'application
 }
 
 REMOVE_BDD () {	# Suppression de la base de donnée et de l'utilisateur associé.
+# $1 = Nom de la base de donnée
 	# Utilise '$app' comme nom d'utilisateur et de base de donnée
-	db_user=$app
+	db_user=$1
 	if mysqlshow -u root -p$(sudo cat $MYSQL_ROOT_PWD_FILE) | grep -q "^| $db_user"; then
 		echo "Delete db"
 		ynh_mysql_drop_db $db_user

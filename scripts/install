@@ -26,7 +26,7 @@ source /usr/share/yunohost/helpers
 CHECK_VAR "$app" "app name not set"
 
 
-CHECK_USER "$admin"	# Vérifie la validité de l'user admin
+CHECK_USER "$admin_wordpress"	# Vérifie la validité de l'user admin
 
 CHECK_PATH	# Vérifie et corrige la syntaxe du path.
 CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
@@ -46,7 +46,7 @@ sudo yunohost app setting $app is_public -v $is_public
 sudo yunohost app setting $app language -v $language
 sudo yunohost app setting $app multisite -v $multisite
 
-GENERATE_DB	# Créer une base de données et un utilisateur dédié au nom de l'app.
+GENERATE_DB $app	# Créer une base de données et un utilisateur dédié au nom de l'app.
 
 
 # Crée le repertoire de destination et stocke son emplacement.

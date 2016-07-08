@@ -8,6 +8,7 @@
 		multisite="No"
 		is_public="Yes"	(PUBLIC|public=Yes|private=No)
 	; Checks
+		pkg_linter=1
 		setup_sub_dir=1
 		setup_root=1
 		setup_nourl=0

@@ -2,11 +2,11 @@
 
 source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
 
-# Récupère les infos de l'application.
-app=$YNH_APP_INSTANCE_NAME
-
 # Source app helpers
 source /usr/share/yunohost/helpers
+
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
 domain=$(sudo yunohost app setting $app domain)
 
 REMOVE_BDD $app	# Suppression de la base de donnée et de l'utilisateur associé.

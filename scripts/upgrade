@@ -2,6 +2,9 @@
 
 source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
 
+# Source app helpers
+source /usr/share/yunohost/helpers
+
 # Récupère les infos de l'application.
 app=$YNH_APP_INSTANCE_NAME
 domain=$(sudo yunohost app setting $app domain)
@@ -13,6 +16,13 @@ multisite=$(sudo yunohost app setting $app multisite)
 final_path=$(sudo yunohost app setting $app final_path)
 
 CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+
+# Check if admin is not null
+if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
+    echo "Unable to upgrade, please contact support"
+    exit 1
+fi
+
 root_pwd=$(sudo cat /etc/yunohost/mysql)
 db_name=$app
 if [[ "$admin_wordpress" = "" ]];
@@ -33,12 +43,6 @@ if [[ "$language" = "" ]];
 then
     language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
 	sudo yunohost app setting $app language -v $language
-fi
-
-# Check if admin is not null
-if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
-    echo "Unable to upgrade, please contact support"
-    exit 1
 fi
 
 # Copie le fichier de config nginx

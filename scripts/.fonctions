@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ynh_version="2.4"
+
 YNH_VERSION () {	# Renvoi le numéro de version de la moulinette Yunohost
 	ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
 }
@@ -7,7 +9,7 @@ YNH_VERSION () {	# Renvoi le numéro de version de la moulinette Yunohost
 CHECK_VAR () {	# Vérifie que la variable n'est pas vide.
 # $1 = Variable à vérifier
 # $2 = Texte à afficher en cas d'erreur
-	test -n "$1" || (echo "$2" && false >&2)
+	test -n "$1" || (echo "$2" >&2 && false)
 }
 
 EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les résidus.
@@ -20,7 +22,7 @@ EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les
 	# Compense le bug de ssowat qui ne supprime pas l'entrée de l'app en cas d'erreur d'installation.
 	sudo sed -i "\@\"$domain$path/\":@d" /etc/ssowat/conf.json
 
-	if [ $ynh_version = "2.2" ]; then
+	if [ "$ynh_version" = "2.2" ]; then
 		/bin/bash $script_dir/remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
 	fi
 
@@ -40,7 +42,7 @@ TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
 
 CHECK_USER () {	# Vérifie la validité de l'user admin
 # $1 = Variable de l'user admin.
-	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" && false >&2)
+	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" >&2 && false)
 }
 
 CHECK_PATH () {	# Vérifie la présence du / en début de path. Et son absence à la fin.
@@ -81,7 +83,7 @@ SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_pa
 # $1 = Nom de l'archive téléchargée.
 	wget -nv --show-progress -i ../sources/source_url -O $1
 	# Vérifie la somme de contrôle de la source téléchargée.
-	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" && false >&2)
+	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" >&2 && false)
 	# Décompresse la source
 	if [ "$(echo ${1##*.})" == "gz" ]; then
 		tar -x -f $1

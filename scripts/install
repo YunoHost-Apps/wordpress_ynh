@@ -34,7 +34,7 @@ CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
 CHECK_FINALPATH	# Vérifie que le dossier de destination n'est pas déjà utilisé.
 
 if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
-    echo "Multisite option of wordpress doesn't work at root of domain."
+    echo "Multisite option of wordpress doesn't work at root of domain." >&2
 	false
 fi
 

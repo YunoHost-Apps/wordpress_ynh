@@ -35,7 +35,7 @@
 		is_public="Yes"	(PUBLIC|public=Yes|private=No)
 	; Checks
 		setup_sub_dir=1
-		setup_root=1
+		setup_root=0
 		setup_nourl=0
 		setup_private=1
 		setup_public=1

@@ -7,6 +7,9 @@ backup_dir=$1
 # The parameter $2 is the id of the app instance ex: ynhexample__2
 app=$2
 
+# Source app helpers
+source /usr/share/yunohost/helpers
+
 # Get old parameter of the app
 domain=$(sudo yunohost app setting $app domain)
 path=$(sudo yunohost app setting $app path)
@@ -24,12 +27,23 @@ if [ -d $final_path ]; then
     echo "There is already a directory: $final_path " | sudo tee /dev/stderr
     exit 1
 fi
-sudo cp -a "${backup_dir}/var/www/$app" $final_path
 
+conf=/etc/nginx/conf.d/$domain.d/$app.conf
+if [ -f $conf ]; then
+    echo "There is already a nginx conf file at this path: $conf " | sudo tee /dev/stderr
+    exit 1
+fi
+# Restore conf files
+sudo cp -a "${backup_dir}/conf/nginx.conf" $conf
+
+# Reload Nginx
+sudo service nginx reload
+
+sudo cp -a "${backup_dir}/var/www/$app" $final_path
 
 db_pwd=$(sudo yunohost app setting $app mysqlpwd)
 db_user=$app
-sudo yunohost app initdb $db_user -p $db_pwd
+ynh_mysql_create_db $db_user $db_user $db_pwd
 sudo su -c "mysql -u $db_user -p$db_pwd $app < ${backup_dir}/db.sql"
 sudo rm -f "${backup_dir}/db.sql"
 sudo sed -i -e "s/'DB_USER', *'[^']*'/'DB_USER', '$app'/g" $final_path/wp-config.php
@@ -41,20 +55,9 @@ sudo chown -R www-data: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 sudo chown root: $final_path/wp-config.php
 
-# Restore conf files
-conf=/etc/nginx/conf.d/$domain.d/$app.conf
-if [ -f $conf ]; then
-    echo "There is already a nginx conf file at this path: $conf " | sudo tee /dev/stderr
-    exit 1
-fi
-sudo cp -a "${backup_dir}/conf/nginx.conf" $conf
-
-# Reload Nginx
-sudo service nginx reload
-
 # Copy dedicated php-fpm process from backup folder to the right location
-sudo cp -a $backup_dir/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
-sudo cp -a $backup_dir/php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
+sudo cp -a $backup_dir/conf/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+sudo cp -a $backup_dir/conf/php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
 # And restart service
 sudo service php5-fpm reload
 

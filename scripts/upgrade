@@ -1,5 +1,10 @@
 #!/bin/bash
 
+source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+
+# Source app helpers
+source /usr/share/yunohost/helpers
+
 # Récupère les infos de l'application.
 app=$YNH_APP_INSTANCE_NAME
 domain=$(sudo yunohost app setting $app domain)
@@ -9,6 +14,14 @@ language=$(sudo yunohost app setting $app language)
 is_public=$(sudo yunohost app setting $app is_public)
 multisite=$(sudo yunohost app setting $app multisite)
 final_path=$(sudo yunohost app setting $app final_path)
+
+CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+
+# Check if admin is not null
+if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
+    echo "Unable to upgrade, please contact support"
+    exit 1
+fi
 
 root_pwd=$(sudo cat /etc/yunohost/mysql)
 db_name=$app
@@ -32,12 +45,6 @@ then
 	sudo yunohost app setting $app language -v $language
 fi
 
-# Check if admin is not null
-if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
-    echo "Unable to upgrade, please contact support"
-    exit 1
-fi
-
 # Copie le fichier de config nginx
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 # Modifie les variables dans le fichier de configuration nginx
@@ -45,22 +52,9 @@ sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Copie le fichier de configuration du pool php-fpm et le configure.
-sed -i "s@__NAMETOCHANGE__@$app@g" ../conf/php-fpm.conf
-sed -i "s@__FINALPATH__@$final_path@g" ../conf/php-fpm.conf
-finalphpconf=/etc/php5/fpm/pool.d/$app.conf
-sudo cp ../conf/php-fpm.conf $finalphpconf
-sudo chown root: $finalphpconf
-finalphpini=/etc/php5/fpm/conf.d/20-$app.ini
-sudo cp ../conf/php-fpm.ini $finalphpini
-sudo chown root: $finalphpini
-sudo service php5-fpm reload
+POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
 
-
-config_file="$final_path/wp-config.php"
-if [ "$(sudo yunohost app setting $app wp-config.php_file_md5)" != $(md5sum "$config_file" | cut -d' ' -f1) ]; then
-	sudo cp -a "$config_file" "$config_file.backup.$(date '+%d.%m.%y_%Hh%M,%Ss')"	# Si le fichier de config a été modifié, créer un backup.
-fi
+CHECK_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
 if [ "$multisite" = "Yes" ];
 then
     sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
@@ -74,8 +68,7 @@ else
 	fi
 fi
 sudo yunohost app setting $app multisite -v $multisite
-# Réenregistre la somme de contrôle du fichier de config.
-sudo yunohost app setting $app wp-config.php_file_md5 -v $(md5sum "$final_path/wp-config.php" | cut -d' ' -f1)
+STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
 
 # Configure les droits d'accès au fichiers
 # Les fichiers appartiennent à www-data, pour permettre les mises à jour.

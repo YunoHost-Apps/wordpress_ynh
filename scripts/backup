@@ -6,6 +6,9 @@ backup_dir=$1
 # The parameter $2 is theid of the app instance
 app=$2
 
+# Source app helpers
+source /usr/share/yunohost/helpers
+
 domain=$(sudo yunohost app setting $app domain)
 final_path=$(sudo yunohost app setting $app final_path)
 

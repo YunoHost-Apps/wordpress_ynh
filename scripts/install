@@ -108,12 +108,15 @@ sleep 5
 trap '' ERR # Ignoring exit signals
 mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 result=$?
+TRAP_ON
 loop_number=1
 while [ $result != 0 ] && [ $loop_number -lt 5 ];
 do
 	sleep 5
+	trap '' ERR # Ignoring exit signals
 	mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 	let result=$?
+	TRAP_ON
 	let loop_number++
 done
 TRAP_ON

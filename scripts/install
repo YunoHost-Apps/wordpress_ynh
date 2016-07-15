@@ -105,6 +105,7 @@ echo "127.0.0.1 $domain #wordpress_yunohost" | sudo tee -a /etc/hosts
 curl -kL --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
 sleep 5
+trap '' ERR # Ignoring exit signals
 mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
 result=$?
 loop_number=1
@@ -115,6 +116,7 @@ do
 	let result=$?
 	let loop_number++
 done
+TRAP_ON
 
 # Replace variables in sql scripts
 sudo sed -i "s@__DOMAIN_PATH__@$domain$path@g" ../conf/sql/*.sql

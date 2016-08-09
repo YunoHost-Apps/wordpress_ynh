@@ -104,16 +104,13 @@ sudo yunohost app ssowatconf
 echo "127.0.0.1 $domain #wordpress_yunohost" | sudo tee -a /etc/hosts
 curl -kL --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
-sleep 5
-mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
-result=$?
-loop_number=1
-while [ $result != 0 ] && [ $loop_number -lt 5 ];
-do
-	sleep 5
-	mysql --debug-check -u $db_user -p$db_pwd $db_user -e "select * from wp_options;" > /dev/null 2>&1
-	let result=$?
-	let loop_number++
+for i in `seq 1 30`
+do	# La boucle attend la fin de l'installation de wordpress Ou 30 secondes.
+	if mysql --debug-check -u $db_user -p$db_pwd $db_user -e "show tables" | grep -q "wp_options"; then
+		break	# Si la table wp_options est trouvée, l'installation de wordpress est terminée. Quitte la boucle.
+	fi
+	echo -n "." >&2
+	sleep 1
 done
 
 # Replace variables in sql scripts

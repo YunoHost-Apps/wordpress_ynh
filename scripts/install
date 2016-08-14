@@ -180,7 +180,8 @@ then
 fi
 
 # Clean hosts
-sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
+sudo sed '/#wordpress_yunohost/d' /etc/hosts > /etc/hosts.tmp
+sudo cp -a /etc/hosts.tmp /etc/hosts && rm /etc/hosts.tmp
 
 sudo service nginx reload
 

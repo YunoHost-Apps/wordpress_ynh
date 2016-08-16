@@ -95,7 +95,9 @@ SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_pa
 	# Copie les fichiers sources
 	sudo cp -a $(cat ../sources/source_dir)/. "$final_path"
 	# Copie les fichiers additionnels ou modifiés.
-	sudo cp -a ../sources/ajouts/. "$final_path"
+	if test -e "../sources/ajouts"; then
+		sudo cp -a ../sources/ajouts/. "$final_path"
+	fi
 }
 
 POOL_FPM () {	# Créer le fichier de configuration du pool php-fpm et le configure.
@@ -113,13 +115,13 @@ POOL_FPM () {	# Créer le fichier de configuration du pool php-fpm et le configu
 STORE_MD5_CONFIG () {	# Enregistre la somme de contrôle du fichier de config
 # $1 = Nom du fichier de conf pour le stockage dans settings.yml
 # $2 = Nom complet et chemin du fichier de conf.
-	sudo yunohost app setting $app $1_file_md5 -v $(md5sum "$2" | cut -d' ' -f1)
+	sudo yunohost app setting $app $1_file_md5 -v $(sudo md5sum "$2" | cut -d' ' -f1)
 }
 
 CHECK_MD5_CONFIG () {	# Créé un backup du fichier de config si il a été modifié.
 # $1 = Nom du fichier de conf pour le stockage dans settings.yml
 # $2 = Nom complet et chemin du fichier de conf.
-	if [ "$(sudo yunohost app setting $app $1_file_md5)" != $(md5sum "$2" | cut -d' ' -f1) ]; then
+	if [ "$(sudo yunohost app setting $app $1_file_md5)" != $(sudo md5sum "$2" | cut -d' ' -f1) ]; then
 		sudo cp -a "$2" "$2.backup.$(date '+%d.%m.%y_%Hh%M,%Ss')"	# Si le fichier de config a été modifié, créer un backup.
 	fi
 }

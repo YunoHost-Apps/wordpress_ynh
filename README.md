@@ -10,6 +10,6 @@ https://wordpress.org/
 Si l'option multisite est activée, le script installe le paquet *php5-cli*.
 
 **Mise à jour du package:**  
-sudo yunohost app upgrade --verbose -u https://github.com/YunoHost-Apps/wordpress_ynh wordpress
+sudo yunohost app upgrade --verbose wordpress -u https://github.com/YunoHost-Apps/wordpress_ynh
 
 **Multi-utilisateur:** Oui, avec support ldap.

@@ -4,8 +4,8 @@ source .fonctions	# Charge les fonctions génériques habituellement utilisées 
 
 CLEAN_SETUP () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
-	# Clean hosts
-	sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
+# Pas de nettoyage supplémentaire nécessaire ici...
+	echo ""
 }
 TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
 
@@ -101,8 +101,7 @@ sudo yunohost app ssowatconf
 
 
 # Wordpress installation
-echo "127.0.0.1 $domain #wordpress_yunohost" | sudo tee -a /etc/hosts
-curl -kL --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://$domain$path/wp-admin/install.php?step=2 > /dev/null 2>&1
+curl -kL -H "Host: $domain" --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://localhost$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
 for i in `seq 1 30`
 do	# La boucle attend la fin de l'installation de wordpress Ou 30 secondes.
@@ -178,9 +177,6 @@ then
 	sudo yunohost app setting $app unprotected_uris -d
 	sudo yunohost app ssowatconf
 fi
-
-# Clean hosts
-sudo sed -i '/#wordpress_yunohost/d' /etc/hosts
 
 sudo service nginx reload
 

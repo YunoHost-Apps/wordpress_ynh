@@ -11,7 +11,7 @@ domain=$(sudo yunohost app setting $app domain)
 
 REMOVE_BDD $app	# Suppression de la base de donnée et de l'utilisateur associé.
 
-REMOVE_APP_DIR	# Suppression du dossier de l'application
+SECURE_REMOVE '/var/www/$app'	# Suppression du dossier de l'application
 
 REMOVE_NGINX_CONF	# Suppression de la configuration nginx
 

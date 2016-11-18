@@ -71,7 +71,7 @@ GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom 
 
 SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_path
 # $1 = Nom de l'archive téléchargée.
-	wget -nv --show-progress -i ../sources/source_url -O $1
+	wget -nv -i ../sources/source_url -O $1
 	# Vérifie la somme de contrôle de la source téléchargée.
 	md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" >&2 && false)
 	# Décompresse la source

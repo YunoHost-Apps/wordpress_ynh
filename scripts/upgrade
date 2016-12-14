@@ -7,13 +7,13 @@ source /usr/share/yunohost/helpers
 
 # Récupère les infos de l'application.
 app=$YNH_APP_INSTANCE_NAME
-domain=$(sudo yunohost app setting $app domain)
-path=$(sudo yunohost app setting $app path)
-admin_wordpress=$(sudo yunohost app setting $app admin)
-language=$(sudo yunohost app setting $app language)
-is_public=$(sudo yunohost app setting $app is_public)
-multisite=$(sudo yunohost app setting $app multisite)
-final_path=$(sudo yunohost app setting $app final_path)
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+admin_wordpress=$(ynh_app_setting_get $app admin)
+language=$(ynh_app_setting_get $app language)
+is_public=$(ynh_app_setting_get $app is_public)
+multisite=$(ynh_app_setting_get $app multisite)
+final_path=$(ynh_app_setting_get $app final_path)
 
 CHECK_PATH	# Vérifie et corrige la syntaxe du path.
 
@@ -30,19 +30,19 @@ then
     mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
     admin_wordpress=$(cat /tmp/wordpressuser)
     sudo rm -f /tmp/wordpressuser
-	sudo yunohost app setting $app admin -v $admin_wordpress
+	ynh_app_setting_set $app admin $admin_wordpress
 fi
 
 if [[ "$final_path" = "" ]];
 then
     final_path=/var/www/$app
-	sudo yunohost app setting $app final_path -v $final_path
+	ynh_app_setting_set $app final_path $final_path
 fi
 
 if [[ "$language" = "" ]];
 then
     language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
-	sudo yunohost app setting $app language -v $language
+	ynh_app_setting_set $app language $language
 fi
 
 # Copie le fichier de config nginx
@@ -67,7 +67,7 @@ else
 		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
 	fi
 fi
-sudo yunohost app setting $app multisite -v $multisite
+ynh_app_setting_set $app multisite $multisite
 STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
 
 # Configure les droits d'accès au fichiers
@@ -77,11 +77,11 @@ sudo chown -R www-data: $final_path
 sudo chown root: $final_path/wp-config.php
 
 
-sudo yunohost app setting $app skipped_uris -d	# Retire le skipped_uris si il existe encore.
+ynh_app_setting_delete $app skipped_uris	# Retire le skipped_uris si il existe encore.
 if [ "$is_public" = "No" ]; then	# Retire l'accès public
-	sudo yunohost app setting $app unprotected_uris -d
+	ynh_app_setting_delete $app unprotected_uris
 else	# Ou remplace le skipped_uris par unprotected_uris le cas échéant.
-	sudo yunohost app setting $app unprotected_uris -v "/"
+	ynh_app_setting_set $app unprotected_uris "/"
 fi
 sudo yunohost app ssowatconf
 

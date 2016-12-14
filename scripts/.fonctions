@@ -16,7 +16,7 @@ EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les
 	# Compense le bug de ssowat qui ne supprime pas l'entrée de l'app en cas d'erreur d'installation.
 	sudo sed -i "\@\"$domain$path/\":@d" /etc/ssowat/conf.json
 
-	exit 1
+	ynh_die
 }
 
 TRAP_ON () {	# Activate signal capture
@@ -32,7 +32,7 @@ TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
 
 CHECK_USER () {	# Vérifie la validité de l'user admin
 # $1 = Variable de l'user admin.
-	sudo yunohost user list --json | grep -q "\"username\": \"$1\"" || (echo "Wrong admin" >&2 && false)
+	ynh_user_exists "$1" || (echo "Wrong admin" >&2 && false)
 }
 
 CHECK_PATH () {	# Vérifie la présence du / en début de path. Et son absence à la fin.
@@ -59,14 +59,15 @@ CHECK_FINALPATH () {	# Vérifie que le dossier de destination n'est pas déjà u
 
 GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom de l'app.
 # $1 = Nom de la base de donnée
-	# Génère un mot de passe aléatoire.
 	db_user=$1
-	db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
+	# Génère un mot de passe aléatoire.
+# 	db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
+	db_pwd=$(ynh_string_random)
 	CHECK_VAR "$db_pwd" "db_pwd empty"
 	# Utilise '$app' comme nom d'utilisateur et de base de donnée
 	# Initialise la base de donnée et stocke le mot de passe mysql.
 	ynh_mysql_create_db $db_user $db_user $db_pwd
-	sudo yunohost app setting $app mysqlpwd -v $db_pwd
+	ynh_app_setting_set $app mysqlpwd $db_pwd
 }
 
 SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_path
@@ -91,7 +92,7 @@ SETUP_SOURCE () {	# Télécharge la source, décompresse et copie dans $final_pa
 }
 
 ADD_SYS_USER () {   # Créer un utilisateur système dédié à l'app
-        if grep -q "^$app:" /etc/passwd	# Test l'existence de l'utilisateur
+        if ! ynh_system_user_exists "$app"	# Test l'existence de l'utilisateur
         then
             sudo useradd -d /var/www/$app --system --user-group $app --shell /usr/sbin/nologin || (echo "Unable to create $app system account" >&2 && false)
         fi
@@ -113,13 +114,13 @@ POOL_FPM () {	# Créer le fichier de configuration du pool php-fpm et le configu
 STORE_MD5_CONFIG () {	# Enregistre la somme de contrôle du fichier de config
 # $1 = Nom du fichier de conf pour le stockage dans settings.yml
 # $2 = Nom complet et chemin du fichier de conf.
-	sudo yunohost app setting $app $1_file_md5 -v $(sudo md5sum "$2" | cut -d' ' -f1)
+	ynh_app_setting_set $app $1_file_md5 $(sudo md5sum "$2" | cut -d' ' -f1)
 }
 
 CHECK_MD5_CONFIG () {	# Créé un backup du fichier de config si il a été modifié.
 # $1 = Nom du fichier de conf pour le stockage dans settings.yml
 # $2 = Nom complet et chemin du fichier de conf.
-	if [ "$(sudo yunohost app setting $app $1_file_md5)" != $(sudo md5sum "$2" | cut -d' ' -f1) ]; then
+	if [ "$(ynh_app_setting_get $app $1_file_md5)" != $(sudo md5sum "$2" | cut -d' ' -f1) ]; then
 		sudo cp -a "$2" "$2.backup.$(date '+%d.%m.%y_%Hh%M,%Ss')"	# Si le fichier de config a été modifié, créer un backup.
 	fi
 }
@@ -164,7 +165,7 @@ REMOVE_LOGROTATE_CONF () {	# Suppression de la configuration de logrotate
 }
 
 SECURE_REMOVE () {      # Suppression de dossier avec vérification des variables
-	chaine="$1"
+	chaine="$1"	# L'argument doit être donné entre quotes simple '', pour éviter d'interpréter les variables.
 	no_var=0
 	while (echo "$chaine" | grep -q '\$')	# Boucle tant qu'il y a des $ dans la chaine
 	do
@@ -180,8 +181,10 @@ SECURE_REMOVE () {      # Suppression de dossier avec vérification des variable
 	done
 	if [ "$no_var" -eq 1 ]
 	then
-		echo "Delete directory $chaine"
-		sudo rm -r "$chaine"
+		if [ -e "$chaine" ]; then
+			echo "Delete directory $chaine"
+			sudo rm -r "$chaine"
+		fi
 		return 0
 	else
 		echo "No detected variable." >&2
@@ -201,7 +204,7 @@ REMOVE_BDD () {	# Suppression de la base de donnée et de l'utilisateur associé
 }
 
 REMOVE_SYS_USER () {   # Supprime l'utilisateur système dédié à l'app
-    if grep -q "^$app:" /etc/passwd	# Test l'existence de l'utilisateur
+    if ynh_system_user_exists "$app"	# Test l'existence de l'utilisateur
     then
     	sudo userdel $app
     fi

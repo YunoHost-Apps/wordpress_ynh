@@ -9,8 +9,8 @@ app=$2
 # Source app helpers
 source /usr/share/yunohost/helpers
 
-domain=$(sudo yunohost app setting $app domain)
-final_path=$(sudo yunohost app setting $app final_path)
+domain=$(ynh_app_setting_get $app domain)
+final_path=$(ynh_app_setting_get $app final_path)
 
 # Copy the app files
 sudo mkdir -p ${backup_dir}/var/www

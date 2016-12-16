@@ -61,6 +61,7 @@ CHECK_FINALPATH () {	# Vérifie que le dossier de destination n'est pas déjà u
 GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom de l'app.
 # $1 = Nom de la base de donnée
 	db_user=$1
+	db_user=${db_user//-/_}	# mariadb ne supporte pas les - dans les noms de base de données. Ils sont donc remplacé par des _
 	# Génère un mot de passe aléatoire.
 # 	db_pwd=$(head -n20 /dev/urandom | tr -c -d 'A-Za-z0-9' | head -c20)
 	db_pwd=$(ynh_string_random)

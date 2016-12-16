@@ -7,11 +7,18 @@ CHECK_VAR () {	# Vérifie que la variable n'est pas vide.
 }
 
 EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les résidus.
-	trap '' ERR
+	exit_code=$?
+	if [ "$exit_code" -eq 0 ]; then
+			exit 0	# Quitte sans erreur si le script se termine correctement.
+	fi
+	trap '' EXIT
+	set +eu
 	echo -e "\e[91m \e[1m"	# Shell in light red bold
 	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!" >&2
 
-	CLEAN_SETUP	# Appel la fonction de nettoyage spécifique du script install.
+	if type -t CLEAN_SETUP > /dev/null; then	# Vérifie l'existance de la fonction avant de l'exécuter.
+		CLEAN_SETUP	# Appel la fonction de nettoyage spécifique du script install.
+	fi
 
 	# Compense le bug de ssowat qui ne supprime pas l'entrée de l'app en cas d'erreur d'installation.
 	sudo sed -i "\@\"$domain$path/\":@d" /etc/ssowat/conf.json
@@ -20,14 +27,8 @@ EXIT_PROPERLY () {	# Provoque l'arrêt du script en cas d'erreur. Et nettoye les
 }
 
 TRAP_ON () {	# Activate signal capture
-	trap EXIT_PROPERLY ERR	# Capturing exit signals on error
-}
-
-TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
-	# Pour une raison que j'ignore, la fonction TRAP_ON fonctionne très bien.
-	# Mais pas la fonction TRAP_OFF...
-	# Utiliser directement `trap '' ERR` dans le code pour l'utiliser, à la place de la fonction.
-	trap '' ERR	# Ignoring exit signals
+	set -eu	# Exit if a command fail, and if a variable is used unset.
+	trap EXIT_PROPERLY EXIT	# Capturing exit signals on shell script
 }
 
 CHECK_USER () {	# Vérifie la validité de l'user admin
@@ -66,7 +67,7 @@ GENERATE_DB () {	# Créer une base de données et un utilisateur dédié au nom 
 	CHECK_VAR "$db_pwd" "db_pwd empty"
 	# Utilise '$app' comme nom d'utilisateur et de base de donnée
 	# Initialise la base de donnée et stocke le mot de passe mysql.
-	ynh_mysql_create_db $db_user $db_user $db_pwd
+	ynh_mysql_create_db "$db_user" "$db_user" $db_pwd
 	ynh_app_setting_set $app mysqlpwd $db_pwd
 }
 

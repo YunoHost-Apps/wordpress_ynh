@@ -20,7 +20,7 @@ CHECK_PATH	# Vérifie et corrige la syntaxe du path.
 # Check if admin is not null
 if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
     echo "Unable to upgrade, please contact support"
-    exit 1
+    ynh_die
 fi
 
 root_pwd=$(sudo cat /etc/yunohost/mysql)

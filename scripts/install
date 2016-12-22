@@ -39,19 +39,19 @@ if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
 fi
 
 # Enregistre les infos dans la config YunoHost
-sudo yunohost app setting $app domain -v $domain
-sudo yunohost app setting $app path -v $path
-sudo yunohost app setting $app admin -v $admin_wordpress
-sudo yunohost app setting $app is_public -v $is_public
-sudo yunohost app setting $app language -v $language
-sudo yunohost app setting $app multisite -v $multisite
+ynh_app_setting_set $app domain $domain
+ynh_app_setting_set $app path $path
+ynh_app_setting_set $app admin $admin_wordpress
+ynh_app_setting_set $app is_public $is_public
+ynh_app_setting_set $app language $language
+ynh_app_setting_set $app multisite $multisite
 
 GENERATE_DB $app	# Créer une base de données et un utilisateur dédié au nom de l'app.
 
 
 # Crée le repertoire de destination et stocke son emplacement.
 sudo mkdir "$final_path"
-sudo yunohost app setting $app final_path -v $final_path
+ynh_app_setting_set $app final_path $final_path
 
 
 SETUP_SOURCE "wordpress.tar.gz"	# Télécharge la source, décompresse et copie dans $final_path
@@ -93,7 +93,7 @@ done
 sudo chown -R www-data: $final_path
 
 # Donne un accès public pour curl
-sudo yunohost app setting $app unprotected_uris -v "/"
+ynh_app_setting_set $app unprotected_uris "/"
 # Recharge la configuration Nginx
 sudo service nginx reload
 # Régénère la configuration de SSOwat
@@ -175,7 +175,7 @@ sudo chown root: $final_path/wp-config.php
 if [ "$is_public" = "No" ];
 then
 	# Retire l'accès public
-	sudo yunohost app setting $app unprotected_uris -d
+	ynh_app_setting_delete $app unprotected_uris
 	sudo yunohost app ssowatconf
 fi
 

@@ -11,20 +11,18 @@ app=$2
 source /usr/share/yunohost/helpers
 
 # Get old parameter of the app
-domain=$(sudo yunohost app setting $app domain)
-path=$(sudo yunohost app setting $app path)
-is_public=$(sudo yunohost app setting $app is_public)
-final_path=$(sudo yunohost app setting $app final_path)
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+is_public=$(ynh_app_setting_get $app is_public)
+final_path=$(ynh_app_setting_get $app final_path)
 
 if [ -d $final_path ]; then
-    echo "There is already a directory: $final_path " | sudo tee /dev/stderr
-    exit 1
+    ynh_die "There is already a directory: $final_path"
 fi
 
 conf=/etc/nginx/conf.d/$domain.d/$app.conf
 if [ -f $conf ]; then
-    echo "There is already a nginx conf file at this path: $conf " | sudo tee /dev/stderr
-    exit 1
+    ynh_die "There is already a nginx conf file at this path: $conf"
 fi
 # Restore conf files
 sudo cp -a "${backup_dir}/conf/nginx.conf" $conf
@@ -34,7 +32,7 @@ sudo service nginx reload
 
 sudo cp -a "${backup_dir}/var/www/$app" $final_path
 
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
+db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 db_user=$app
 ynh_mysql_create_db $db_user $db_user $db_pwd
 sudo su -c "mysql -u $db_user -p$db_pwd $app < ${backup_dir}/db.sql"
@@ -57,6 +55,6 @@ sudo service php5-fpm reload
 # Set ssowat config
 if [ "$is_public" = "No" ];
 then
-	sudo yunohost app setting $app skipped_uris -d
+	ynh_app_setting_delete $app skipped_uris
 fi
 sudo yunohost app ssowatconf

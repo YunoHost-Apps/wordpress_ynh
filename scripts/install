@@ -4,8 +4,8 @@ source .fonctions	# Charge les fonctions génériques habituellement utilisées 
 
 CLEAN_SETUP () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
-# Pas de nettoyage supplémentaire nécessaire ici...
-	echo ""
+	# Clean hosts
+	sudo sed -i '/#WORDPRESS/d' /etc/hosts
 }
 TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
 
@@ -101,6 +101,8 @@ sudo yunohost app ssowatconf
 
 
 # Wordpress installation
+echo -e "127.0.0.1 $domain #WORDPRESS" | sudo tee -a /etc/hosts
+sleep 1
 curl -kL -H "Host: $domain" --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://localhost$path/wp-admin/install.php?step=2 > /dev/null 2>&1
 
 echo -n "Please wait during Wordpress installation" >&2
@@ -132,6 +134,7 @@ then
     sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
+	sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
   	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/ > /dev/null 2>&1
 # 	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
 
@@ -180,6 +183,9 @@ then
 fi
 
 sudo service nginx reload
+
+# Clean hosts
+sudo sed -i '/#WORDPRESS/d' /etc/hosts
 
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
 sudo rm -f $final_path/wp-cli.phar

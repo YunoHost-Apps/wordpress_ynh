@@ -1,60 +1,100 @@
 #!/bin/bash
-# This restore script is adapted to Yunohost >=2.4
 
-# The parameter $1 is the backup directory location dedicated to the app
-backup_dir=$1
+#=================================================
+# GENERIC STARTING
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
 
-# The parameter $2 is the id of the app instance ex: ynhexample__2
-app=$2
+# Exit on command errors and treat unset variables as an error
+set -eu
 
-# Source app helpers
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+if [ ! -e .fonctions ]; then
+	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
+	sudo cp ../settings/scripts/.fonctions ./.fonctions
+	sudo chmod a+rx .fonctions
+fi
+source .fonctions
 source /usr/share/yunohost/helpers
 
-# Get old parameter of the app
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+
 domain=$(ynh_app_setting_get $app domain)
-path=$(ynh_app_setting_get $app path)
+path_url=$(ynh_app_setting_get $app path)
 is_public=$(ynh_app_setting_get $app is_public)
 final_path=$(ynh_app_setting_get $app final_path)
+db_name=$(ynh_app_setting_get $app db_name)
 
-if [ -d $final_path ]; then
-    ynh_die "There is already a directory: $final_path"
-fi
+#=================================================
+# CHECK IF THE APP CAN BE RESTORED
+#=================================================
+
+sudo yunohost app checkurl "${domain}${path_url}" -a "$app" \
+	|| ynh_die "Path not available: ${domain}${path_url}"
+test ! -d $final_path \
+	|| ynh_die "There is already a directory: $final_path "
+
+#=================================================
+# STANDARD RESTORE STEPS
+#=================================================
+# RESTORE OF THE NGINX CONFIGURATION
+#=================================================
 
 conf=/etc/nginx/conf.d/$domain.d/$app.conf
 if [ -f $conf ]; then
-    ynh_die "There is already a nginx conf file at this path: $conf"
+	ynh_die "There is already a nginx conf file at this path: $conf "
 fi
-# Restore conf files
-sudo cp -a "${backup_dir}/conf/nginx.conf" $conf
+sudo cp -a ./nginx.conf $conf
 
-# Reload Nginx
-sudo service nginx reload
+#=================================================
+# RESTORE OF THE MAIN DIR OF THE APP
+#=================================================
 
-sudo cp -a "${backup_dir}/var/www/$app" $final_path
+sudo cp -a ./sources/. $final_path
+
+#=================================================
+# RESTORE OF THE SQL BDD
+#=================================================
 
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
-db_user=$app
-ynh_mysql_create_db $db_user $db_user $db_pwd
-sudo su -c "mysql -u $db_user -p$db_pwd $app < ${backup_dir}/db.sql"
-sudo rm -f "${backup_dir}/db.sql"
-sudo sed -i -e "s/'DB_USER', *'[^']*'/'DB_USER', '$app'/g" $final_path/wp-config.php
-sudo sed -i -e "s/'DB_NAME', *'[^']*'/'DB_NAME', '$app'/g" $final_path/wp-config.php
+ynh_mysql_create_db $db_name $db_name $db_pwd
+ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
 
-# Set permissions
-# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
-sudo chown -R www-data: $final_path
+#=================================================
+# RECREATE OF THE DEDICATED USER
+#=================================================
+
+ynh_system_user_create $app	# Recreate the dedicated user, if not exist
+
+#=================================================
+# RESTORE USER RIGHTS
+#=================================================
+
+# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+sudo chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 sudo chown root: $final_path/wp-config.php
 
-# Copy dedicated php-fpm process from backup folder to the right location
-sudo cp -a $backup_dir/conf/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
-sudo cp -a $backup_dir/conf/php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
-# And restart service
-sudo service php5-fpm reload
+#=================================================
+# RESTORE OF THE PHP-FPM CONFIGURATION
+#=================================================
 
-# Set ssowat config
-if [ "$is_public" = "No" ];
-then
-	ynh_app_setting_delete $app skipped_uris
-fi
-sudo yunohost app ssowatconf
+sudo cp -a ./php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+sudo cp -a ./php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
+
+#=================================================
+# GENERIC FINALISATION
+#=================================================
+# RELOAD NGINX AND PHP-FPM
+#=================================================
+
+sudo systemctl reload php5-fpm
+sudo systemctl reload nginx

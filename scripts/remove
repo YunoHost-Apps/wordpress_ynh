@@ -1,23 +1,59 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-# Source app helpers
+source .fonctions
 source /usr/share/yunohost/helpers
 
-# Récupère les infos de l'application.
-app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get $app domain)
+#=================================================
+# LOAD SETTINGS
+#=================================================
 
-REMOVE_BDD $app	# Suppression de la base de donnée et de l'utilisateur associé.
+app=$YNH_APP_INSTANCE_NAME
+
+domain=$(ynh_app_setting_get $app domain)
+db_name=$(ynh_app_setting_get $app db_name)
+
+#=================================================
+# STANDARD REMOVE
+#=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+
+ynh_remove_app_dependencies
+
+#=================================================
+# REMOVE THE SQL BDD
+#=================================================
+
+ynh_mysql_remove_db $db_name $db_name	# Suppression de la base de donnée et de l'utilisateur associé.
+
+#=================================================
+# REMOVE THE MAIN DIR OF THE APP
+#=================================================
 
 SECURE_REMOVE '/var/www/$app'	# Suppression du dossier de l'application
 
+#=================================================
+# REMOVE THE NGINX CONFIGURATION
+#=================================================
+
 REMOVE_NGINX_CONF	# Suppression de la configuration nginx
+
+#=================================================
+# REMOVE THE PHP-FPM CONFIGURATION
+#=================================================
 
 REMOVE_FPM_CONF	# Suppression de la configuration du pool php-fpm
 
-# Régénère la configuration de SSOwat
-sudo yunohost app ssowatconf
+#=================================================
+# GENERIC FINALISATION
+#=================================================
+# REMOVE DEDICATED USER
+#=================================================
 
-echo -e "\e[0m"	# Restore normal color
+ynh_system_user_delete $app

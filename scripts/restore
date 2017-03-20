@@ -13,12 +13,12 @@ set -eu
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e .fonctions ]; then
+if [ ! -e _common.sh ]; then
 	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
-	sudo cp ../settings/scripts/.fonctions ./.fonctions
-	sudo chmod a+rx .fonctions
+	sudo cp ../settings/scripts/_common.sh ./_common.sh
+	sudo chmod a+rx _common.sh
 fi
-source .fonctions
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================

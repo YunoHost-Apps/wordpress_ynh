@@ -224,6 +224,13 @@ CHECK_MD5_CONFIG () {	# Créé un backup du fichier de config si il a été modi
 	fi
 }
 
+#=================================================
+# PACKAGE CHECK BYPASSING...
+#=================================================
+
+IS_PACKAGE_CHECK () {	# Détermine une exécution en conteneur (Non testé)
+	return uname -n | grep -c 'pchecker_lxc'
+}
 
 #=================================================
 #=================================================

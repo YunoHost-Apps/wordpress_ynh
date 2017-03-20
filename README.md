@@ -3,6 +3,8 @@
 
 Site du project Yunohost : [Yunohost.org](https://yunohost.org/#/)
 
+=======
+
 ## English version
 Wordpress lets you create your blog or web site very easily. <br/>
 With this package, you can even activate the [multisite](http://codex.wordpress.org/Glossary#Multisite)

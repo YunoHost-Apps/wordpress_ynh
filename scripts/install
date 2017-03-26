@@ -144,7 +144,7 @@ YNH_CURL "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_p
 WARNING echo -n "Please wait during Wordpress installation"
 for i in `seq 1 300`
 do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
-	if ynh_mysql_connect_as $db_name $db_pwd $db_name -e "show tables" | grep -q "wp_options"; then
+	if ynh_mysql_connect_as $db_name $db_pwd $db_name <<< "show tables" | grep -q "wp_options"; then
 		break	# Si la table wp_options est trouvée, l'installation de wordpress est terminée. Quitte la boucle.
 	fi
 	WARNING echo -n "."

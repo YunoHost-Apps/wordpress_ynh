@@ -176,7 +176,7 @@ then
 
 	# Active le multisite via wp-cli.
 	sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-	ALL_QUIET php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path_url/
+	ALL_QUIET php $final_path/wp-cli.phar core multisite-convert --allow-root --path=$final_path --base=$path_url/
 
 	# Active le multisite wordpress
 	sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php

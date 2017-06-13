@@ -33,3 +33,7 @@ Si l'option multisite est activée, le script installe le paquet *php5-cli*.
 3) Il peut également y avoir des mises à jour du paquet wordpress_ynh, celles-ci sont liées à l'intégration du paquet dans le systeme Yunohost.
 
 **Multi-utilisateur:** Oui, avec support ldap.
+
+**Voir l'état du package:**  
+*[Dernier rapport hebdomadaire](https://forum.yunohost.org/t/rapport-hebdomadaire-dintegration-continue/2297)*  
+*[Dernier test d'intégration continue](https://ci-apps.yunohost.org/jenkins/job/wordpress%20%28Official%29/lastBuild/consoleFull)*

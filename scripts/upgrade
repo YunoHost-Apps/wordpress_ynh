@@ -30,7 +30,7 @@ db_name=$(ynh_app_setting_get $app db_name)
 if [ -z "$admin_wordpress" ]; then
 	ynh_mysql_execute_as_root "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" $db_name
 	admin_wordpress=$(cat /tmp/wordpressuser)
-	sudo rm -f /tmp/wordpressuser
+	ynh_secure_remove /tmp/wordpressuser
 	ynh_app_setting_set $app admin $admin_wordpress
 fi
 
@@ -61,7 +61,7 @@ elif [ "$multisite" = "No" ]; then
 fi
 
 if [ -z $db_name ]; then	# Si db_name n'est pas renseigné dans app setting
-	db_name=$(ynh_make_valid_dbid $app)
+	db_name=$(ynh_sanitize_dbid $app)
 	ynh_app_setting_set $app db_name $db_name
 fi
 
@@ -85,12 +85,7 @@ path_url=$(ynh_normalize_url_path $path_url)	# Vérifie et corrige la syntaxe du
 # NGINX CONFIGURATION
 #=================================================
 
-# Copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-# Modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATHTOCHANGE__@$path_url@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
+ynh_nginx_config
 
 #=================================================
 # CREATE DEDICATED USER
@@ -102,14 +97,14 @@ ynh_system_user_create $app	# Create the dedicated user, if not exist
 # PHP-FPM CONFIGURATION
 #=================================================
 
-POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
+ynh_fpm_config	# Créer le fichier de configuration du pool php-fpm et le configure.
 
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
 # SAVE THE CONFIG FILE IF IT BEEN MODIFIED
 #=================================================
-CHECK_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
+ynh_backup_if_checksum_is_different "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
 
 #=================================================
 # CONFIGURE MULTISITE
@@ -117,14 +112,14 @@ CHECK_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Créé un backup 
 
 if [ $multisite -eq 1 ]
 then
-	sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
 else
 	multisite=0
 	if [ $is_public -eq 0 ]
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
+		ynh_replace_string "#--PRIVATE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
 	else
-		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
+		ynh_replace_string "//--PUBLIC--define" "define" $final_path/wp-config.php
 	fi
 fi
 ynh_app_setting_set $app multisite $multisite
@@ -133,7 +128,7 @@ ynh_app_setting_set $app multisite $multisite
 # STORE THE CHECKSUM OF THE CONFIG FILE
 #=================================================
 
-STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
+ynh_store_file_checksum "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
 
 #=================================================
 # GENERIC FINALISATION

@@ -48,24 +48,20 @@ test ! -d $final_path \
 # RESTORE OF THE NGINX CONFIGURATION
 #=================================================
 
-conf=/etc/nginx/conf.d/$domain.d/$app.conf
-if [ -f $conf ]; then
-	ynh_die "There is already a nginx conf file at this path: $conf "
-fi
-sudo cp -a ./nginx.conf $conf
+ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # RESTORE OF THE MAIN DIR OF THE APP
 #=================================================
 
-sudo cp -a ./sources/. $final_path
+ynh_restore_file "$final_path"
 
 #=================================================
 # RESTORE OF THE SQL BDD
 #=================================================
 
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
-ynh_mysql_create_db $db_name $db_name $db_pwd
+ynh_mysql_setup_db $db_name $db_name $db_pwd
 ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
 
 #=================================================
@@ -87,8 +83,8 @@ sudo chown root: $final_path/wp-config.php
 # RESTORE OF THE PHP-FPM CONFIGURATION
 #=================================================
 
-sudo cp -a ./php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
-sudo cp -a ./php-fpm.ini /etc/php5/fpm/conf.d/20-$app.ini
+ynh_restore_file "/etc/php5/fpm/pool.d/$app.conf"
+ynh_restore_file "/etc/php5/fpm/conf.d/20-$app.ini"
 
 #=================================================
 # GENERIC FINALISATION

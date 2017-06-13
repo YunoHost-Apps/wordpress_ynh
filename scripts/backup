@@ -30,7 +30,7 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get $app domain)
 final_path=$(ynh_app_setting_get $app final_path)
 db_name=$(ynh_app_setting_get $app db_name)
-db_pwd=$(ynh_app_setting_get "$app" mysqlpwd)
+db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 
 #=================================================
 # STANDARD BACKUP STEPS
@@ -39,25 +39,25 @@ db_pwd=$(ynh_app_setting_get "$app" mysqlpwd)
 #=================================================
 
 CHECK_SIZE "$final_path"
-ynh_backup "$final_path" "sources"
+ynh_backup "$final_path" "${YNH_APP_BACKUP_DIR}$final_path"
 
 #=================================================
 # BACKUP OF THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "nginx.conf"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP OF THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_backup "/etc/php5/fpm/pool.d/$app.conf" "php-fpm.conf"
-ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini" "php-fpm.ini"
+ynh_backup "/etc/php5/fpm/pool.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/pool.d/$app.conf"
+ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/conf.d/20-$app.ini"
 
 #=================================================
 # BACKUP OF THE SQL BDD
 #=================================================
 
-ynh_mysql_dump_db "$db_name" > dump.sql
-CHECK_SIZE "dump.sql"
-ynh_backup "dump.sql" "db.sql"
+ynh_mysql_dump_db "$db_name" > db.sql
+CHECK_SIZE "db.sql"
+# ynh_backup "db.sql" "${YNH_APP_BACKUP_DIR}/db.sql"

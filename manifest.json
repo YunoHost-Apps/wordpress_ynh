@@ -9,9 +9,9 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "4.5.2",
+	"version": "4.7.2",
 	"url": "https://wordpress.org/",
-	"license": "free",
+	"license": "GPLv2",
 	"maintainer": {
 		"name": "Maniack Crudelis",
 		"email": "maniackc_dev@crudelis.fr"
@@ -63,21 +63,21 @@
 			},
 			{
 				"name": "multisite",
+				"type": "boolean",
 				"ask": {
 					"en": "Enable multisite option ?",
 					"fr": "Activer l'option multisite ?"
 				},
-				"choices": ["Yes", "No"],
-				"default": "No"
+				"default": false
 			},
 			{
 				"name": "is_public",
+				"type": "boolean",
 				"ask": {
 					"en": "Is it a public WordPress site ?",
 					"fr": "Est-ce un site public ?"
 				},
-				"choices": ["Yes", "No"],
-				"default": "Yes"
+				"default": true
 			}
 		]
 	}

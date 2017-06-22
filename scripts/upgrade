@@ -1,92 +1,159 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-# Source app helpers
+source _common.sh
 source /usr/share/yunohost/helpers
 
-# Récupère les infos de l'application.
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
 app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get $app domain)
-path=$(ynh_app_setting_get $app path)
+path_url=$(ynh_app_setting_get $app path)
 admin_wordpress=$(ynh_app_setting_get $app admin)
 language=$(ynh_app_setting_get $app language)
 is_public=$(ynh_app_setting_get $app is_public)
 multisite=$(ynh_app_setting_get $app multisite)
 final_path=$(ynh_app_setting_get $app final_path)
+db_name=$(ynh_app_setting_get $app db_name)
 
-CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+#=================================================
+# FIX OLD THINGS
+#=================================================
 
-# Check if admin is not null
-if [[ "$admin_wordpress" = "" || "$is_public" = "" || "$language" = "" ]]; then
-    echo "Unable to upgrade, please contact support"
-    ynh_die
-fi
-
-root_pwd=$(sudo cat /etc/yunohost/mysql)
-db_name=$app
-if [[ "$admin_wordpress" = "" ]];
-then
-    mysql -u root -p$root_pwd $db_name -e "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
-    admin_wordpress=$(cat /tmp/wordpressuser)
-    sudo rm -f /tmp/wordpressuser
+if [ -z "$admin_wordpress" ]; then
+	ynh_mysql_execute_as_root "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" $db_name
+	admin_wordpress=$(cat /tmp/wordpressuser)
+	ynh_secure_remove /tmp/wordpressuser
 	ynh_app_setting_set $app admin $admin_wordpress
 fi
 
-if [[ "$final_path" = "" ]];
-then
-    final_path=/var/www/$app
+if [ -z "$final_path" ]; then
+	final_path=/var/www/$app
 	ynh_app_setting_set $app final_path $final_path
 fi
 
-if [[ "$language" = "" ]];
-then
-    language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
+if [ -z "$language" ]; then
+	language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
 	ynh_app_setting_set $app language $language
 fi
 
-# Copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-# Modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
+if [ "$is_public" = "Yes" ]; then
+	ynh_app_setting_set $app is_public 1	# Fixe is_public en booléen
+	is_public=1
+elif [ "$is_public" = "No" ]; then
+	ynh_app_setting_set $app is_public 0
+	is_public=0
+fi
 
-POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
+if [ "$multisite" = "Yes" ]; then
+	ynh_app_setting_set $app multisite 1	# Fixe multisite en booléen
+	multisite=1
+elif [ "$multisite" = "No" ]; then
+	ynh_app_setting_set $app multisite 0
+	multisite=0
+fi
 
-CHECK_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
-if [ "$multisite" = "Yes" ];
+if [ -z $db_name ]; then	# Si db_name n'est pas renseigné dans app setting
+	db_name=$(ynh_sanitize_dbid $app)
+	ynh_app_setting_set $app db_name $db_name
+fi
+
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+
+BACKUP_BEFORE_UPGRADE	# Backup the current version of the app
+ynh_clean_setup () {
+	BACKUP_FAIL_UPGRADE	# restore it if the upgrade fails
+}
+ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+
+#=================================================
+# CHECK THE PATH
+#=================================================
+
+path_url=$(ynh_normalize_url_path $path_url)	# Vérifie et corrige la syntaxe du path.
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+
+ynh_nginx_config
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+
+ynh_system_user_create $app	# Create the dedicated user, if not exist
+
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+
+ynh_fpm_config	# Créer le fichier de configuration du pool php-fpm et le configure.
+
+#=================================================
+# SPECIFIC UPGRADE
+#=================================================
+# SAVE THE CONFIG FILE IF IT BEEN MODIFIED
+#=================================================
+ynh_backup_if_checksum_is_different "$final_path/wp-config.php"	# Créé un backup du fichier de config si il a été modifié.
+
+#=================================================
+# CONFIGURE MULTISITE
+#=================================================
+
+if [ $multisite -eq 1 ]
 then
-    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
 else
-	multisite="No"
-	if [ "$is_public" = "No" ];
+	multisite=0
+	if [ $is_public -eq 0 ]
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
+		ynh_replace_string "#--PRIVATE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
 	else
-		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
+		ynh_replace_string "//--PUBLIC--define" "define" $final_path/wp-config.php
 	fi
 fi
 ynh_app_setting_set $app multisite $multisite
-STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
 
-# Configure les droits d'accès au fichiers
-# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
-sudo chown -R www-data: $final_path
+#=================================================
+# STORE THE CHECKSUM OF THE CONFIG FILE
+#=================================================
+
+ynh_store_file_checksum "$final_path/wp-config.php"	# Réenregistre la somme de contrôle du fichier de config
+
+#=================================================
+# GENERIC FINALISATION
+#=================================================
+# SECURING FILES AND DIRECTORIES
+#=================================================
+
+# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+sudo chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 sudo chown root: $final_path/wp-config.php
 
+#=================================================
+# SETUP SSOWAT
+#=================================================
 
 ynh_app_setting_delete $app skipped_uris	# Retire le skipped_uris si il existe encore.
-if [ "$is_public" = "No" ]; then	# Retire l'accès public
+if [ $is_public -eq 0 ]; then	# Retire l'accès public
 	ynh_app_setting_delete $app unprotected_uris
 else	# Ou remplace le skipped_uris par unprotected_uris le cas échéant.
 	ynh_app_setting_set $app unprotected_uris "/"
 fi
-sudo yunohost app ssowatconf
 
+#=================================================
+# RELOAD NGINX
+#=================================================
 
-# Recharge la configuration Nginx
-sudo service nginx reload
-# Régénère la configuration de SSOwat
-sudo yunohost app ssowatconf
+sudo systemctl reload nginx

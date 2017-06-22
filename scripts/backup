@@ -1,29 +1,63 @@
 #!/bin/bash
 
-# The parameter $1 is the backup directory location dedicated to the app
-backup_dir=$1
+#=================================================
+# GENERIC STARTING
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
 
-# The parameter $2 is theid of the app instance
-app=$2
+# Exit on command errors and treat unset variables as an error
+set -eu
 
-# Source app helpers
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+if [ ! -e _common.sh ]; then
+	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
+	sudo cp ../settings/scripts/_common.sh ./_common.sh
+	sudo chmod a+rx _common.sh
+fi
+source _common.sh
 source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get $app domain)
 final_path=$(ynh_app_setting_get $app final_path)
+db_name=$(ynh_app_setting_get $app db_name)
+db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 
-# Copy the app files
-sudo mkdir -p ${backup_dir}/var/www
-sudo cp -a $final_path "${backup_dir}/var/www/$app"
+#=================================================
+# STANDARD BACKUP STEPS
+#=================================================
+# BACKUP OF THE MAIN DIR OF THE APP
+#=================================================
 
-# Copy the conf files
-sudo mkdir -p "${backup_dir}/conf"
-sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf "${backup_dir}/conf/nginx.conf"
+CHECK_SIZE "$final_path"
+ynh_backup "$final_path" "${YNH_APP_BACKUP_DIR}$final_path"
 
-# Copy dedicated php-fpm process to backup folder
-sudo cp -a /etc/php5/fpm/pool.d/$app.conf "${backup_dir}/conf/php-fpm.conf"
-sudo cp -a /etc/php5/fpm/conf.d/20-$app.ini "${backup_dir}/conf/php-fpm.ini"
+#=================================================
+# BACKUP OF THE NGINX CONFIGURATION
+#=================================================
 
-# Backup db
-root_pwd=$(sudo cat /etc/yunohost/mysql)
-sudo su -c "mysqldump -u root -p$root_pwd --no-create-db $app > ${backup_dir}/db.sql"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/nginx/conf.d/$domain.d/$app.conf"
+
+#=================================================
+# BACKUP OF THE PHP-FPM CONFIGURATION
+#=================================================
+
+ynh_backup "/etc/php5/fpm/pool.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/pool.d/$app.conf"
+ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/conf.d/20-$app.ini"
+
+#=================================================
+# BACKUP OF THE SQL BDD
+#=================================================
+
+ynh_mysql_dump_db "$db_name" > db.sql
+CHECK_SIZE "db.sql"
+# ynh_backup "db.sql" "${YNH_APP_BACKUP_DIR}/db.sql"

@@ -1,17 +1,26 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-CLEAN_SETUP () {
-# Nettoyage des résidus d'installation non pris en charge par le script remove.
-	# Clean hosts
-	sudo sed -i '/#WORDPRESS/d' /etc/hosts
-}
-TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
+source _common.sh
+source /usr/share/yunohost/helpers
 
-# Retrieve arguments
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
+
+ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
+
 domain=$YNH_APP_ARG_DOMAIN
-path=$YNH_APP_ARG_PATH
+path_url=$YNH_APP_ARG_PATH
 admin_wordpress=$YNH_APP_ARG_ADMIN
 language=$YNH_APP_ARG_LANGUAGE
 multisite=$YNH_APP_ARG_MULTISITE
@@ -19,173 +28,213 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
-# Source app helpers
-source /usr/share/yunohost/helpers
+#=================================================
+# CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
+#=================================================
 
-# Vérifie que les variables ne sont pas vides.
-CHECK_VAR "$app" "app name not set"
-
-
-CHECK_USER "$admin_wordpress"	# Vérifie la validité de l'user admin
-
-CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+path_url=$(ynh_normalize_url_path $path_url)	# Vérifie et corrige la syntaxe du path.
 CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
-
 CHECK_FINALPATH	# Vérifie que le dossier de destination n'est pas déjà utilisé.
 
-if [ "$path" == "/" ] && [ "$multisite" = "Yes" ]; then
-    echo "Multisite option of wordpress doesn't work at root of domain." >&2
-	false
+if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
+	ynh_die "Multisite option of wordpress doesn't work at root of domain."
 fi
 
-# Enregistre les infos dans la config YunoHost
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
+
 ynh_app_setting_set $app domain $domain
-ynh_app_setting_set $app path $path
+ynh_app_setting_set $app path $path_url
 ynh_app_setting_set $app admin $admin_wordpress
 ynh_app_setting_set $app is_public $is_public
 ynh_app_setting_set $app language $language
 ynh_app_setting_set $app multisite $multisite
 
-GENERATE_DB $app	# Créer une base de données et un utilisateur dédié au nom de l'app.
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
 
+ynh_install_app_dependencies php5-cli
 
-# Crée le repertoire de destination et stocke son emplacement.
-sudo mkdir "$final_path"
+#=================================================
+# CREATE A SQL BDD
+#=================================================
+
+db_name=$(ynh_sanitize_dbid $app)
+ynh_app_setting_set $app db_name $db_name
+ynh_mysql_setup_db $db_name $db_name
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+
 ynh_app_setting_set $app final_path $final_path
+ynh_setup_source "$final_path"	# Télécharge la source, décompresse et copie dans $final_path
 
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
 
-SETUP_SOURCE "wordpress.tar.gz"	# Télécharge la source, décompresse et copie dans $final_path
+ynh_nginx_config
 
-# Et copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
 
+ynh_system_user_create $app	# Créer un utilisateur système dédié à l'app
 
-# Modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATHTOCHANGE__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__FINALPATH__@$final_path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__NAMETOCHANGE__@$app@g" /etc/nginx/conf.d/$domain.d/$app.conf
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
 
-POOL_FPM	# Créer le fichier de configuration du pool php-fpm et le configure.
+ynh_fpm_config	# Créer le fichier de configuration du pool php-fpm et le configure.
 
+#=================================================
+# SPECIFIC SETUP
+#=================================================
+# CONFIGURE WP-CONFIG
+#=================================================
 
 sudo cp ../conf/wp-config.php $final_path/wp-config.php
-
 # Change variables in Wordpress configuration
-sudo sed -i "s/__DB_USER__/$db_user/g" $final_path/wp-config.php
-sudo sed -i "s/__DB_PWD__/$db_pwd/g" $final_path/wp-config.php
-sudo sed -i "s/__DOMAIN__/$domain/g" $final_path/wp-config.php
-sudo sed -i "s@__PATH__@$path@g" $final_path/wp-config.php
-
+ynh_replace_string "__DB_USER__" "$db_name" $final_path/wp-config.php
+ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/wp-config.php
+ynh_replace_string "__DOMAIN__" "$domain" $final_path/wp-config.php
+ynh_replace_string "__PATH__" "$path_url" $final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
 do
-    j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
-    if [ "$j" = "" ];
-    then
-        # For obscure reasons, the loop is too fast at execution
-        sleep 1
-        j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
-    fi
-    sudo sed -i "s/KEY$i/$j/g" $final_path/wp-config.php
+	j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+	if [ "$j" = "" ];
+	then
+		# For obscure reasons, the loop is too fast at execution
+		sleep 1
+		j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+	fi
+	ynh_replace_string "KEY$i" "$j" $final_path/wp-config.php
 done
 
-# Set permissions to wordpress directory
-sudo chown -R www-data: $final_path
+#=================================================
+# SETTING UP WITH CURL
+#=================================================
 
-# Donne un accès public pour curl
+# Set right permissions for curl install
+sudo chown -R $app: $final_path
+
+# Rend la page d'install publique pour curl
 ynh_app_setting_set $app unprotected_uris "/"
-# Recharge la configuration Nginx
-sudo service nginx reload
-# Régénère la configuration de SSOwat
-sudo yunohost app ssowatconf
+sudo yunohost app ssowatconf	# Régénère la configuration de SSOwat
 
+# Reload Nginx
+sudo systemctl reload nginx
 
 # Wordpress installation
-echo -e "127.0.0.1 $domain #WORDPRESS" | sudo tee -a /etc/hosts
-sleep 1
-curl -kL -H "Host: $domain" --data "&weblog_title=YunoBlog&user_name=$admin_wordpress&admin_password=$db_pwd&admin_password2=$db_pwd&admin_email=$admin_wordpress@$domain&language=$language&Submit=Install+WordPress" https://localhost$path/wp-admin/install.php?step=2 > /dev/null 2>&1
+ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "language=$language" "Submit=Install+WordPress"
 
-echo -n "Please wait during Wordpress installation" >&2
+WARNING echo -n "Please wait during Wordpress installation"
 for i in `seq 1 300`
 do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
-	if mysql --debug-check -u $db_user -p$db_pwd $db_user -e "show tables" | grep -q "wp_options"; then
+	if ynh_mysql_connect_as $db_name $db_pwd $db_name <<< "show tables" | grep -q "wp_options"; then
 		break	# Si la table wp_options est trouvée, l'installation de wordpress est terminée. Quitte la boucle.
 	fi
-	echo -n "." >&2
+	WARNING echo -n "."
 	sleep 1
 done
 
+#=================================================
+# LOAD SQL CONFIG
+#=================================================
+
 # Replace variables in sql scripts
-sudo sed -i "s@__DOMAIN_PATH__@$domain$path@g" ../conf/sql/*.sql
-sudo sed -i "s/__LANGUAGE__/$language/g" ../conf/sql/*.sql
-sudo sed -i "s/__DATE__/$(date +%s)/g" ../conf/sql/*.sql
+ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
+ynh_replace_string "__LANGUAGE__" "$language" ../conf/sql/*.sql
+ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
 
 # Charge les commandes sql communes à tous les scripts.
-mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+# mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
+ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/common.sql
 
-if [ "$multisite" = "Yes" ]
+#=================================================
+# CONFIGURE MULTISITE
+#=================================================
+
+if [ $multisite -eq 1 ]
 then
-	# Installation de php5-cli pour wp-cli
-	sudo apt-get update
-	sudo apt-get install php5-cli -qy
-
-    sudo sed -i "s@#--MULTISITE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
-    # Autorise le multisite wordpress
-    sudo sed -i "s@//--MULTISITE1--define@define@g" $final_path/wp-config.php
+	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+	# Autorise le multisite wordpress
+	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
 	sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-  	php $final_path/wp-cli.phar core multisite-convert --path=$final_path --base=$path/ > /dev/null 2>&1
-# 	echo "The 2 warnings of php about \"Permission denied\" on wp-config.php are normal. The install script writing into this file, not wp-cli!"
+	ALL_QUIET php $final_path/wp-cli.phar core multisite-convert --allow-root --path=$final_path --base=$path_url/
 
-    # Active le multisite wordpress
-    sudo sed -i "s@//--MULTISITE2--define@define@g" $final_path/wp-config.php
+	# Active le multisite wordpress
+	ynh_replace_string "//--MULTISITE2--define" "define" $final_path/wp-config.php
 
-    # Charge les commandes sql pour activer les plugins
-    if [ "$is_public" = "No" ];
-    then
-		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/multisite.sql
-    else
-		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/multisite.sql
-    fi
-	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/multisite.sql
-else
-	if [ "$is_public" = "No" ];
+	# Charge les commandes sql pour activer les plugins
+	if [ $is_public -eq 0 ]
 	then
-		sudo sed -i "s@#--PRIVATE--@@g" /etc/nginx/conf.d/$domain.d/$app.conf
-		sudo sed -i "s@#--PRIVATE--@@g" ../conf/sql/single.sql
+		ynh_replace_string "#--PRIVATE--" "" ../conf/sql/multisite.sql
 	else
-		sudo sed -i "s@//--PUBLIC--define@define@g" $final_path/wp-config.php
-		sudo sed -i "s@#--PRIVATE--@#@g" /etc/nginx/conf.d/$domain.d/$app.conf
-		sudo sed -i "s@#--PUBLIC--@@g" ../conf/sql/single.sql
+		ynh_replace_string "#--PUBLIC--" "" ../conf/sql/multisite.sql
+	fi
+	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/multisite.sql
+else
+	if [ $is_public -eq 0 ]
+	then
+		ynh_replace_string "#--PRIVATE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+		ynh_replace_string "#--PRIVATE--" "" ../conf/sql/single.sql
+	else
+		ynh_replace_string "//--PUBLIC--define" "define" $final_path/wp-config.php
+		ynh_replace_string "#--PRIVATE--" "#" /etc/nginx/conf.d/$domain.d/$app.conf
+		ynh_replace_string "#--PUBLIC--" "" ../conf/sql/single.sql
 	fi
 	# Charge les commandes sql pour activer les plugins
-	mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/single.sql
+	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/single.sql
 fi
 
 # Décommente les add_filter, qui auraient provoqué une erreur avec wp-cli
-sudo sed -i "s@//add_filter@add_filter@g" $final_path/wp-config.php
+ynh_replace_string "//add_filter" "add_filter" $final_path/wp-config.php
 
-STORE_MD5_CONFIG "wp-config.php" "$final_path/wp-config.php"	# Enregistre la somme de contrôle du fichier de config
+#=================================================
+# STORE THE CHECKSUM OF THE CONFIG FILE
+#=================================================
 
+ynh_store_file_checksum "$final_path/wp-config.php"	# Enregistre la somme de contrôle du fichier de config
 
-# Configure les droits d'accès au fichiers
-# Les fichiers appartiennent à www-data, pour permettre les mises à jour.
-sudo chown -R www-data: $final_path
+#=================================================
+# GENERIC FINALISATION
+#=================================================
+# SECURING FILES AND DIRECTORIES
+#=================================================
+
+# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+sudo chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 sudo chown root: $final_path/wp-config.php
 
-if [ "$is_public" = "No" ];
+#=================================================
+# SETUP SSOWAT
+#=================================================
+
+if [ $is_public -eq 0 ];
 then
 	# Retire l'accès public
 	ynh_app_setting_delete $app unprotected_uris
-	sudo yunohost app ssowatconf
 fi
 
-sudo service nginx reload
+#=================================================
+# RELOAD NGINX
+#=================================================
 
-# Clean hosts
-sudo sed -i '/#WORDPRESS/d' /etc/hosts
+sudo systemctl reload nginx
+
+#=================================================
+# REMOVE WP-CLI.PHAR
+#=================================================
 
 # wp-cli me semble un peu trop permissif... Il a terminé son travail...
-sudo rm -f $final_path/wp-cli.phar
+ynh_secure_remove $final_path/wp-cli.phar

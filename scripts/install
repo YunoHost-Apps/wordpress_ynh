@@ -154,6 +154,15 @@ do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
 	WARNING echo -n "."
 	sleep 1
 done
+WARNING echo ""
+
+#=================================================
+# INSTALL WORDPRESS' PLUGINS
+#=================================================
+
+sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+php $final_path/wp-cli.phar --allow-root plugin install simple-ldap-login --path=$final_path
+php $final_path/wp-cli.phar --allow-root plugin install http-authentication --path=$final_path
 
 #=================================================
 # LOAD SQL CONFIG
@@ -179,7 +188,6 @@ then
 	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
-	sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 	ALL_QUIET php $final_path/wp-cli.phar core multisite-convert --allow-root --path=$final_path --base=$path_url/
 
 	# Active le multisite wordpress

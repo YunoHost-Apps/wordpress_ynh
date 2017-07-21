@@ -3,7 +3,7 @@
 	"id": "wordpress",
 	"packaging_format": 1,
 	"requirements": {
-		"yunohost": ">= 2.4"
+		"yunohost": ">= 2.6.4"
 	},
 	"description": {
 		"en": "Create a beautiful blog or website easily",

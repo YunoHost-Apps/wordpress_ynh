@@ -24,31 +24,36 @@ db_name=$(ynh_app_setting_get $app db_name)
 # REMOVE DEPENDENCIES
 #=================================================
 
+# Remove metapackage and its dependencies
 ynh_remove_app_dependencies
 
 #=================================================
 # REMOVE THE SQL BDD
 #=================================================
 
-ynh_mysql_remove_db $db_name $db_name	# Suppression de la base de donnée et de l'utilisateur associé.
+# Remove a database if it exists, along with the associated user
+ynh_mysql_remove_db $db_name $db_name
 
 #=================================================
 # REMOVE THE MAIN DIR OF THE APP
 #=================================================
 
-ynh_secure_remove "/var/www/$app"	# Suppression du dossier de l'application
+# Remove the app directory securely
+ynh_secure_remove "/var/www/$app"
 
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
 
-ynh_remove_nginx_config	# Suppression de la configuration nginx
+# Remove the dedicated nginx config
+ynh_remove_nginx_config
 
 #=================================================
 # REMOVE THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_remove_fpm_config	# Suppression de la configuration du pool php-fpm
+# Remove the dedicated php-fpm config
+ynh_remove_fpm_config
 
 #=================================================
 # GENERIC FINALISATION
@@ -56,4 +61,5 @@ ynh_remove_fpm_config	# Suppression de la configuration du pool php-fpm
 # REMOVE DEDICATED USER
 #=================================================
 
+# Delete a system user
 ynh_system_user_delete $app

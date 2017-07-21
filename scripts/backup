@@ -14,7 +14,7 @@ set -eu
 #=================================================
 
 if [ ! -e _common.sh ]; then
-	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
+	# Get the _common.sh file if it's not in the current directory
 	sudo cp ../settings/scripts/_common.sh ./_common.sh
 	sudo chmod a+rx _common.sh
 fi
@@ -39,20 +39,20 @@ db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 #=================================================
 
 CHECK_SIZE "$final_path"
-ynh_backup "$final_path" "${YNH_APP_BACKUP_DIR}$final_path"
+ynh_backup "$final_path"
 
 #=================================================
 # BACKUP OF THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP OF THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_backup "/etc/php5/fpm/pool.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/pool.d/$app.conf"
-ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini" "${YNH_APP_BACKUP_DIR}/etc/php5/fpm/conf.d/20-$app.ini"
+ynh_backup "/etc/php5/fpm/pool.d/$app.conf"
+ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini"
 
 #=================================================
 # BACKUP OF THE SQL BDD
@@ -60,4 +60,4 @@ ynh_backup "/etc/php5/fpm/conf.d/20-$app.ini" "${YNH_APP_BACKUP_DIR}/etc/php5/fp
 
 ynh_mysql_dump_db "$db_name" > db.sql
 CHECK_SIZE "db.sql"
-# ynh_backup "db.sql" "${YNH_APP_BACKUP_DIR}/db.sql"
+ynh_backup "db.sql"

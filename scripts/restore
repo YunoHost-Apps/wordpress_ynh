@@ -14,7 +14,7 @@ set -eu
 #=================================================
 
 if [ ! -e _common.sh ]; then
-	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
+	# Get the _common.sh file if it's not in the current directory
 	sudo cp ../settings/scripts/_common.sh ./_common.sh
 	sudo chmod a+rx _common.sh
 fi

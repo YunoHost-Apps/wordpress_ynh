@@ -143,7 +143,7 @@ sudo yunohost app ssowatconf	# Régénère la configuration de SSOwat
 sudo systemctl reload nginx
 
 # Wordpress installation
-ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "language=$language" "Submit=Install+WordPress"
+ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
 
 WARNING echo -n "Please wait during Wordpress installation"
 for i in `seq 1 300`
@@ -154,6 +154,15 @@ do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
 	WARNING echo -n "."
 	sleep 1
 done
+WARNING echo ""
+
+#=================================================
+# INSTALL WORDPRESS' PLUGINS
+#=================================================
+
+sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+php $final_path/wp-cli.phar --allow-root plugin install simple-ldap-login --path=$final_path
+php $final_path/wp-cli.phar --allow-root plugin install http-authentication --path=$final_path
 
 #=================================================
 # LOAD SQL CONFIG
@@ -161,12 +170,18 @@ done
 
 # Replace variables in sql scripts
 ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
-ynh_replace_string "__LANGUAGE__" "$language" ../conf/sql/*.sql
 ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
 
 # Charge les commandes sql communes à tous les scripts.
 # mysql --debug-check -u $db_user -p$db_pwd $db_user < ../conf/sql/common.sql
 ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/common.sql
+
+#=================================================
+# SET LANGUAGE
+#=================================================
+
+php $final_path/wp-cli.phar --allow-root --path=$final_path core language install $language
+php $final_path/wp-cli.phar --allow-root --path=$final_path core language activate $language
 
 #=================================================
 # CONFIGURE MULTISITE
@@ -179,7 +194,6 @@ then
 	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
-	sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 	ALL_QUIET php $final_path/wp-cli.phar core multisite-convert --allow-root --path=$final_path --base=$path_url/
 
 	# Active le multisite wordpress

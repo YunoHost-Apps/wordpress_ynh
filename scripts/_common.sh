@@ -100,6 +100,10 @@ QUIET () {	# Redirige la sortie standard dans /dev/null
 	$@ > /dev/null
 }
 
+ALL_QUIET () {	# Redirige la sortie standard et d'erreur dans /dev/null
+	$@ > /dev/null 2>&1
+}
+
 #=================================================
 # BACKUP
 #=================================================

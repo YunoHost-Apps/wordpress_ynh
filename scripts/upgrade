@@ -116,6 +116,14 @@ ynh_add_fpm_config
 ynh_backup_if_checksum_is_different "$final_path/wp-config.php"
 
 #=================================================
+# UPDATE WORDPRESS' PLUGINS
+#=================================================
+
+sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+php $final_path/wp-cli.phar --allow-root plugin update simple-ldap-login --path=$final_path
+php $final_path/wp-cli.phar --allow-root plugin update http-authentication --path=$final_path
+
+#=================================================
 # CONFIGURE MULTISITE
 #=================================================
 

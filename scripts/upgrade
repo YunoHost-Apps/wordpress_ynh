@@ -66,6 +66,10 @@ if [ -z $db_name ]; then	# Si db_name n'est pas renseigné dans app setting
 	ynh_app_setting_set $app db_name $db_name
 fi
 
+if grep add_filter.*auto_update $final_path/wp-config.php; then	# Si des add_filter demeurent dans le wp-config
+	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
+fi
+
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
@@ -116,14 +120,6 @@ ynh_add_fpm_config
 ynh_backup_if_checksum_is_different "$final_path/wp-config.php"
 
 #=================================================
-# UPDATE WORDPRESS' PLUGINS
-#=================================================
-
-sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-php $final_path/wp-cli.phar --allow-root plugin update simple-ldap-login --path=$final_path
-php $final_path/wp-cli.phar --allow-root plugin update http-authentication --path=$final_path
-
-#=================================================
 # CONFIGURE MULTISITE
 #=================================================
 
@@ -140,6 +136,20 @@ else
 	fi
 fi
 ynh_app_setting_set $app multisite $multisite
+
+#=================================================
+# UPDATE WORDPRESS' PLUGINS
+#=================================================
+
+sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+update_plugin () {
+	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
+}
+update_plugin simple-ldap-login
+update_plugin http-authentication
+update_plugin companion-auto-update
+$wpcli_alias plugin activate companion-auto-update
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
@@ -175,3 +185,9 @@ fi
 #=================================================
 
 sudo systemctl reload nginx
+
+#=================================================
+# REMOVE WP-CLI.PHAR
+#=================================================
+
+ynh_secure_remove $final_path/wp-cli.phar

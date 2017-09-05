@@ -33,6 +33,9 @@ app=$YNH_APP_INSTANCE_NAME
 # CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
 #=================================================
 
+final_path=/var/www/$app
+test ! -e "$final_path" || ynh_die "This path already contains a folder"
+
 # Normalize the url path syntax
 path_url=$(ynh_normalize_url_path $path_url)
 
@@ -40,8 +43,6 @@ path_url=$(ynh_normalize_url_path $path_url)
 ynh_webpath_available $domain $path_url
 # Register (book) web path
 ynh_webpath_register $app $domain $path_url
-
-CHECK_FINALPATH	# Vérifie que le dossier de destination n'est pas déjà utilisé.
 
 if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
 	ynh_die "Multisite option of wordpress doesn't work at root of domain."
@@ -109,7 +110,7 @@ ynh_add_fpm_config
 # CONFIGURE WP-CONFIG
 #=================================================
 
-sudo cp ../conf/wp-config.php $final_path/wp-config.php
+cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
 ynh_replace_string "__DB_USER__" "$db_name" $final_path/wp-config.php
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/wp-config.php
@@ -133,14 +134,14 @@ done
 #=================================================
 
 # Set right permissions for curl install
-sudo chown -R $app: $final_path
+chown -R $app: $final_path
 
 # Rend la page d'install publique pour curl
 ynh_app_setting_set $app unprotected_uris "/"
-sudo yunohost app ssowatconf	# Régénère la configuration de SSOwat
+yunohost app ssowatconf	# Régénère la configuration de SSOwat
 
 # Reload Nginx
-sudo systemctl reload nginx
+systemctl reload nginx
 
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
@@ -160,7 +161,7 @@ WARNING echo ""
 # INSTALL WORDPRESS' PLUGINS
 #=================================================
 
-sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
@@ -228,9 +229,9 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 #=================================================
 
 # Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
-sudo chown -R $app: $final_path
+chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
-sudo chown root: $final_path/wp-config.php
+chown root: $final_path/wp-config.php
 
 #=================================================
 # SETUP SSOWAT
@@ -246,7 +247,7 @@ fi
 # RELOAD NGINX
 #=================================================
 
-sudo systemctl reload nginx
+systemctl reload nginx
 
 #=================================================
 # REMOVE WP-CLI.PHAR

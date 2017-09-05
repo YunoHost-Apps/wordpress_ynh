@@ -41,7 +41,7 @@ if [ -z "$final_path" ]; then
 fi
 
 if [ -z "$language" ]; then
-	language=$(sudo grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
+	language=$(grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
 	ynh_app_setting_set $app language $language
 fi
 
@@ -76,11 +76,14 @@ fi
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 
-BACKUP_BEFORE_UPGRADE	# Backup the current version of the app
+# Backup the current version of the app
+ynh_backup_before_upgrade
 ynh_clean_setup () {
-	BACKUP_FAIL_UPGRADE	# restore it if the upgrade fails
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
 }
-ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
 
 #=================================================
 # CHECK THE PATH
@@ -141,7 +144,7 @@ ynh_app_setting_set $app multisite $multisite
 # UPDATE WORDPRESS' PLUGINS
 #=================================================
 
-sudo wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
@@ -165,9 +168,9 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 #=================================================
 
 # Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
-sudo chown -R $app: $final_path
+chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
-sudo chown root: $final_path/wp-config.php
+chown root: $final_path/wp-config.php
 
 #=================================================
 # SETUP SSOWAT
@@ -184,7 +187,7 @@ fi
 # RELOAD NGINX
 #=================================================
 
-sudo systemctl reload nginx
+systemctl reload nginx
 
 #=================================================
 # REMOVE WP-CLI.PHAR

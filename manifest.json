@@ -2,9 +2,6 @@
 	"name": "WordPress",
 	"id": "wordpress",
 	"packaging_format": 1,
-	"requirements": {
-		"yunohost": ">= 2.6.4"
-	},
 	"description": {
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
@@ -16,6 +13,9 @@
 		"name": "Maniack Crudelis",
 		"email": "maniackc_dev@crudelis.fr"
 	},
+    "requirements": {
+        "yunohost": ">= 2.7.2"
+    },
 	"multi_instance": true,
 	"services": [
 		"nginx",

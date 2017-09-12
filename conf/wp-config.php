@@ -1,14 +1,51 @@
 <?php
+/**
+ * The base configuration for WordPress
+ *
+ * The wp-config.php creation script uses this file during the
+ * installation. You don't have to use the web site, you can
+ * copy this file to "wp-config.php" and fill in the values.
+ *
+ * This file contains the following configurations:
+ *
+ * * MySQL settings
+ * * Secret keys
+ * * Database table prefix
+ * * ABSPATH
+ *
+ * @link https://codex.wordpress.org/Editing_wp-config.php
+ *
+ * @package WordPress
+*/
 
-// Database
+// ** MySQL settings - You can get this info from your web host ** //
+/** The name of the database for WordPress */
 define('DB_NAME', '__DB_USER__');
+
+/** MySQL database username */
 define('DB_USER', '__DB_USER__');
+
+/** MySQL database password */
 define('DB_PASSWORD', '__DB_PWD__');
+
+/** MySQL hostname */
 define('DB_HOST', 'localhost');
+
+/** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
 define('DB_COLLATE', '');
 
-// Keys
+/**#@+
+ * Authentication Unique Keys and Salts.
+ *
+ * Change these to different unique phrases!
+ * You can generate these using the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}
+ * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.
+ *
+ * @since 2.6.0
+*/
 define('AUTH_KEY',         'KEY1');
 define('SECURE_AUTH_KEY',  'KEY2');
 define('LOGGED_IN_KEY',    'KEY3');
@@ -18,32 +55,38 @@ define('SECURE_AUTH_SALT', 'KEY6');
 define('LOGGED_IN_SALT',   'KEY7');
 define('NONCE_SALT',       'KEY8');
 
-// Prefix
+/**#@-*/
+
+/**
+ * WordPress Database Table prefix.
+ *
+ * You can have multiple installations in one database if you give each
+ * a unique prefix. Only numbers, letters, and underscores please!
+*/
 $table_prefix  = 'wp_';
 
-// Debug mode
-define('WP_DEBUG', false); 
+/**
+ * For developers: WordPress debugging mode.
+ *
+ * Change this to true to enable the display of notices during development.
+ * It is strongly recommended that plugin and theme developers use WP_DEBUG
+ * in their development environments.
+ *
+ * For information on other constants that can be used for debugging,
+ * visit the Codex.
+ *
+ * @link https://codex.wordpress.org/Debugging_in_WordPress
+*/
+define('WP_DEBUG', false);
 
-// Multisite
-//--MULTISITE1--define('WP_ALLOW_MULTISITE', true);
-//--MULTISITE2--define('MULTISITE', true);
-//--MULTISITE2--define('SUBDOMAIN_INSTALL', false);
-//--MULTISITE2--define('DOMAIN_CURRENT_SITE', '__DOMAIN__');
-//--MULTISITE2--define('PATH_CURRENT_SITE', '__PATH__/');
-//--MULTISITE2--define('SITE_ID_CURRENT_SITE', 1);
-//--MULTISITE2--define('BLOG_ID_CURRENT_SITE', 1);
+/* That's all, stop editing! Happy blogging. */
 
-// Path
+/** Absolute path to the WordPress directory. */
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__) . '/');
 
-// WordPress settings path
+/** Sets up WordPress vars and included files. */
 require_once(ABSPATH . 'wp-settings.php');
 
 // Force https redirect
 //--PUBLIC--define('FORCE_SSL_ADMIN', true);
-
-// Auto update
-define('WP_AUTO_UPDATE_CORE', 'minor');
-//add_filter( 'auto_update_plugin', '__return_true' );
-//add_filter( 'auto_update_theme', '__return_true' );

@@ -2,20 +2,20 @@
 	"name": "WordPress",
 	"id": "wordpress",
 	"packaging_format": 1,
-	"requirements": {
-		"yunohost": ">= 2.4"
-	},
 	"description": {
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "4.7.2",
+	"version": "4.8",
 	"url": "https://wordpress.org/",
 	"license": "GPLv2",
 	"maintainer": {
 		"name": "Maniack Crudelis",
 		"email": "maniackc_dev@crudelis.fr"
 	},
+    "requirements": {
+        "yunohost": ">= 2.7.2"
+    },
 	"multi_instance": true,
 	"services": [
 		"nginx",
@@ -58,8 +58,8 @@
 					"en": "Choose the language of the WordPress site",
 					"fr": "Choissisez la langue du WordPress"
 				},
-				"choices": ["en_EN", "fr_FR"],
-				"default": "en_EN"
+				"choices": ["en_US", "fr_FR"],
+				"default": "en_US"
 			},
 			{
 				"name": "multisite",

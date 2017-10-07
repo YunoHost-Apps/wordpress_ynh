@@ -1,5 +1,4 @@
 # Wordpress for YunoHost
-==================
 
 [![Integration level](https://dash.yunohost.org/integration/wordpress.svg)](https://ci-apps.yunohost.org/jenkins/job/wordpress%20%28Official%29/lastBuild/consoleFull)  
 [![Install Wordpress with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)

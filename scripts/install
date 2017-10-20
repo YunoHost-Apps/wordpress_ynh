@@ -165,6 +165,7 @@ wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.ph
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
+$wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
 
 #=================================================
@@ -208,6 +209,7 @@ fi
 #=================================================
 
 $wpcli_alias plugin activate simple-ldap-login
+# Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update
 
 #=================================================

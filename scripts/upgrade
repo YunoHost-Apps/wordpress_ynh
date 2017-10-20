@@ -153,8 +153,8 @@ update_plugin simple-ldap-login
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update
 
-# Remove broken plugin http-authentication
-$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin delete http-authentication
+# Disable broken plugin http-authentication
+$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE

@@ -165,7 +165,6 @@ wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.ph
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
-$wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
 
 #=================================================
@@ -175,9 +174,6 @@ $wpcli_alias plugin install companion-auto-update
 # Replace variables in sql scripts
 ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
 ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
-
-# Charge les commandes sql communes à tous les scripts.
-ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/common.sql
 
 #=================================================
 # SET LANGUAGE
@@ -212,7 +208,6 @@ fi
 #=================================================
 
 $wpcli_alias plugin activate simple-ldap-login
-$wpcli_alias plugin activate http-authentication
 $wpcli_alias plugin activate companion-auto-update
 
 #=================================================

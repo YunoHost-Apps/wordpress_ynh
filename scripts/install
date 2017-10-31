@@ -176,9 +176,6 @@ $wpcli_alias plugin install companion-auto-update
 ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
 ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
 
-# Charge les commandes sql communes à tous les scripts.
-ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/common.sql
-
 #=================================================
 # SET LANGUAGE
 #=================================================
@@ -212,7 +209,7 @@ fi
 #=================================================
 
 $wpcli_alias plugin activate simple-ldap-login
-$wpcli_alias plugin activate http-authentication
+# Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update
 
 #=================================================

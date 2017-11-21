@@ -129,8 +129,10 @@ ynh_backup_if_checksum_is_different "$final_path/wp-config.php"
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+	plugin_network="--network"
 else
 	multisite=0
+	plugin_network=""
 	if [ $is_public -eq 0 ]
 	then
 		ynh_replace_string "#--PRIVATE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
@@ -151,7 +153,7 @@ update_plugin () {
 }
 update_plugin simple-ldap-login
 update_plugin companion-auto-update
-$wpcli_alias plugin activate companion-auto-update
+$wpcli_alias plugin activate companion-auto-update $plugin_network
 
 # Disable broken plugin http-authentication
 $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication

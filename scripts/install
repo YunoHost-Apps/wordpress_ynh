@@ -114,8 +114,6 @@ cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
 ynh_replace_string "__DB_USER__" "$db_name" $final_path/wp-config.php
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/wp-config.php
-ynh_replace_string "__DOMAIN__" "$domain" $final_path/wp-config.php
-ynh_replace_string "__PATH__" "$path_url" $final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
 do
@@ -169,14 +167,6 @@ $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
 
 #=================================================
-# LOAD SQL CONFIG
-#=================================================
-
-# Replace variables in sql scripts
-ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
-ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
-
-#=================================================
 # SET LANGUAGE
 #=================================================
 
@@ -200,17 +190,19 @@ then
 	ynh_replace_string "//--MULTISITE2--define" "define" $final_path/wp-config.php
 
 	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/multisite.sql
+	plugin_network="--network"
 else
 	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/single.sql
+	plugin_network=""
 fi
 
 #=================================================
 # ACTIVATE WORDPRESS' PLUGINS
 #=================================================
 
-$wpcli_alias plugin activate simple-ldap-login
+$wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
-$wpcli_alias plugin activate companion-auto-update
+$wpcli_alias plugin activate companion-auto-update $plugin_network
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE

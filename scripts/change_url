@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+source _sed
 
 #=================================================
 # RETRIEVE ARGUMENTS
@@ -79,10 +80,22 @@ then
 	# Make a backup of the original nginx config file if modified
 	ynh_backup_if_checksum_is_different "$nginx_conf_path"
 
-	ynh_replace_string "location $old_path" "location $new_path" "$nginx_conf_path"
+	# Move from sub path to root
+	if [ "$new_path" == "/" ]
+	then
+		ynh_replace_string "\(^.*rewrite.*\^$old_path.* permanent;\)" "#sub_path_only\1" "$nginx_conf_path"
+		ynh_replace_string "\(rewrite *\^\)$old_path\$ $old_path/*" "\1$new_path$ $new_path" "$nginx_conf_path"
+
+	# Move to a sub path
+	else
+		ynh_replace_string "^#sub_path_only" "" "$nginx_conf_path"
+		ynh_replace_string "\(rewrite *\^\)$old_path\$ $old_path/*" "\1$new_path$ $new_path/" "$nginx_conf_path"
+	fi
+
+	ynh_replace_string "location ${old_path%/}/" "location ${new_path%/}/" "$nginx_conf_path"
 
 	# Change the rewrite instructions for multisite
-	ynh_replace_string "rewrite ^$old_path" "rewrite ^$new_path" "$nginx_conf_path"
+	ynh_replace_string "rewrite \^$old_path\(.*last;\)" "rewrite ^$new_path\1" "$nginx_conf_path"
 	ynh_replace_string "$old_path\$2 last;" "$new_path\$2 last;" "$nginx_conf_path"
 
 	# Change the rewrite instruction with $request_filename

@@ -1,5 +1,5 @@
-SOURCE_URL=https://wordpress.org/wordpress-4.8.tar.gz
-SOURCE_SUM=b91248a7220a7fb1ca293c3a0ec8db6c
+SOURCE_URL=https://wordpress.org/wordpress-4.9.1.tar.gz
+SOURCE_SUM=111ecbfc98633103e1fc1105c0c00c76
 SOURCE_SUM_PRG=md5sum
 ARCH_FORMAT=tar.gz
 SOURCE_IN_SUBDIR=true

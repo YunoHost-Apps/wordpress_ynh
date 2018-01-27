@@ -169,7 +169,7 @@ update_plugin wp-fail2ban
 $wpcli_alias plugin activate wp-fail2ban $plugin_network
 
 # Disable broken plugin http-authentication
-$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication
+$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication $plugin_network
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE

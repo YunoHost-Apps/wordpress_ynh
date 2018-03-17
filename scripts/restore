@@ -87,6 +87,14 @@ ynh_restore_file "/etc/php5/fpm/pool.d/$app.conf"
 ynh_restore_file "/etc/php5/fpm/conf.d/20-$app.ini"
 
 #=================================================
+# RESTORE FAIL2BAN CONFIGURATION
+#=================================================
+
+ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
+ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
+systemctl restart fail2ban
+
+#=================================================
 # GENERIC FINALISATION
 #=================================================
 # RELOAD NGINX AND PHP-FPM

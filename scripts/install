@@ -88,6 +88,10 @@ ynh_setup_source "$final_path"
 #=================================================
 
 # Create a dedicated nginx config
+if [ "$path_url" != "/" ]
+then
+	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+fi
 ynh_add_nginx_config
 
 #=================================================
@@ -114,8 +118,6 @@ cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
 ynh_replace_string "__DB_USER__" "$db_name" $final_path/wp-config.php
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/wp-config.php
-ynh_replace_string "__DOMAIN__" "$domain" $final_path/wp-config.php
-ynh_replace_string "__PATH__" "$path_url" $final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
 do
@@ -167,14 +169,7 @@ wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
-
-#=================================================
-# LOAD SQL CONFIG
-#=================================================
-
-# Replace variables in sql scripts
-ynh_replace_string "__DOMAIN_PATH__" "$domain$path_url" ../conf/sql/*.sql
-ynh_replace_string "__DATE__" "$(date +%s)" ../conf/sql/*.sql
+$wpcli_alias plugin install wp-fail2ban
 
 #=================================================
 # SET LANGUAGE
@@ -213,6 +208,7 @@ fi
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
+$wpcli_alias plugin activate wp-fail2ban $plugin_network
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
@@ -231,6 +227,12 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 chown root: $final_path/wp-config.php
+
+#=================================================
+# SETUP FAIL2BAN
+#=================================================
+
+ynh_add_fail2ban_config "/var/log/auth.log" "Authentication (attempt for unknown user|failure for) .* from <HOST>" 5
 
 #=================================================
 # SETUP SSOWAT
@@ -253,3 +255,11 @@ systemctl reload nginx
 #=================================================
 
 ynh_secure_remove $final_path/wp-cli.phar
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
+
+ynh_send_readme_to_admin "$message" "$admin_wordpress"

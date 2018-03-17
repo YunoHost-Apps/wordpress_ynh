@@ -25,6 +25,12 @@ final_path=$(ynh_app_setting_get $app final_path)
 db_name=$(ynh_app_setting_get $app db_name)
 
 #=================================================
+# CHECK VERSION
+#=================================================
+
+ynh_abort_if_up_to_date
+
+#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 
@@ -45,18 +51,18 @@ if [ -z "$language" ]; then
 	ynh_app_setting_set $app language $language
 fi
 
-if [ "$is_public" = "Yes" ]; then
+if [ "${is_public,,}" = "yes" ]; then
 	ynh_app_setting_set $app is_public 1	# Fixe is_public en booléen
 	is_public=1
-elif [ "$is_public" = "No" ]; then
+elif [ "${is_public,,}" = "no" ]; then
 	ynh_app_setting_set $app is_public 0
 	is_public=0
 fi
 
-if [ "$multisite" = "Yes" ]; then
+if [ "${multisite,,}" = "yes" ]; then
 	ynh_app_setting_set $app multisite 1	# Fixe multisite en booléen
 	multisite=1
-elif [ "$multisite" = "No" ]; then
+elif [ "${multisite,,}" = "no" ]; then
 	ynh_app_setting_set $app multisite 0
 	multisite=0
 fi
@@ -97,6 +103,10 @@ path_url=$(ynh_normalize_url_path $path_url)
 #=================================================
 
 # Create a dedicated nginx config
+if [ "$path_url" != "/" ]
+then
+	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+fi
 ynh_add_nginx_config
 
 #=================================================
@@ -152,11 +162,14 @@ update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
 update_plugin simple-ldap-login
+$wpcli_alias plugin activate simple-ldap-login $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
+update_plugin wp-fail2ban
+$wpcli_alias plugin activate wp-fail2ban $plugin_network
 
 # Disable broken plugin http-authentication
-$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication
+$wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication $plugin_network
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
@@ -175,6 +188,12 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 chown -R $app: $final_path
 # Sauf le fichier de config wp-config.php qui appartient à root
 chown root: $final_path/wp-config.php
+
+#=================================================
+# UPGRADE FAIL2BAN
+#=================================================
+
+ynh_add_fail2ban_config "/var/log/auth.log" "Authentication (attempt for unknown user|failure for) .* from <HOST>" 5
 
 #=================================================
 # SETUP SSOWAT

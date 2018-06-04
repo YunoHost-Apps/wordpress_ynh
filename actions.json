@@ -1,7 +1,7 @@
 {
     "public_private": {
         "name": "Move to public or private",
-        "command": "$YNH_APP_ID/scripts/actions/public_private",
+        "command": "/bin/bash $YNH_APP_ID/scripts/actions/public_private",
         "user": "root",
         "cwd": "/etc/yunohost/apps/",
         "accepted_return_codes": [0, 1, 2, 3],
@@ -13,7 +13,7 @@
                 "name": "is_public",
                 "type": "string",
                 "ask": {
-                    "en": "Is it a public app ?"
+                    "en": "Is it a public app ? (yes/no)"
                 },
                 "example": "yes, no"
             }

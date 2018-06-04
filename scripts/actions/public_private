@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source /usr/share/yunohost/helpers
+
+#=================================================
+# RETRIEVE ARGUMENTS
+#=================================================
+
+# Get is_public and set as lowercase
+is_public=${YNH_ACTION_IS_PUBLIC,,}
+
+app=$YNH_APP_ID
+
+#=================================================
+# CHECK IF ARGUMENTS ARE CORRECT
+#=================================================
+
+if [ "$is_public" = "y" ] || [ "$is_public" = "yes" ]; then
+        is_public=1
+elif [ "$is_public" = "n" ] || [ "$is_public" = "no" ]; then
+        is_public=0
+fi
+
+if [ "$is_public" != "0" ] && [ "$is_public" != "1" ]; then
+        ynh_die "Argument is_public is incorrect, should be 'yes' or 'no'"
+fi
+
+#=================================================
+# CHECK IF AN ACTION HAS TO BE DONE
+#=================================================
+
+is_public_old=$(ynh_app_setting_get $app is_public)
+
+if [ $is_public -eq $is_public_old ]
+then
+        ynh_die "is_public is already set as $is_public." 0
+fi
+
+#=================================================
+# SPECIFIC ACTION
+#=================================================
+# MOVE TO PUBLIC OR PRIVATE
+#=================================================
+
+if [ $is_public -eq 0 ];
+then
+        ynh_app_setting_delete $app unprotected_uris
+else
+        ynh_app_setting_set $app unprotected_uris "/"
+fi
+
+# Regen ssowat configuration
+yunohost app ssowatconf
+
+# Update the config of the app
+ynh_app_setting_set $app is_public $is_public
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+
+systemctl reload nginx

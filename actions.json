@@ -1,0 +1,22 @@
+{
+    "public_private": {
+        "name": "Move to public or private",
+        "command": "$YNH_APP_ID/scripts/actions/public_private",
+        "user": "root",
+        "cwd": "/etc/yunohost/apps/",
+        "accepted_return_codes": [0, 1, 2, 3],
+        "description": {
+            "en": "Change the public access of the app."
+        },
+        "arguments": [
+            {
+                "name": "is_public",
+                "type": "string",
+                "ask": {
+                    "en": "Is it a public app ?"
+                },
+                "example": "yes, no"
+            }
+        ]
+    }
+}

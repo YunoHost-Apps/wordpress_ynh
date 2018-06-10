@@ -1,22 +1,20 @@
-{
-    "public_private": {
+[{
+        "id": "public_private",
         "name": "Move to public or private",
-        "command": "/bin/bash $YNH_APP_ID/scripts/actions/public_private",
+        "command": "/bin/bash scripts/actions/public_private",
         "user": "root",
-        "cwd": "/etc/yunohost/apps/",
-        "accepted_return_codes": [0, 1, 2, 3],
+        "accepted_return_codes": [0],
         "description": {
             "en": "Change the public access of the app."
         },
         "arguments": [
             {
                 "name": "is_public",
-                "type": "string",
+                "type": "boolean",
                 "ask": {
-                    "en": "Is it a public app ? (yes/no)"
+                    "en": "Is it a public app ? (1/0) (1=yes; 0=no)"
                 },
-                "example": "yes, no"
+                "default": true
             }
         ]
-    }
-}
+}]

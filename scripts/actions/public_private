@@ -21,16 +21,6 @@ app=$YNH_APP_ID
 # CHECK IF ARGUMENTS ARE CORRECT
 #=================================================
 
-if [ "$is_public" = "y" ] || [ "$is_public" = "yes" ]; then
-        is_public=1
-elif [ "$is_public" = "n" ] || [ "$is_public" = "no" ]; then
-        is_public=0
-fi
-
-if [ "$is_public" != "0" ] && [ "$is_public" != "1" ]; then
-        ynh_die "Argument is_public is incorrect, should be 'yes' or 'no'"
-fi
-
 #=================================================
 # CHECK IF AN ACTION HAS TO BE DONE
 #=================================================

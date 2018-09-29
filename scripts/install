@@ -58,6 +58,8 @@ ynh_app_setting_set $app admin $admin_wordpress
 ynh_app_setting_set $app is_public $is_public
 ynh_app_setting_set $app language $language
 ynh_app_setting_set $app multisite $multisite
+ynh_app_setting_set $app overwrite_nginx "1"
+ynh_app_setting_set $app overwrite_phpfpm "1"
 
 #=================================================
 # STANDARD MODIFICATIONS

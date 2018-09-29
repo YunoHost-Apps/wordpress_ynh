@@ -1,0 +1,37 @@
+{
+	"name": "Wordpress configuration panel",
+	"version": "0.1",
+	"panel": [{
+		"name": "Wordpress configuration",
+		"id": "main",
+		"sections": [{
+			"name": "Public access",
+			"id": "is_public",
+			"options": [{
+				"name": "Is it a public app ?",
+				"id": "is_public",
+				"type": "bool",
+				"default": true
+			}]
+		},
+		{
+			"name": "Overwriting config files",
+			"id": "overwrite_files",
+			"options": [{
+				"name": "Overwrite the nginx config file ?",
+				"help": "If the file is overwritten, a backup will be created.",
+				"id": "overwrite_nginx",
+				"type": "bool",
+				"default": true
+			},
+			{
+				"name": "Overwrite the php-fpm config file ?",
+				"help": "If the file is overwritten, a backup will be created.",
+				"id": "overwrite_phpfpm",
+				"type": "bool",
+				"default": true
+			}]
+		}]
+	}
+]
+}

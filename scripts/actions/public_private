@@ -12,14 +12,10 @@ source /usr/share/yunohost/helpers
 # RETRIEVE ARGUMENTS
 #=================================================
 
-# Get is_public and set as lowercase
-is_public=${YNH_ACTION_IS_PUBLIC,,}
+# Get is_public
+is_public=${YNH_ACTION_IS_PUBLIC}
 
-app=$YNH_APP_ID
-
-#=================================================
-# CHECK IF ARGUMENTS ARE CORRECT
-#=================================================
+app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
 
 #=================================================
 # CHECK IF AN ACTION HAS TO BE DONE
@@ -29,7 +25,7 @@ is_public_old=$(ynh_app_setting_get $app is_public)
 
 if [ $is_public -eq $is_public_old ]
 then
-        ynh_die "is_public is already set as $is_public." 0
+	ynh_die "is_public is already set as $is_public." 0
 fi
 
 #=================================================
@@ -38,11 +34,11 @@ fi
 # MOVE TO PUBLIC OR PRIVATE
 #=================================================
 
-if [ $is_public -eq 0 ];
+if [ $is_public -eq 0 ]
 then
-        ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete $app unprotected_uris
 else
-        ynh_app_setting_set $app unprotected_uris "/"
+	ynh_app_setting_set $app unprotected_uris "/"
 fi
 
 # Regen ssowat configuration

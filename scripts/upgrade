@@ -23,6 +23,8 @@ is_public=$(ynh_app_setting_get $app is_public)
 multisite=$(ynh_app_setting_get $app multisite)
 final_path=$(ynh_app_setting_get $app final_path)
 db_name=$(ynh_app_setting_get $app db_name)
+overwrite_nginx=$(ynh_app_setting_get $app overwrite_nginx)
+overwrite_phpfpm=$(ynh_app_setting_get $app overwrite_phpfpm)
 
 #=================================================
 # CHECK VERSION
@@ -67,13 +69,25 @@ elif [ "${multisite,,}" = "no" ]; then
 	multisite=0
 fi
 
-if [ -z $db_name ]; then	# Si db_name n'est pas renseigné dans app setting
+if [ -z "$db_name" ]; then	# Si db_name n'est pas renseigné dans app setting
 	db_name=$(ynh_sanitize_dbid $app)
 	ynh_app_setting_set $app db_name $db_name
 fi
 
 if grep add_filter.*auto_update $final_path/wp-config.php; then	# Si des add_filter demeurent dans le wp-config
 	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
+fi
+
+# If overwrite_nginx doesn't exist, create it
+if [ -z "$overwrite_nginx" ]; then
+	overwrite_nginx=1
+	ynh_app_setting_set $app overwrite_nginx $overwrite_nginx
+fi
+
+# If overwrite_phpfpm doesn't exist, create it
+if [ -z "$overwrite_phpfpm" ]; then
+	overwrite_phpfpm=1
+	ynh_app_setting_set $app overwrite_phpfpm $overwrite_phpfpm
 fi
 
 #=================================================
@@ -102,12 +116,16 @@ path_url=$(ynh_normalize_url_path $path_url)
 # NGINX CONFIGURATION
 #=================================================
 
-# Create a dedicated nginx config
-if [ "$path_url" != "/" ]
+# Overwrite the nginx configuration only if it's allowed
+if [ $overwrite_nginx -eq 1 ]
 then
-	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+	# Create a dedicated nginx config
+	if [ "$path_url" != "/" ]
+	then
+		ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+	fi
+	ynh_add_nginx_config
 fi
-ynh_add_nginx_config
 
 #=================================================
 # CREATE DEDICATED USER
@@ -120,8 +138,12 @@ ynh_system_user_create $app
 # PHP-FPM CONFIGURATION
 #=================================================
 
-# Create a dedicated php-fpm config
-ynh_add_fpm_config
+# Overwrite the php-fpm configuration only if it's allowed
+if [ $overwrite_phpfpm -eq 1 ]
+then
+	# Create a dedicated php-fpm config
+	ynh_add_fpm_config
+fi
 
 #=================================================
 # SPECIFIC UPGRADE

@@ -145,6 +145,9 @@ yunohost app ssowatconf	# Régénère la configuration de SSOwat
 # Reload Nginx
 systemctl reload nginx
 
+# Wait untils nginx has fully reloaded (fix http2 issue)
+sleep 2
+
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
 

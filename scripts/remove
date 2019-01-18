@@ -28,28 +28,28 @@ db_name=$(ynh_app_setting_get $app db_name)
 ynh_remove_app_dependencies
 
 #=================================================
-# REMOVE THE SQL BDD
+# REMOVE THE MYSQL DATABASE
 #=================================================
 
 # Remove a database if it exists, along with the associated user
 ynh_mysql_remove_db $db_name $db_name
 
 #=================================================
-# REMOVE THE MAIN DIR OF THE APP
+# REMOVE APP MAIN DIR
 #=================================================
 
 # Remove the app directory securely
 ynh_secure_remove "/var/www/$app"
 
 #=================================================
-# REMOVE THE NGINX CONFIGURATION
+# REMOVE NGINX CONFIGURATION
 #=================================================
 
 # Remove the dedicated nginx config
 ynh_remove_nginx_config
 
 #=================================================
-# REMOVE THE PHP-FPM CONFIGURATION
+# REMOVE PHP-FPM CONFIGURATION
 #=================================================
 
 # Remove the dedicated php-fpm config
@@ -59,6 +59,7 @@ ynh_remove_fpm_config
 # REMOVE FAIL2BAN CONFIGURATION
 #=================================================
 
+# Remove the dedicated fail2ban config
 ynh_remove_fail2ban_config
 
 #=================================================
@@ -67,5 +68,5 @@ ynh_remove_fail2ban_config
 # REMOVE DEDICATED USER
 #=================================================
 
-# Delete a system user
+# Delete dedicated system user
 ynh_system_user_delete $app

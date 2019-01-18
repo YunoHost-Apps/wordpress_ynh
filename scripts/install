@@ -43,7 +43,7 @@ path_url=$(ynh_normalize_url_path $path_url)
 ynh_webpath_register $app $domain $path_url
 
 if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
-	ynh_die "Multisite option of wordpress doesn't work at root of domain."
+	ynh_die "Multisite option of wordpress doesn't work at the root of a domain."
 fi
 
 #=================================================
@@ -66,7 +66,7 @@ ynh_app_setting_set $app multisite $multisite
 ynh_install_app_dependencies php5-cli
 
 #=================================================
-# CREATE A SQL BDD
+# CREATE A MYSQL DATABASE
 #=================================================
 
 db_name=$(ynh_sanitize_dbid $app)
@@ -92,7 +92,7 @@ ynh_add_nginx_config
 # CREATE DEDICATED USER
 #=================================================
 
-# Create a system user
+# Create a dedicated system user
 ynh_system_user_create $app
 
 #=================================================
@@ -132,9 +132,10 @@ done
 # Set right permissions for curl install
 chown -R $app: $final_path
 
-# Rend la page d'install publique pour curl
+# Set the app as temporarily public for curl call
 ynh_app_setting_set $app unprotected_uris "/"
-yunohost app ssowatconf	# Régénère la configuration de SSOwat
+# Regen SSOwat configuration
+yunohost app ssowatconf
 
 # Reload Nginx
 ynh_systemd_action --action=reload --service_name=nginx
@@ -144,15 +145,17 @@ ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_nam
 
 ynh_print_info "Please wait during Wordpress installation" >&2
 for i in `seq 1 300`
-do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
+do
+	# The loop waits for wordpress to be installed, or 5 minutes.
 	if ynh_mysql_connect_as $db_name $db_pwd $db_name <<< "show tables" | grep -q "wp_options"; then
-		break	# Si la table wp_options est trouvée, l'installation de wordpress est terminée. Quitte la boucle.
+		# If the table wp_options is found, wordpress has finished its installation.
+		break
 	fi
 	sleep 1
 done
 
 #=================================================
-# INSTALL WORDPRESS' PLUGINS
+# INSTALL WORDPRESS PLUGINS
 #=================================================
 
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
@@ -177,13 +180,13 @@ $wpcli_alias core language activate $language
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
-	# Autorise le multisite wordpress
+	# Allow multisite
 	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
 
-	# Active le multisite via wp-cli.
+	# Activate multisite via wp-cli
 	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path_url/
 
-	# Active le multisite wordpress
+	# Activate multisite in wordpress config
 	ynh_replace_string "//--MULTISITE2--define" "define" $final_path/wp-config.php
 
 	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/multisite.sql
@@ -194,7 +197,7 @@ else
 fi
 
 #=================================================
-# ACTIVATE WORDPRESS' PLUGINS
+# ACTIVATE WORDPRESS PLUGINS
 #=================================================
 
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
@@ -203,7 +206,7 @@ $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban $plugin_network
 
 #=================================================
-# STORE THE CHECKSUM OF THE CONFIG FILE
+# STORE THE CONFIG FILE CHECKSUM
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
@@ -215,15 +218,17 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 # SECURING FILES AND DIRECTORIES
 #=================================================
 
-# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+# Set permissions to app files
+# Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
-# Sauf le fichier de config wp-config.php qui appartient à root
+# Except the file config wp-config.php
 chown root: $final_path/wp-config.php
 
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
 
+# Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
@@ -232,7 +237,7 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 
 if [ $is_public -eq 0 ];
 then
-	# Retire l'accès public
+	# Remove the public access
 	ynh_app_setting_delete $app unprotected_uris
 fi
 

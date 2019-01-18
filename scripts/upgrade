@@ -51,28 +51,32 @@ if [ -z "$language" ]; then
 	ynh_app_setting_set $app language $language
 fi
 
+# Fix is_public as a boolean
 if [ "${is_public,,}" = "yes" ]; then
-	ynh_app_setting_set $app is_public 1	# Fixe is_public en booléen
+	ynh_app_setting_set $app is_public 1
 	is_public=1
 elif [ "${is_public,,}" = "no" ]; then
 	ynh_app_setting_set $app is_public 0
 	is_public=0
 fi
 
+# Fix multisite as a boolean
 if [ "${multisite,,}" = "yes" ]; then
-	ynh_app_setting_set $app multisite 1	# Fixe multisite en booléen
+	ynh_app_setting_set $app multisite 1
 	multisite=1
 elif [ "${multisite,,}" = "no" ]; then
 	ynh_app_setting_set $app multisite 0
 	multisite=0
 fi
 
-if [ -z $db_name ]; then	# Si db_name n'est pas renseigné dans app setting
+# If db_name doesn't exist, create it
+if [ -z $db_name ]; then
 	db_name=$(ynh_sanitize_dbid $app)
 	ynh_app_setting_set $app db_name $db_name
 fi
 
-if grep add_filter.*auto_update $final_path/wp-config.php; then	# Si des add_filter demeurent dans le wp-config
+# If some 'add_filter' are still in wp_config, remove them
+if grep add_filter.*auto_update $final_path/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
 fi
 
@@ -121,7 +125,7 @@ ynh_add_nginx_config
 # CREATE DEDICATED USER
 #=================================================
 
-# Create the dedicated user, if not exist
+# Create a dedicated user (if not existing)
 ynh_system_user_create $app
 
 #=================================================
@@ -134,10 +138,10 @@ ynh_add_fpm_config
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
-# SAVE THE CONFIG FILE IF IT BEEN MODIFIED
+# SAVE THE CONFIG FILE IF IT HAS BEEN MODIFIED
 #=================================================
 
-# Verify the checksum and backup the file if it's different
+# Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
 ynh_backup_if_checksum_is_different "$final_path/wp-config.php"
 
 #=================================================
@@ -161,7 +165,7 @@ fi
 ynh_app_setting_set $app multisite $multisite
 
 #=================================================
-# UPDATE WORDPRESS' PLUGINS
+# UPDATE WORDPRESS PLUGINS
 #=================================================
 
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
@@ -183,7 +187,7 @@ $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deac
 # STORE THE CHECKSUM OF THE CONFIG FILE
 #=================================================
 
-# Recalculate and store the config file checksum into the app settings
+# Recalculate and store the checksum of the file for the next upgrade.
 ynh_store_file_checksum "$final_path/wp-config.php"
 
 #=================================================
@@ -192,25 +196,30 @@ ynh_store_file_checksum "$final_path/wp-config.php"
 # SECURING FILES AND DIRECTORIES
 #=================================================
 
-# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+# Set permissions to app files
+# Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
-# Sauf le fichier de config wp-config.php qui appartient à root
+# Except the file config wp-config.php
 chown root: $final_path/wp-config.php
 
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
 
+# Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
 
-ynh_app_setting_delete $app skipped_uris	# Retire le skipped_uris si il existe encore.
-if [ $is_public -eq 0 ]; then	# Retire l'accès public
+# Remove skipped_uris if it's still present
+ynh_app_setting_delete $app skipped_uris
+if [ $is_public -eq 0 ]; then
+	# Remove the public access
 	ynh_app_setting_delete $app unprotected_uris
-else	# Ou remplace le skipped_uris par unprotected_uris le cas échéant.
+else
+	# Or replace skipped_uris by unprotected_uris
 	ynh_app_setting_set $app unprotected_uris "/"
 fi
 

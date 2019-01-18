@@ -6,12 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -35,26 +30,26 @@ db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
-# BACKUP OF THE MAIN DIR OF THE APP
+# BACKUP THE APP MAIN DIR
 #=================================================
 
 CHECK_SIZE "$final_path"
 ynh_backup "$final_path"
 
 #=================================================
-# BACKUP OF THE NGINX CONFIGURATION
+# BACKUP NGINX CONFIGURATION
 #=================================================
 
 ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# BACKUP OF THE PHP-FPM CONFIGURATION
+# BACKUP PHP-FPM CONFIGURATION
 #=================================================
 
 ynh_backup "/etc/php5/fpm/pool.d/$app.conf"
 
 #=================================================
-# BACKUP OF THE SQL BDD
+# BACKUP THE MYSQL DATABASE
 #=================================================
 
 ynh_mysql_dump_db "$db_name" > db.sql

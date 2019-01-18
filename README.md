@@ -39,8 +39,9 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* Tested on x86_64
-* Tested on RaspberryPi
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/wordpress%20%28Official%29.svg)](https://ci-stretch.nohost.me/ci/apps/wordpress/)
 
 ## Limitations
 

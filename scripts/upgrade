@@ -28,7 +28,7 @@ db_name=$(ynh_app_setting_get $app db_name)
 # CHECK VERSION
 #=================================================
 
-ynh_abort_if_up_to_date
+upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -99,14 +99,22 @@ ynh_abort_if_errors
 path_url=$(ynh_normalize_url_path $path_url)
 
 #=================================================
+# ACTIVATE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_ON
+
+#=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+
+ynh_install_app_dependencies php5-cli
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
 # Create a dedicated nginx config
-if [ "$path_url" != "/" ]
-then
-	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
-fi
 ynh_add_nginx_config
 
 #=================================================
@@ -193,7 +201,7 @@ chown root: $final_path/wp-config.php
 # UPGRADE FAIL2BAN
 #=================================================
 
-ynh_add_fail2ban_config "/var/log/auth.log" "Authentication (attempt for unknown user|failure for) .* from <HOST>" 5
+ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
 # SETUP SSOWAT
@@ -210,10 +218,16 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl reload nginx
+ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
 ynh_secure_remove $final_path/wp-cli.phar
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_OFF

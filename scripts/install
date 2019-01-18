@@ -39,8 +39,6 @@ test ! -e "$final_path" || ynh_die "This path already contains a folder"
 # Normalize the url path syntax
 path_url=$(ynh_normalize_url_path $path_url)
 
-# Check web path availability
-ynh_webpath_available $domain $path_url
 # Register (book) web path
 ynh_webpath_register $app $domain $path_url
 
@@ -88,10 +86,6 @@ ynh_setup_source "$final_path"
 #=================================================
 
 # Create a dedicated nginx config
-if [ "$path_url" != "/" ]
-then
-	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
-fi
 ynh_add_nginx_config
 
 #=================================================
@@ -143,21 +137,19 @@ ynh_app_setting_set $app unprotected_uris "/"
 yunohost app ssowatconf	# Régénère la configuration de SSOwat
 
 # Reload Nginx
-systemctl reload nginx
+ynh_systemd_action --action=reload --service_name=nginx
 
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
 
-WARNING echo -n "Please wait during Wordpress installation"
+ynh_print_info "Please wait during Wordpress installation" >&2
 for i in `seq 1 300`
 do	# La boucle attend la fin de l'installation de wordpress Ou 5 minutes.
 	if ynh_mysql_connect_as $db_name $db_pwd $db_name <<< "show tables" | grep -q "wp_options"; then
 		break	# Si la table wp_options est trouvée, l'installation de wordpress est terminée. Quitte la boucle.
 	fi
-	WARNING echo -n "."
 	sleep 1
 done
-WARNING echo ""
 
 #=================================================
 # INSTALL WORDPRESS' PLUGINS
@@ -189,7 +181,7 @@ then
 	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
 
 	# Active le multisite via wp-cli.
-	ALL_QUIET $wpcli_alias core multisite-convert --base=$path_url/
+	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path_url/
 
 	# Active le multisite wordpress
 	ynh_replace_string "//--MULTISITE2--define" "define" $final_path/wp-config.php
@@ -232,7 +224,7 @@ chown root: $final_path/wp-config.php
 # SETUP FAIL2BAN
 #=================================================
 
-ynh_add_fail2ban_config "/var/log/auth.log" "Authentication (attempt for unknown user|failure for) .* from <HOST>" 5
+ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
 # SETUP SSOWAT
@@ -248,7 +240,7 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl reload nginx
+ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # REMOVE WP-CLI.PHAR
@@ -260,6 +252,6 @@ ynh_secure_remove $final_path/wp-cli.phar
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
+message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
 
-ynh_send_readme_to_admin "$message" "$admin_wordpress"
+ynh_send_readme_to_admin --app_message="$message" --recipients="$admin_wordpress"

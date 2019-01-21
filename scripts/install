@@ -171,7 +171,7 @@ $wpcli_alias plugin install wp-fail2ban
 #=================================================
 
 $wpcli_alias core language install $language
-$wpcli_alias core language activate $language
+$wpcli_alias site switch-language $language
 
 #=================================================
 # CONFIGURE MULTISITE

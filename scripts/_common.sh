@@ -26,10 +26,6 @@ CHECK_SIZE () {	# Vérifie avant chaque backup que l'espace est suffisant
 # FUTUR OFFICIAL HELPERS
 #=================================================
 
-#=================================================
-# EXPERIMENTAL HELPERS
-#=================================================
-
 # Create a dedicated fail2ban config (jail and filter conf files)
 #
 # usage: ynh_add_fail2ban_config log_file filter [max_retry [ports]]
@@ -212,27 +208,6 @@ ynh_check_app_version_changed () {
 
 #=================================================
 
-# Delete a file checksum from the app settings
-#
-# $app should be defined when calling this helper
-#
-# usage: ynh_remove_file_checksum file
-# | arg: -f, --file= - The file for which the checksum will be deleted
-ynh_delete_file_checksum () {
-	# Declare an array to define the options of this helper.
-	declare -Ar args_array=( [f]=file= )
-	local file
-	# Manage arguments with getopts
-	ynh_handle_getopts_args "$@"
-
-	local checksum_setting_name=checksum_${file//[\/ ]/_}	# Replace all '/' and ' ' by '_'
-	ynh_app_setting_delete $app $checksum_setting_name
-}
-
-#=================================================
-# EXPERIMENTAL HELPERS
-#=================================================
-
 # Start (or other actions) a service,  print a log in case of failure and optionnaly wait until the service is completely started
 #
 # usage: ynh_systemd_action [-n service_name] [-a action] [ [-l "line to match"] [-p log_path] [-t timeout] [-e length] ]
@@ -302,6 +277,7 @@ ynh_systemd_action() {
 		if [ $i -eq $timeout ]
 		then
 			echo "The service $service_name didn't fully started before the timeout." >&2
+			echo "Please find here an extract of the end of the log of the service $service_name:"
 			journalctl --lines=$length -u $service_name >&2
 			test -n "$log_path" && echo "--" && tail --lines=$length "$log_path" >&2
 		fi

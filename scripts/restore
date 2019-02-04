@@ -19,6 +19,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=3
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -41,6 +42,7 @@ test ! -d $final_path \
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Activate maintenance mode"
 
 ynh_maintenance_mode_ON
 
@@ -55,12 +57,14 @@ ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
+ynh_script_progression --message="Restore the app main directory"
 
 ynh_restore_file "$final_path"
 
 #=================================================
 # RESTORE THE MYSQL DATABASE
 #=================================================
+ynh_script_progression --message="Restore the mysql database" --weight=3
 
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 ynh_mysql_setup_db $db_name $db_name $db_pwd
@@ -69,6 +73,7 @@ ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
 #=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
+ynh_script_progression --message="Recreate the dedicated user" --weight=3
 
 # Create the dedicated user (if not existing)
 ynh_system_user_create $app
@@ -92,6 +97,7 @@ ynh_restore_file "/etc/php/7.0/fpm/pool.d/$app.conf"
 #=================================================
 # RESTORE THE FAIL2BAN CONFIGURATION
 #=================================================
+ynh_script_progression --message="Restore the fail2ban configuration" --weight=6
 
 ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
 ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
@@ -102,6 +108,7 @@ ynh_systemd_action --action=restart --service_name=fail2ban
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================
+ynh_script_progression --message="Reload nginx and php-fpm" --weight=2
 
 ynh_systemd_action --action=reload --service_name=php5-fpm
 ynh_systemd_action --action=reload --service_name=nginx
@@ -109,6 +116,7 @@ ynh_systemd_action --action=reload --service_name=nginx
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Disable maintenance mode" --weight=8
 
 ynh_maintenance_mode_OFF
 
@@ -119,3 +127,9 @@ ynh_maintenance_mode_OFF
 message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
 
 ynh_send_readme_to_admin --app_message="$message" --recipients="$admin_wordpress"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Restoration completed" --last

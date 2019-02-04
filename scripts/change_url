@@ -12,6 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
+ynh_script_progression --message="Retrieve arguments from the manifest"
 
 old_domain=$YNH_APP_OLD_DOMAIN
 old_path=$YNH_APP_OLD_PATH
@@ -24,6 +25,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=2
 
 final_path=$(ynh_app_setting_get $app final_path)
 multisite=$(ynh_app_setting_get $app multisite)
@@ -37,6 +39,7 @@ fi
 #=================================================
 # CHECK THE SYNTAX OF THE PATHS
 #=================================================
+ynh_script_progression --message="Check the syntax of the paths"
 
 test -n "$old_path" || old_path="/"
 test -n "$new_path" || new_path="/"
@@ -46,6 +49,7 @@ old_path=$(ynh_normalize_url_path $old_path)
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Activate maintenance mode" --weight=2
 
 path_url=$old_path
 domain=$old_domain
@@ -79,6 +83,7 @@ ynh_abort_if_errors
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
+ynh_script_progression --message="Modify url in nginx configuration" --weight=3
 
 nginx_conf_path=/etc/nginx/conf.d/$old_domain.d/$app.conf
 
@@ -124,13 +129,21 @@ ynh_mysql_execute_as_root "UPDATE wp_options SET option_value='$new_domain$new_p
 #=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reload nginx"
 
 ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Disable maintenance mode" --weight=5
 
 path_url=$old_path
 domain=$old_domain
 ynh_maintenance_mode_OFF
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Change of url completed" --last

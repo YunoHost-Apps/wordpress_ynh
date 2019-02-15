@@ -8,11 +8,11 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-source _sed
 
 #=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
+ynh_script_progression --message="Retrieve arguments from the manifest"
 
 old_domain=$YNH_APP_OLD_DOMAIN
 old_path=$YNH_APP_OLD_PATH
@@ -25,7 +25,9 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=2
 
+final_path=$(ynh_app_setting_get $app final_path)
 multisite=$(ynh_app_setting_get $app multisite)
 
 if [ $multisite -eq 1 ]
@@ -37,11 +39,21 @@ fi
 #=================================================
 # CHECK THE SYNTAX OF THE PATHS
 #=================================================
+ynh_script_progression --message="Check the syntax of the paths"
 
 test -n "$old_path" || old_path="/"
 test -n "$new_path" || new_path="/"
 new_path=$(ynh_normalize_url_path $new_path)
 old_path=$(ynh_normalize_url_path $old_path)
+
+#=================================================
+# ACTIVATE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Activate maintenance mode" --weight=2
+
+path_url=$old_path
+domain=$old_domain
+ynh_maintenance_mode_ON
 
 #=================================================
 # CHECK WHICH PARTS SHOULD BE CHANGED
@@ -71,6 +83,7 @@ ynh_abort_if_errors
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
+ynh_script_progression --message="Modify url in nginx configuration" --weight=3
 
 nginx_conf_path=/etc/nginx/conf.d/$old_domain.d/$app.conf
 
@@ -80,29 +93,15 @@ then
 	# Make a backup of the original nginx config file if modified
 	ynh_backup_if_checksum_is_different "$nginx_conf_path"
 
-	# Move from sub path to root
-	if [ "$new_path" == "/" ]
-	then
-		ynh_replace_string "\(^.*rewrite.*\^$old_path.* permanent;\)" "#sub_path_only\1" "$nginx_conf_path"
-		ynh_replace_string "\(rewrite *\^\)$old_path\$ $old_path/*" "\1$new_path$ $new_path" "$nginx_conf_path"
+	# Set global variables for nginx helper
+	domain="$old_domain"
+	path_url="$new_path"
 
-	# Move to a sub path
-	else
-		ynh_replace_string "^#sub_path_only" "" "$nginx_conf_path"
-		ynh_replace_string "\(rewrite *\^\)$old_path\$ $old_path/*" "\1$new_path$ $new_path/" "$nginx_conf_path"
-	fi
+	# Store path_url setting
+	ynh_app_setting_set $app path "$path_url"
 
-	ynh_replace_string "location ${old_path%/}/" "location ${new_path%/}/" "$nginx_conf_path"
-
-	# Change the rewrite instructions for multisite
-	ynh_replace_string "rewrite \^$old_path\(.*last;\)" "rewrite ^$new_path\1" "$nginx_conf_path"
-	ynh_replace_string "$old_path\$2 last;" "$new_path\$2 last;" "$nginx_conf_path"
-
-	# Change the rewrite instruction with $request_filename
-	ynh_replace_string "${old_path%/}/index.php?q=" "${new_path%/}/index.php?q=" "$nginx_conf_path"
-
-	# Calculate and store the nginx config file checksum
-	ynh_store_file_checksum "$nginx_conf_path"
+	# Create a dedicated nginx config
+	ynh_add_nginx_config
 fi
 
 # Change the domain for nginx
@@ -112,9 +111,8 @@ then
 	ynh_delete_file_checksum "$nginx_conf_path"
 	mv $nginx_conf_path /etc/nginx/conf.d/$new_domain.d/$app.conf
 
-	nginx_conf_path=/etc/nginx/conf.d/$new_domain.d/$app.conf
-	# Calculate and store the nginx config file checksum
-	ynh_store_file_checksum "$nginx_conf_path"
+	# Store file checksum for the new config file location
+	ynh_store_file_checksum "/etc/nginx/conf.d/$new_domain.d/$app.conf"
 fi
 
 #=================================================
@@ -131,5 +129,21 @@ ynh_mysql_execute_as_root "UPDATE wp_options SET option_value='$new_domain$new_p
 #=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reload nginx"
 
-systemctl reload nginx
+ynh_systemd_action --action=reload --service_name=nginx
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Disable maintenance mode" --weight=5
+
+path_url=$old_path
+domain=$old_domain
+ynh_maintenance_mode_OFF
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Change of url completed" --last

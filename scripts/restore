@@ -6,12 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -24,6 +19,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=3
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -32,6 +28,7 @@ path_url=$(ynh_app_setting_get $app path)
 is_public=$(ynh_app_setting_get $app is_public)
 final_path=$(ynh_app_setting_get $app final_path)
 db_name=$(ynh_app_setting_get $app db_name)
+admin_wordpress=$(ynh_app_setting_get $app admin)
 
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
@@ -43,61 +40,96 @@ test ! -d $final_path \
 	|| ynh_die "There is already a directory: $final_path "
 
 #=================================================
-# STANDARD RESTORE STEPS
+# ACTIVATE MAINTENANCE MODE
 #=================================================
-# RESTORE OF THE NGINX CONFIGURATION
+ynh_script_progression --message="Activate maintenance mode"
+
+ynh_maintenance_mode_ON
+
+#=================================================
+# STANDARD RESTORATION STEPS
+#=================================================
+# RESTORE THE NGINX CONFIGURATION
 #=================================================
 
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# RESTORE OF THE MAIN DIR OF THE APP
+# RESTORE THE APP MAIN DIR
 #=================================================
+ynh_script_progression --message="Restore the app main directory"
 
 ynh_restore_file "$final_path"
 
 #=================================================
-# RESTORE OF THE SQL BDD
+# RESTORE THE MYSQL DATABASE
 #=================================================
+ynh_script_progression --message="Restore the mysql database" --weight=3
 
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 ynh_mysql_setup_db $db_name $db_name $db_pwd
 ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
 
 #=================================================
-# RECREATE OF THE DEDICATED USER
+# RECREATE THE DEDICATED USER
 #=================================================
+ynh_script_progression --message="Recreate the dedicated user" --weight=3
 
-ynh_system_user_create $app	# Recreate the dedicated user, if not exist
+# Create the dedicated user (if not existing)
+ynh_system_user_create $app
 
 #=================================================
 # RESTORE USER RIGHTS
 #=================================================
 
-# Les fichiers appartiennent à l'user wordpress, pour permettre les mises à jour.
+# Set permissions to app files
+# Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
-# Sauf le fichier de config wp-config.php qui appartient à root
+# Except the file config wp-config.php
 chown root: $final_path/wp-config.php
 
 #=================================================
-# RESTORE OF THE PHP-FPM CONFIGURATION
+# RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_restore_file "/etc/php5/fpm/pool.d/$app.conf"
+ynh_restore_file "/etc/php/7.0/fpm/pool.d/$app.conf"
 
 #=================================================
-# RESTORE FAIL2BAN CONFIGURATION
+# RESTORE THE FAIL2BAN CONFIGURATION
 #=================================================
+ynh_script_progression --message="Restore the fail2ban configuration" --weight=6
 
 ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
 ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
-systemctl restart fail2ban
+ynh_systemd_action --action=restart --service_name=fail2ban
 
 #=================================================
 # GENERIC FINALISATION
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================
+ynh_script_progression --message="Reload nginx and php-fpm" --weight=2
 
-systemctl reload php5-fpm
-systemctl reload nginx
+ynh_systemd_action --action=reload --service_name=php5-fpm
+ynh_systemd_action --action=reload --service_name=nginx
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Disable maintenance mode" --weight=8
+
+ynh_maintenance_mode_OFF
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
+
+ynh_send_readme_to_admin --app_message="$message" --recipients="$admin_wordpress"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Restoration completed" --last

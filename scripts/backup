@@ -6,12 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -24,6 +19,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=2
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -35,27 +31,31 @@ db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
-# BACKUP OF THE MAIN DIR OF THE APP
+# BACKUP THE APP MAIN DIR
 #=================================================
+ynh_script_progression --message="Backup the app main dir" --weight=2
 
 CHECK_SIZE "$final_path"
 ynh_backup "$final_path"
 
 #=================================================
-# BACKUP OF THE NGINX CONFIGURATION
+# BACKUP NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Backup nginx configuration"
 
 ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# BACKUP OF THE PHP-FPM CONFIGURATION
+# BACKUP PHP-FPM CONFIGURATION
 #=================================================
+ynh_script_progression --message="Backup php-fpm configuration"
 
-ynh_backup "/etc/php5/fpm/pool.d/$app.conf"
+ynh_backup "/etc/php/7.0/fpm/pool.d/$app.conf"
 
 #=================================================
-# BACKUP OF THE SQL BDD
+# BACKUP THE MYSQL DATABASE
 #=================================================
+ynh_script_progression --message="Backup the mysql database" --weight=2
 
 ynh_mysql_dump_db "$db_name" > db.sql
 CHECK_SIZE "db.sql"
@@ -63,6 +63,13 @@ CHECK_SIZE "db.sql"
 #=================================================
 # BACKUP FAIL2BAN CONFIGURATION
 #=================================================
+ynh_script_progression --message="Backup fail2ban configuration"
 
 ynh_backup "/etc/fail2ban/jail.d/$app.conf"
 ynh_backup "/etc/fail2ban/filter.d/$app.conf"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Backup completed" --last

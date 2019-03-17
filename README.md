@@ -30,7 +30,7 @@ Use the admin panel of your wordpress to configure this app.
  * Integration with YunoHost users and SSO:
    * private mode: Blog only accessible by YunoHost users
    * public mode: Visible by anyone, YunoHost users automatically connected
- * Automatic update of wordpress core, plugins and themes
+ * Automatic update of wordpress core, plugins and themes. This Yunohost package of wordpress needs to be updated from wordpress admin panel, not only from yunohost admin panel.
  * Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
 
 #### Multi-users support

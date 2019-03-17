@@ -30,7 +30,7 @@ Use the admin panel of your wordpress to configure this app.
  * Integration with YunoHost users and SSO:
    * private mode: Blog only accessible by YunoHost users
    * public mode: Visible by anyone, YunoHost users automatically connected
- * Automatic update of wordpress core, plugins and themes
+ * Automatic update of wordpress core, plugins and themes.
  * Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
 
 #### Multi-users support
@@ -46,6 +46,7 @@ Supported, with LDAP and SSO.
 ## Limitations
 
 * Multisite only available on subdirectories.
+* As the automatic update plugin isn't working as expected, pay attention to keep your wordpress up to date from the wordpress admin panel, and not only from yunohost admin panel. For security reason, you should control that all updates are regularly applied in wordpress admin panel as well as in yunohost admin panel.
 
 ## Links
 

@@ -47,6 +47,15 @@ Supported, with LDAP and SSO.
 
 * Multisite only available on subdirectories.
 
+**Security**
+
+Please be aware that Wordpress is known for being frequently a source of security risks https://en.wikipedia.org/wiki/WordPress#Vulnerabilities, and also as the most popular (source: https://en.wikipedia.org/wiki/WordPress) website management system it is a target for bots and attackers.
+Some vulnerabilities might let an attacker breach into your wordpress, or even your Yunohost server (via privilege escalation).
+
+Don't forget to comply with good security principles (strong password, frequent updates, don't add unknow code in your theme/extensions…). In particular, *please keep your wordpress as up-to-date as possible*.
+
+Furthermore, you might take a look at this guide: https://codex.wordpress.org/Hardening_WordPress. You might see some benefits in the use of wordpress security plugins.
+
 ## Links
 
  * Report a bug: https://github.com/YunoHost-Apps/wordpress_ynh/issues

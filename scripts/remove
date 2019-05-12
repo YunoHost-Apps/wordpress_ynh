@@ -70,6 +70,12 @@ ynh_script_progression --message="Remove fail2ban configuration" --weight=8
 ynh_remove_fail2ban_config
 
 #=================================================
+# REMOVE THE CRON
+#=================================================
+
+ynh_secure_remove /etc/cron.d/$app
+
+#=================================================
 # GENERIC FINALISATION
 #=================================================
 # REMOVE DEDICATED USER

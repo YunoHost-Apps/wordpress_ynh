@@ -128,9 +128,8 @@ ynh_mysql_execute_as_root "UPDATE wp_options SET option_value='$new_domain$new_p
 # UPDATE THE CRON
 #=================================================
 
-ynh_replace_string "$old_domain$old_path" "$new_domain$new_path"
 echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
-0 3  *  *  * root wget -q -O - https:///wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
+0 3  *  *  * root wget -q -O - https://$new_domain$new_path/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
 
 #=================================================
 # GENERIC FINALISATION

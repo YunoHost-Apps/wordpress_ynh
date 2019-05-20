@@ -12,19 +12,20 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=2
+ynh_script_progression --message="Loading installation settings..." --weight=2
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-db_name=$(ynh_app_setting_get $app db_name)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 #=================================================
 # STANDARD REMOVE
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Remove dependencies" --weight=11
+ynh_script_progression --message="Removing dependencies..." --weight=11
 
 # Remove metapackage and its dependencies
 ynh_remove_app_dependencies
@@ -32,23 +33,23 @@ ynh_remove_app_dependencies
 #=================================================
 # REMOVE THE MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Remove the mysql database" --weight=2
+ynh_script_progression --message="Removing the MySQL database..." --weight=2
 
 # Remove a database if it exists, along with the associated user
-ynh_mysql_remove_db $db_name $db_name
+ynh_mysql_remove_db --db_user=$db_name --db_name=$db_name
 
 #=================================================
 # REMOVE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Remove app main directory"
+ynh_script_progression --message="Removing app main directory..."
 
 # Remove the app directory securely
-ynh_secure_remove "/var/www/$app"
+ynh_secure_remove --file="$final_path"
 
 #=================================================
 # REMOVE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Remove nginx configuration"
+ynh_script_progression --message="Removing nginx web server configuration..."
 
 # Remove the dedicated nginx config
 ynh_remove_nginx_config
@@ -56,7 +57,7 @@ ynh_remove_nginx_config
 #=================================================
 # REMOVE PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Remove php-fpm configuration" --weight=2
+ynh_script_progression --message="Removing php-fpm configuration..." --weight=2
 
 # Remove the dedicated php-fpm config
 ynh_remove_fpm_config
@@ -64,7 +65,7 @@ ynh_remove_fpm_config
 #=================================================
 # REMOVE FAIL2BAN CONFIGURATION
 #=================================================
-ynh_script_progression --message="Remove fail2ban configuration" --weight=8
+ynh_script_progression --message="Removing fail2ban configuration..." --weight=8
 
 # Remove the dedicated fail2ban config
 ynh_remove_fail2ban_config
@@ -74,13 +75,13 @@ ynh_remove_fail2ban_config
 #=================================================
 # REMOVE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Remove the dedicated user" --weight=3
+ynh_script_progression --message="Removing the dedicated system user..." --weight=3
 
 # Delete dedicated system user
-ynh_system_user_delete $app
+ynh_system_user_delete --username=$app
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Deletion completed" --last
+ynh_script_progression --message="Removal of $app completed" --last

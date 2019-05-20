@@ -39,9 +39,9 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/wordpress%20%28Official%29.svg)](https://ci-stretch.nohost.me/ci/apps/wordpress/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/wordpress/)
 
 ## Limitations
 
@@ -61,6 +61,8 @@ Furthermore, you might take a look at this guide: https://codex.wordpress.org/Ha
 
  * Report a bug: https://github.com/YunoHost-Apps/wordpress_ynh/issues
  * Wordpress website: https://wordpress.org/
+ * Wordpress repository: https://core.trac.wordpress.org/browser  
+ https://build.trac.wordpress.org/browser
  * YunoHost website: https://yunohost.org/
 
 ---

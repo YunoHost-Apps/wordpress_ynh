@@ -19,57 +19,56 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=2
+ynh_script_progression --message="Loading installation settings..." --weight=2
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-final_path=$(ynh_app_setting_get $app final_path)
-db_name=$(ynh_app_setting_get $app db_name)
-db_pwd=$(ynh_app_setting_get $app mysqlpwd)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
 # BACKUP THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Backup the app main dir" --weight=2
+ynh_script_progression --message="Backing up the main app directory..." --weight=2
 
 CHECK_SIZE "$final_path"
-ynh_backup "$final_path"
+ynh_backup --src_path="$final_path"
 
 #=================================================
 # BACKUP NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Backup nginx configuration"
+ynh_script_progression --message="Backing up nginx web server configuration..."
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Backup php-fpm configuration"
+ynh_script_progression --message="Backing up php-fpm configuration..."
 
-ynh_backup "/etc/php/7.0/fpm/pool.d/$app.conf"
+ynh_backup --src_path="/etc/php/7.0/fpm/pool.d/$app.conf"
 
 #=================================================
 # BACKUP THE MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Backup the mysql database" --weight=2
+ynh_script_progression --message="Backing up the MySQL database..." --weight=2
 
-ynh_mysql_dump_db "$db_name" > db.sql
+ynh_mysql_dump_db --database="$db_name" > db.sql
 CHECK_SIZE "db.sql"
 
 #=================================================
 # BACKUP FAIL2BAN CONFIGURATION
 #=================================================
-ynh_script_progression --message="Backup fail2ban configuration"
+ynh_script_progression --message="Backing up fail2ban configuration..."
 
-ynh_backup "/etc/fail2ban/jail.d/$app.conf"
-ynh_backup "/etc/fail2ban/filter.d/$app.conf"
+ynh_backup --src_path="/etc/fail2ban/jail.d/$app.conf"
+ynh_backup --src_path="/etc/fail2ban/filter.d/$app.conf"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Backup completed" --last
+ynh_script_progression --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)." --time --last

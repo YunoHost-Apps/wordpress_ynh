@@ -19,7 +19,6 @@ ynh_abort_if_errors
 #=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
-ynh_script_progression --message="Retrieve arguments from the manifest"
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
@@ -33,64 +32,61 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
 #=================================================
-ynh_script_progression --message="Check if the app can be installed" --weight=2
+ynh_script_progression --message="Validating installation parameters..." --weight=2
 
 final_path=/var/www/$app
-test ! -e "$final_path" || ynh_die "This path already contains a folder"
-
-# Normalize the url path syntax
-path_url=$(ynh_normalize_url_path $path_url)
+test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
 
 # Register (book) web path
-ynh_webpath_register $app $domain $path_url
+ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
 if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
-	ynh_die "Multisite option of wordpress doesn't work at the root of a domain."
+	ynh_die --message="Multisite option of wordpress doesn't work at the root of a domain."
 fi
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Store settings from manifest" --weight=2
+ynh_script_progression --message="Storing installation settings..." --weight=2
 
-ynh_app_setting_set $app domain $domain
-ynh_app_setting_set $app path $path_url
-ynh_app_setting_set $app admin $admin_wordpress
-ynh_app_setting_set $app is_public $is_public
-ynh_app_setting_set $app language $language
-ynh_app_setting_set $app multisite $multisite
+ynh_app_setting_set --app=$app --key=domain --value=$domain
+ynh_app_setting_set --app=$app --key=path --value=$path_url
+ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
+ynh_app_setting_set --app=$app --key=is_public --value=$is_public
+ynh_app_setting_set --app=$app --key=language --value=$language
+ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Install dependencies" --weight=9
+ynh_script_progression --message="Installing dependencies..." --weight=9
 
 ynh_install_app_dependencies php5-cli
 
 #=================================================
 # CREATE A MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Create a mysql database"
+ynh_script_progression --message="Creating a MySQL database..."
 
-db_name=$(ynh_sanitize_dbid $app)
-ynh_app_setting_set $app db_name $db_name
-ynh_mysql_setup_db $db_name $db_name
+db_name=$(ynh_sanitize_dbid --db_name=$app)
+ynh_app_setting_set --app=$app --key=db_name --value=$db_name
+ynh_mysql_setup_db --db_user=$db_name --db_name=$db_name
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Download, check and unpack source" --weight=4
+ynh_script_progression --message="Setting up source files..." --weight=4
 
-ynh_app_setting_set $app final_path $final_path
+ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source "$final_path"
+ynh_setup_source --dest_dir="$final_path"
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configure nginx" --weight=3
+ynh_script_progression --message="Configuring nginx web server..." --weight=3
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -98,15 +94,15 @@ ynh_add_nginx_config
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Create a dedicated user" --weight=3
+ynh_script_progression --message="Configuring system user..." --weight=3
 
 # Create a dedicated system user
-ynh_system_user_create $app
+ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configure php-fpm" --weight=2
+ynh_script_progression --message="Configuring php-fpm..." --weight=2
 
 # Create a dedicated php-fpm config
 ynh_add_fpm_config
@@ -116,49 +112,49 @@ ynh_add_fpm_config
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configure wp-config.php"
+ynh_script_progression --message="Configuring wordpress..."
 
 cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
-ynh_replace_string "__DB_USER__" "$db_name" $final_path/wp-config.php
-ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/wp-config.php
+ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_name --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file=$final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
 do
-	j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+	j=$(ynh_string_random --length=40)
 	if [ "$j" = "" ];
 	then
 		# For obscure reasons, the loop is too fast at execution
 		sleep 1
-		j=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{40\}\).*/\1/p')
+		j=$(ynh_string_random --length=40)
 	fi
-	ynh_replace_string "KEY$i" "$j" $final_path/wp-config.php
+	ynh_replace_string --match_string="KEY$i" --replace_string="$j" --target_file=$final_path/wp-config.php
 done
 
 #=================================================
 # SETTING UP WITH CURL
 #=================================================
-ynh_script_progression --message="Install wordpress with Curl" --weight=10
+ynh_script_progression --message="Installing wordpress with Curl..." --weight=10
 
 # Set right permissions for curl install
 chown -R $app: $final_path
 
 # Set the app as temporarily public for curl call
-ynh_app_setting_set $app unprotected_uris "/"
+ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
 # Reload Nginx
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
 
-ynh_print_info "Please wait during Wordpress installation"
+ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
 do
 	# The loop waits for wordpress to be installed, or 5 minutes.
-	if ynh_mysql_connect_as $db_name $db_pwd $db_name <<< "show tables" | grep -q "wp_options"; then
+	if ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
 		# If the table wp_options is found, wordpress has finished its installation.
 		break
 	fi
@@ -168,9 +164,9 @@ done
 #=================================================
 # INSTALL WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Install wordpress plugins" --weight=20
+ynh_script_progression --message="Installing wordpress plugins..." --weight=20
 
-wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
@@ -181,7 +177,7 @@ $wpcli_alias plugin install wp-fail2ban
 #=================================================
 # SET LANGUAGE
 #=================================================
-ynh_script_progression --message="Set language" --weight=3
+ynh_script_progression --message="Configuring language..." --weight=3
 
 $wpcli_alias core language install $language
 $wpcli_alias site switch-language $language
@@ -192,29 +188,29 @@ $wpcli_alias site switch-language $language
 
 if [ $multisite -eq 1 ]
 then
-	ynh_script_progression --message="Configure multisite" --weight=2
+	ynh_script_progression --message="Configuring multisite..." --weight=2
 
-	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
 	# Allow multisite
-	ynh_replace_string "//--MULTISITE1--define" "define " $final_path/wp-config.php
+	ynh_replace_string --match_string="//--MULTISITE1--define" --replace_string="define " --target_file=$final_path/wp-config.php
 
 	# Activate multisite via wp-cli
 	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path_url/
 
 	# Activate multisite in wordpress config
-	ynh_replace_string "//--MULTISITE2--define" "define" $final_path/wp-config.php
+	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$final_path/wp-config.php
 
-	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/multisite.sql
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
-	ynh_mysql_connect_as $db_name $db_pwd $db_name < ../conf/sql/single.sql
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 fi
 
 #=================================================
 # ACTIVATE WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Activate wordpress plugins" --weight=4
+ynh_script_progression --message="Activating plugins..." --weight=4
 
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
@@ -226,7 +222,7 @@ $wpcli_alias plugin activate wp-fail2ban $plugin_network
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/wp-config.php"
+ynh_store_file_checksum --file="$final_path/wp-config.php"
 
 #=================================================
 # GENERIC FINALISATION
@@ -243,7 +239,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configure fail2ban" --weight=7
+ynh_script_progression --message="Configuring fail2ban..." --weight=7
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
@@ -251,20 +247,20 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Setup SSOwat"
+ynh_script_progression --message="Configuring SSOwat..."
 
 if [ $is_public -eq 0 ];
 then
 	# Remove the public access
-	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 fi
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reload nginx" --weight=3
+ynh_script_progression --message="Reloading nginx web server..." --weight=3
 
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # REMOVE WP-CLI.PHAR
@@ -276,12 +272,12 @@ ynh_secure_remove $final_path/wp-cli.phar
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
+echo "If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh" > mail_to_send
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="$admin_wordpress"
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=install
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation completed" --last
+ynh_script_progression --message="Installation of $app completed" --last

@@ -229,6 +229,13 @@ $wpcli_alias plugin activate wp-fail2ban $plugin_network
 ynh_store_file_checksum "$final_path/wp-config.php"
 
 #=================================================
+# CREATE A CRON TASK FOR AUTOMATIC UPDATE
+#=================================================
+
+echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
+0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
+
+#=================================================
 # GENERIC FINALISATION
 #=================================================
 # SECURING FILES AND DIRECTORIES

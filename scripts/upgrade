@@ -12,18 +12,18 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=5
+ynh_script_progression --message="Loading installation settings..." --weight=5
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-path_url=$(ynh_app_setting_get $app path)
-admin_wordpress=$(ynh_app_setting_get $app admin)
-language=$(ynh_app_setting_get $app language)
-is_public=$(ynh_app_setting_get $app is_public)
-multisite=$(ynh_app_setting_get $app multisite)
-final_path=$(ynh_app_setting_get $app final_path)
-db_name=$(ynh_app_setting_get $app db_name)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
+language=$(ynh_app_setting_get --app=$app --key=language)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+multisite=$(ynh_app_setting_get --app=$app --key=multisite)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # CHECK VERSION
@@ -34,47 +34,48 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensure downward compatibility"
+ynh_script_progression --message="Ensuring downward compatibility..."
 
 if [ -z "$admin_wordpress" ]; then
-	ynh_mysql_execute_as_root "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" $db_name
+	ynh_mysql_execute_as_root --sql="select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" --database=$db_name
 	admin_wordpress=$(cat /tmp/wordpressuser)
-	ynh_secure_remove /tmp/wordpressuser
-	ynh_app_setting_set $app admin $admin_wordpress
+	ynh_secure_remove --file=/tmp/wordpressuser
+	ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 fi
 
+# If final_path doesn't exist, create it
 if [ -z "$final_path" ]; then
 	final_path=/var/www/$app
-	ynh_app_setting_set $app final_path $final_path
+	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 fi
 
 if [ -z "$language" ]; then
 	language=$(grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
-	ynh_app_setting_set $app language $language
+	ynh_app_setting_set --app=$app --key=language --value=$language
 fi
 
 # Fix is_public as a boolean
 if [ "${is_public,,}" = "yes" ]; then
-	ynh_app_setting_set $app is_public 1
+	ynh_app_setting_set --app=$app --key=is_public --value=1
 	is_public=1
 elif [ "${is_public,,}" = "no" ]; then
-	ynh_app_setting_set $app is_public 0
+	ynh_app_setting_set --app=$app --key=is_public --value=0
 	is_public=0
 fi
 
 # Fix multisite as a boolean
 if [ "${multisite,,}" = "yes" ]; then
-	ynh_app_setting_set $app multisite 1
+	ynh_app_setting_set --app=$app --key=multisite --value=1
 	multisite=1
 elif [ "${multisite,,}" = "no" ]; then
-	ynh_app_setting_set $app multisite 0
+	ynh_app_setting_set --app=$app --key=multisite --value=0
 	multisite=0
 fi
 
 # If db_name doesn't exist, create it
-if [ -z $db_name ]; then
-	db_name=$(ynh_sanitize_dbid $app)
-	ynh_app_setting_set $app db_name $db_name
+if [ -z "$db_name" ]; then
+	db_name=$(ynh_sanitize_dbid --db_name=$app)
+	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
 fi
 
 # If some 'add_filter' are still in wp_config, remove them
@@ -87,7 +88,7 @@ fi
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backup the app before upgrading" --weight=15
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -103,26 +104,26 @@ ynh_abort_if_errors
 #=================================================
 
 # Normalize the URL path syntax
-path_url=$(ynh_normalize_url_path $path_url)
+path_url=$(ynh_normalize_url_path --path_url=$path_url)
 
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Activate maintenance mode" --weight=2
+ynh_script_progression --message="Activating maintenance mode..." --weight=2
 
 ynh_maintenance_mode_ON
 
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrade dependencies" --weight=11
+ynh_script_progression --message="Upgrading dependencies..." --weight=11
 
 ynh_install_app_dependencies php5-cli
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Reconfigure nginx" --weight=2
+ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=2
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -130,15 +131,15 @@ ynh_add_nginx_config
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Create a dedicated user"
+ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a dedicated user (if not existing)
-ynh_system_user_create $app
+ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Reconfigure php-fpm" --weight=4
+ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=4
 
 # Create a dedicated php-fpm config
 ynh_add_fpm_config
@@ -150,33 +151,33 @@ ynh_add_fpm_config
 #=================================================
 
 # Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-ynh_backup_if_checksum_is_different "$final_path/wp-config.php"
+ynh_backup_if_checksum_is_different --file="$final_path/wp-config.php"
 
 #=================================================
 # CONFIGURE MULTISITE
 #=================================================
-ynh_script_progression --message="Configure multisite" --weight=2
+ynh_script_progression --message="Configuring multisite..." --weight=2
 
 if [ $multisite -eq 1 ]
 then
-	ynh_replace_string "#--MULTISITE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
 	plugin_network="--network"
 else
 	multisite=0
 	plugin_network=""
 	if [ $is_public -eq 0 ]
 	then
-		ynh_replace_string "#--PRIVATE--" "" /etc/nginx/conf.d/$domain.d/$app.conf
+		ynh_replace_string --match_string="#--PRIVATE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
 	else
-		ynh_replace_string "//--PUBLIC--define" "define" $final_path/wp-config.php
+		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$final_path/wp-config.php
 	fi
 fi
-ynh_app_setting_set $app multisite $multisite
+ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
 #=================================================
 # UPDATE WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Update wordpress plugins" --weight=11
+ynh_script_progression --message="Updating plugins" --weight=11
 
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
@@ -198,7 +199,7 @@ $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deac
 #=================================================
 
 # Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum "$final_path/wp-config.php"
+ynh_store_file_checksum --file="$final_path/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
@@ -222,7 +223,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
-ynh_script_progression --message="Reconfigure fail2ban" --weight=9
+ynh_script_progression --message="Reconfiguring fail2ban..." --weight=9
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
@@ -230,35 +231,35 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Reconfigure SSOwat"
+ynh_script_progression --message="Upgrading SSOwat configuration..."
 
 # Remove skipped_uris if it's still present
-ynh_app_setting_delete $app skipped_uris
+ynh_app_setting_delete --app=$app --key=skipped_uris
 if [ $is_public -eq 0 ]; then
 	# Remove the public access
-	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 else
 	# Or replace skipped_uris by unprotected_uris
-	ynh_app_setting_set $app unprotected_uris "/"
+	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
 fi
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reload nginx"
+ynh_script_progression --message="Reloading nginx web server..."
 
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove $final_path/wp-cli.phar
+ynh_secure_remove --file=$final_path/wp-cli.phar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Disable maintenance mode" --weight=5
+ynh_script_progression --message="Disabling maintenance mode..." --weight=5
 
 ynh_maintenance_mode_OFF
 
@@ -266,4 +267,4 @@ ynh_maintenance_mode_OFF
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade completed" --last
+ynh_script_progression --message="Upgrade of $app completed" --last

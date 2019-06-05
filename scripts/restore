@@ -19,30 +19,31 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=3
+ynh_script_progression --message="Loading settings..." --weight=3
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-path_url=$(ynh_app_setting_get $app path)
-is_public=$(ynh_app_setting_get $app is_public)
-final_path=$(ynh_app_setting_get $app final_path)
-db_name=$(ynh_app_setting_get $app db_name)
-admin_wordpress=$(ynh_app_setting_get $app admin)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
 
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
+ynh_script_progression --message="Validating restoration parameters..." --time --weight=1
 
-ynh_webpath_available $domain $path_url \
-	|| ynh_die "Path not available: ${domain}${path_url}"
+ynh_webpath_available --domain=$domain --path_url=$path_url \
+	|| ynh_die --message="Path not available: ${domain}${path_url}"
 test ! -d $final_path \
-	|| ynh_die "There is already a directory: $final_path "
+	|| ynh_die --message="There is already a directory: $final_path "
 
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Activate maintenance mode"
+ynh_script_progression --message="Activating maintenance mode..."
 
 ynh_maintenance_mode_ON
 
@@ -52,31 +53,31 @@ ynh_maintenance_mode_ON
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
 
-ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restore the app main directory"
+ynh_script_progression --message="Restoring the app main directory..."
 
-ynh_restore_file "$final_path"
+ynh_restore_file --origin_path="$final_path"
 
 #=================================================
 # RESTORE THE MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Restore the mysql database" --weight=3
+ynh_script_progression --message="Restoring the MySQL database..." --weight=3
 
-db_pwd=$(ynh_app_setting_get $app mysqlpwd)
-ynh_mysql_setup_db $db_name $db_name $db_pwd
-ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
+db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
+ynh_mysql_setup_db --db_user=$db_name --db_name=$db_name --db_pwd=$db_pwd
+ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Recreate the dedicated user" --weight=3
+ynh_script_progression --message="Recreating the dedicated system user..." --weight=3
 
 # Create the dedicated user (if not existing)
-ynh_system_user_create $app
+ynh_system_user_create --username=$app
 
 #=================================================
 # RESTORE USER RIGHTS
@@ -92,31 +93,37 @@ chown root: $final_path/wp-config.php
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_restore_file "/etc/php/7.0/fpm/pool.d/$app.conf"
+ynh_restore_file --origin_path="/etc/php/7.0/fpm/pool.d/$app.conf"
 
 #=================================================
 # RESTORE THE FAIL2BAN CONFIGURATION
 #=================================================
-ynh_script_progression --message="Restore the fail2ban configuration" --weight=6
+ynh_script_progression --message="Restoring the fail2ban configuration..." --weight=6
 
-ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
-ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
+ynh_restore_file --origin_path="/etc/fail2ban/jail.d/$app.conf"
+ynh_restore_file --origin_path="/etc/fail2ban/filter.d/$app.conf"
 ynh_systemd_action --action=restart --service_name=fail2ban
+
+#=================================================
+# RESTORE THE CRON
+#=================================================
+
+ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
 # GENERIC FINALISATION
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================
-ynh_script_progression --message="Reload nginx and php-fpm" --weight=2
+ynh_script_progression --message="Reloading nginx web server and php-fpm..." --weight=2
 
-ynh_systemd_action --action=reload --service_name=php5-fpm
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=php7.0-fpm --action=reload
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Disable maintenance mode" --weight=8
+ynh_script_progression --message="Disabling maintenance mode..." --weight=8
 
 ynh_maintenance_mode_OFF
 
@@ -124,12 +131,12 @@ ynh_maintenance_mode_OFF
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh"
+echo "If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh" > mail_to_send
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="$admin_wordpress"
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=restore
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Restoration completed" --last
+ynh_script_progression --message="Restoration completed for $app" --last

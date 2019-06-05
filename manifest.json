@@ -6,7 +6,7 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "5.0.3~ynh1",
+	"version": "5.2~ynh1",
 	"url": "https://wordpress.org/",
 	"license": "GPL-2.0",
 	"maintainer": {
@@ -14,7 +14,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	},
     "requirements": {
-        "yunohost": ">= 3.4"
+        "yunohost": ">= 3.5"
     },
 	"multi_instance": true,
 	"services": [
@@ -54,6 +54,7 @@
 			},
 			{
 				"name": "language",
+				"type": "string",
 				"ask": {
 					"en": "Choose the language of the WordPress site",
 					"fr": "Choissisez la langue du WordPress"
@@ -77,7 +78,11 @@
 					"en": "Is it a public WordPress site ?",
 					"fr": "Est-ce un site public ?"
 				},
-				"default": true
+				"default": true,
+				"help": {
+					"en": "A public wordpress will be publicly visible for everyone. If you're looking for a public blog, you should choose to install a public wordpress.",
+					"fr": "Un wordpress public sera visible publiquement pour tous. Si vous recherchez un blog public, vous devriez choisir d'installer un wordpress public."
+				}
 			}
 		]
 	}

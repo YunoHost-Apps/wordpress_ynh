@@ -10,7 +10,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 WordPress is open source software you can use to create a beautiful website, blog, or app.  
 With this package, you can even activate the [multisite](https://codex.wordpress.org/Glossary#Multisite) option.
 
-**Shipped version:** 5.0.3
+**Shipped version:** 5.2
 
 ## Screenshots
 
@@ -30,7 +30,7 @@ Use the admin panel of your wordpress to configure this app.
  * Integration with YunoHost users and SSO:
    * private mode: Blog only accessible by YunoHost users
    * public mode: Visible by anyone, YunoHost users automatically connected
- * Automatic update of wordpress core, plugins and themes
+ * Automatic update of wordpress core, plugins and themes.
  * Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
 
 #### Multi-users support
@@ -39,18 +39,30 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Official%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/wordpress%20%28Official%29.svg)](https://ci-stretch.nohost.me/ci/apps/wordpress/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/wordpress/)
 
 ## Limitations
 
 * Multisite only available on subdirectories.
+* As the automatic update plugin isn't working as expected, pay attention to keep your wordpress up to date from the wordpress admin panel, and not only from yunohost admin panel. For security reason, you should control that all updates are regularly applied in wordpress admin panel as well as in yunohost admin panel.
+
+**Security**
+
+Please be aware that Wordpress is known for being frequently a source of security risks (https://en.wikipedia.org/wiki/WordPress#Vulnerabilities), and also as the most popular website management system it is a target for bots and attackers.
+Some vulnerabilities might let an attacker breach into your wordpress, or even your Yunohost server (via privilege escalation).
+
+Don't forget to comply with good security principles (strong password, frequent updates, don't add unknow code in your theme/extensions…). In particular, *please keep your wordpress as up-to-date as possible*.
+
+Furthermore, you might take a look at this guide: https://codex.wordpress.org/Hardening_WordPress. You might see some benefits in the use of wordpress security plugins.
 
 ## Links
 
  * Report a bug: https://github.com/YunoHost-Apps/wordpress_ynh/issues
  * Wordpress website: https://wordpress.org/
+ * Wordpress repository: https://core.trac.wordpress.org/browser  
+ https://build.trac.wordpress.org/browser
  * YunoHost website: https://yunohost.org/
 
 ---

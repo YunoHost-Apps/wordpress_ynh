@@ -109,7 +109,6 @@ fi
 
 # Get the database table prefix
 db_prefix=$(grep '^$table_prefix' "$final_path/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
-ynh_debug --message="db_prefix=$db_prefix"
 
 ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='$new_domain$new_path' WHERE option_name='siteurl'" --database=$app
 ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='$new_domain$new_path' WHERE option_name='home'" --database=$app

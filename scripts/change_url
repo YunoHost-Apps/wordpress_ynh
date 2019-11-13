@@ -107,8 +107,8 @@ fi
 # UPDATE THE DATABASE
 #=================================================
 
-ynh_mysql_execute_as_root --sql="UPDATE wp_options SET option_value='$new_domain$new_path' WHERE option_name='siteurl'" --database=$app
-ynh_mysql_execute_as_root --sql="UPDATE wp_options SET option_value='$new_domain$new_path' WHERE option_name='home'" --database=$app
+ynh_mysql_execute_as_root --sql="UPDATE wp_options SET option_value='https://$new_domain$new_path' WHERE option_name='siteurl'" --database=$app
+ynh_mysql_execute_as_root --sql="UPDATE wp_options SET option_value='https://$new_domain$new_path' WHERE option_name='home'" --database=$app
 
 #=================================================
 # UPDATE THE CRON

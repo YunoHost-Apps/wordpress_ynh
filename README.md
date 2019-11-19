@@ -10,7 +10,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 WordPress is open source software you can use to create a beautiful website, blog, or app.  
 With this package, you can even activate the [multisite](https://codex.wordpress.org/Glossary#Multisite) option.
 
-**Shipped version:** 5.2
+**Shipped version:** 5.3
 
 ## Screenshots
 

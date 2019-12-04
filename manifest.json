@@ -6,7 +6,7 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "5.2~ynh1",
+	"version": "5.3~ynh1",
 	"url": "https://wordpress.org/",
 	"license": "GPL-2.0",
 	"maintainer": {

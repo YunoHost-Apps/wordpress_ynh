@@ -36,6 +36,23 @@ then
 fi
 
 #=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+ynh_script_progression --message="Backing up the app before changing its url (may take a while)..." --weight=5
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# Remove the new domain config file, the remove script won't do it as it doesn't know yet its location.
+	ynh_secure_remove --file="/etc/nginx/conf.d/$new_domain.d/$app.conf"
+
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
 ynh_script_progression --message="Activating maintenance mode..." --weight=2

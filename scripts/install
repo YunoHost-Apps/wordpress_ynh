@@ -167,7 +167,7 @@ wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
-$wpcli_alias plugin install wp-fail2ban
+$wpcli_alias plugin install wp-fail2ban-redux
 
 #=================================================
 # SET LANGUAGE
@@ -210,7 +210,7 @@ ynh_script_progression --message="Activating plugins..." --weight=4
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
-$wpcli_alias plugin activate wp-fail2ban $plugin_network
+$wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM

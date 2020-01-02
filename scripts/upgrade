@@ -83,6 +83,12 @@ if grep add_filter.*auto_update $final_path/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
 fi
 
+# Replace wp-fail2ban by wp-fail2ban-redux
+wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+$wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
+$wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
+
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
@@ -179,8 +185,8 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 #=================================================
 ynh_script_progression --message="Updating plugins" --weight=11
 
-wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+# wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
+# wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
@@ -188,8 +194,8 @@ update_plugin simple-ldap-login
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
-update_plugin wp-fail2ban
-$wpcli_alias plugin activate wp-fail2ban $plugin_network
+update_plugin wp-fail2ban-redux
+$wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 # Disable broken plugin http-authentication
 $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication $plugin_network

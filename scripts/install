@@ -56,6 +56,10 @@ ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
+ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
+ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
+ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
+
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================

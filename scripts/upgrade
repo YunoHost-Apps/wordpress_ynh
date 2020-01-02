@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+source _ynh_add_fpm_config
 
 #=================================================
 # LOAD SETTINGS
@@ -24,6 +25,9 @@ is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 multisite=$(ynh_app_setting_get --app=$app --key=multisite)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+
+fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
+fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 
 #=================================================
 # CHECK VERSION
@@ -81,6 +85,25 @@ fi
 # If some 'add_filter' are still in wp_config, remove them
 if grep add_filter.*auto_update $final_path/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
+fi
+
+# If the app is private, set the usage to low, otherwise to high.
+if [ $is_public -eq 0 ]
+then
+    usage=low
+else
+    usage=high
+fi
+# If fpm_footprint doesn't exist, create it
+if [ -z "$fpm_footprint" ]; then
+    fpm_footprint=$usage
+    ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
+fi
+
+# If fpm_usage doesn't exist, create it
+if [ -z "$fpm_usage" ]; then
+    fpm_usage=$usage
+    ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux
@@ -148,7 +171,7 @@ ynh_system_user_create --username=$app
 ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=4
 
 # Create a dedicated php-fpm config
-ynh_add_fpm_config
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
 #=================================================
 # SPECIFIC UPGRADE

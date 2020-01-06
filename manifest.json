@@ -6,7 +6,7 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "5.3~ynh1",
+	"version": "5.3.2~ynh1",
 	"url": "https://wordpress.org/",
 	"license": "GPL-2.0",
 	"maintainer": {
@@ -14,7 +14,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	},
     "requirements": {
-        "yunohost": ">= 3.5"
+        "yunohost": ">= 3.6"
     },
 	"multi_instance": true,
 	"services": [

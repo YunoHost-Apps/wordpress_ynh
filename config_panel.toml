@@ -5,6 +5,41 @@ name = "Wordpress configuration panel"
 name = "Wordpress configuration"
 
 
+    [main.is_public]
+    name = "Public access"
+
+        [main.is_public.is_public]
+        ask = "Is it a public WordPress site ?"
+        type = "boolean"
+        default = true
+
+
+    [main.overwrite_files]
+    name = "Overwriting config files"
+
+        [main.overwrite_files.overwrite_nginx]
+        ask = "Overwrite the nginx config file ?"
+        type = "boolean"
+        default = true
+        help = "If the file is overwritten, a backup will be created."
+
+        [main.overwrite_files.overwrite_phpfpm]
+        ask = "Overwrite the php-fpm config file ?"
+        type = "boolean"
+        default = true
+        help = "If the file is overwritten, a backup will be created."
+
+
+    [main.global_config]
+    name = "Global configuration"
+
+        [main.global_config.email_type]
+        ask = "Send HTML email to admin ?"
+        type = "boolean"
+        default = true
+        help = "Allow app scripts to send HTML mails instead of plain text."
+
+
     [main.php_fpm_config]
     name = "PHP-FPM configuration"
 

@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+source _ynh_add_fpm_config
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -55,6 +56,10 @@ ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
+
+ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
+ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
+ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -104,8 +109,15 @@ ynh_system_user_create --username=$app
 #=================================================
 ynh_script_progression --message="Configuring php-fpm..." --weight=2
 
+# If the app is private, set the usage to low, otherwise to high.
+if [ $is_public -eq 0 ]
+then
+    usage=low
+else
+    usage=high
+fi
 # Create a dedicated php-fpm config
-ynh_add_fpm_config
+ynh_add_fpm_config --usage=$usage --footprint=$usage
 
 #=================================================
 # SPECIFIC SETUP
@@ -251,7 +263,7 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 ynh_script_progression --message="Configuring SSOwat..."
 
-if [ $is_public -eq 0 ];
+if [ $is_public -eq 0 ]
 then
 	# Remove the public access
 	ynh_app_setting_delete --app=$app --key=unprotected_uris

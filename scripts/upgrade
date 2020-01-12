@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+source _ynh_add_fpm_config
 
 #=================================================
 # LOAD SETTINGS
@@ -28,6 +29,9 @@ db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
 overwrite_phpfpm=$(ynh_app_setting_get --app=$app --key=overwrite_phpfpm)
 admin_mail_html=$(ynh_app_setting_get --app=$app --key=admin_mail_html)
+
+fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
+fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 
 #=================================================
 # CHECK VERSION
@@ -105,6 +109,26 @@ if [ -z "$overwrite_phpfpm" ]; then
     ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=$overwrite_phpfpm
 fi
 
+# If the app is private, set the usage to low, otherwise to high.
+if [ $is_public -eq 0 ]
+then
+    usage=low
+else
+    usage=high
+fi
+
+# If fpm_footprint doesn't exist, create it
+if [ -z "$fpm_footprint" ]; then
+    fpm_footprint=$usage
+    ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
+fi
+
+# If fpm_usage doesn't exist, create it
+if [ -z "$fpm_usage" ]; then
+    fpm_usage=$usage
+    ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
+fi
+
 # Replace wp-fail2ban by wp-fail2ban-redux
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
@@ -176,7 +200,7 @@ if [ $overwrite_phpfpm -eq 1 ]
 then
     ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=4
     # Create a dedicated php-fpm config
-    ynh_add_fpm_config
+    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 fi
 
 #=================================================

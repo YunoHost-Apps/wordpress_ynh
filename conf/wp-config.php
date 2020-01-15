@@ -90,3 +90,10 @@ require_once(ABSPATH . 'wp-settings.php');
 
 // Force https redirect
 //--PUBLIC--define('FORCE_SSL_ADMIN', true);
+
+/* No Errors */
+error_reporting(0);
+@ini_set(‘display_errors’, 0);
+
+/* No PHP Edit */
+define( 'DISALLOW_FILE_EDIT', true );

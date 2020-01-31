@@ -323,6 +323,25 @@ ynh_script_progression --message="Disabling maintenance mode..." --weight=5
 ynh_maintenance_mode_OFF
 
 #=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+# Get main domain and buid the url of the admin panel of the app.
+admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
+
+# Build the changelog
+ynh_app_changelog || true
+
+echo "If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__.
+
+---
+
+Changelog since your last upgrade:
+$(cat changelog)" > mail_to_send
+
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=upgrade
+
+#=================================================
 # END OF SCRIPT
 #=================================================
 

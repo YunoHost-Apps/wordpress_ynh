@@ -4,6 +4,20 @@ Changelog
 ## Unreleased
 - Nothing for now...
 
+## [5.3.2~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85) - 2020-01-31
+
+#### Added
+* [Add action and config-panel feature](https://github.com/YunoHost-Apps/wordpress_ynh/pull/79)
+* [Add changelog](https://github.com/YunoHost-Apps/wordpress_ynh/pull/82)
+
+#### Fixed
+- [fix config is_public](https://github.com/YunoHost-Apps/wordpress_ynh/pull/84)
+
+#### Changed
+* [Use ynh_get_scalable_phpfpm](https://github.com/YunoHost-Apps/wordpress_ynh/pull/80)
+* [Update to 5.3.2](https://github.com/YunoHost-Apps/wordpress_ynh/pull/81)
+
+
 ## [5.3~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/77) - 2019-12-26
 
 #### Fixed

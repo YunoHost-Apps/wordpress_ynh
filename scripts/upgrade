@@ -132,7 +132,10 @@ fi
 # Replace wp-fail2ban by wp-fail2ban-redux
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
 wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
-$wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
+if [ $multisite -eq 1 ]; then
+        plugin_network="--network"
+fi
+$wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate $plugin_network wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
 $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
 
 #=================================================

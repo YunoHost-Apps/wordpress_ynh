@@ -68,7 +68,7 @@ ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --weight=9
 
-ynh_install_app_dependencies php5-cli
+ynh_install_app_dependencies php7.0-cli
 
 #=================================================
 # CREATE A MYSQL DATABASE
@@ -174,7 +174,7 @@ done
 ynh_script_progression --message="Installing wordpress plugins..." --weight=20
 
 wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication

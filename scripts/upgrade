@@ -131,7 +131,7 @@ fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
 if [ $multisite -eq 1 ]; then
         plugin_network="--network"
 fi
@@ -173,7 +173,7 @@ ynh_maintenance_mode_ON
 #=================================================
 ynh_script_progression --message="Upgrading dependencies..." --weight=11
 
-ynh_install_app_dependencies php5-cli
+ynh_install_app_dependencies php7.0-cli
 
 #=================================================
 # NGINX CONFIGURATION
@@ -242,7 +242,7 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 ynh_script_progression --message="Updating plugins" --weight=11
 
 # wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-# wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+# wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }

@@ -9,3 +9,33 @@ description = "Change the public access of the app."
             type = "boolean"
             ask = "Is it a public app ?"
             default = true
+
+
+[reset_default_nginx]
+name = "Reset the nginx config for this app."
+command = "/bin/bash scripts/actions/reset_default_system nginx"
+# user = "root"  # optional
+# cwd = "/" # optional
+# accepted_return_codes = [0, 1, 2, 3]  # optional
+accepted_return_codes = [0]
+description = "Reset the nginx config for this app."
+
+
+[reset_default_phpfpm]
+name = "Reset the php-fpm config for this app."
+command = "/bin/bash scripts/actions/reset_default_system phpfpm"
+# user = "root"  # optional
+# cwd = "/" # optional
+# accepted_return_codes = [0, 1, 2, 3]  # optional
+accepted_return_codes = [0]
+description = "Reset the php-fpm config for this app."
+
+
+[reset_default_app]
+name = "Reset the app with a default configuration."
+command = "/bin/bash scripts/actions/reset_default_app"
+# user = "root"  # optional
+# cwd = "/" # optional
+# accepted_return_codes = [0, 1, 2, 3]  # optional
+accepted_return_codes = [0]
+description = "Reset the app to its default configuration to try to fix potential issues.<br>This action won't remove any data added to the app.<br>However, if you have modified any configuration, it will be overwritten."

@@ -14,7 +14,7 @@ source _ynh_add_fpm_config
 # RETRIEVE ARGUMENTS
 #=================================================
 
-app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
+app=$YNH_APP_INSTANCE_NAME
 
 fpm_config_dir=$(ynh_app_setting_get --app=$app --key=fpm_config_dir)
 

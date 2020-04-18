@@ -22,7 +22,7 @@ ynh_abort_if_errors
 # Get is_public
 is_public=${YNH_ACTION_IS_PUBLIC}
 
-app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
+app=$YNH_APP_INSTANCE_NAME
 
 #=================================================
 # CHECK IF ARGUMENTS ARE CORRECT

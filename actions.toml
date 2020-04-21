@@ -9,3 +9,12 @@ description = "Change the public access of the app."
             type = "boolean"
             ask = "Is it a public app ?"
             default = true
+
+[disable_maintenance]
+name = "Disable the maintenance mode of Wordpress"
+command = "/bin/bash scripts/actions/disable_maintenance"
+# user = "root"  # optional
+# cwd = "/" # optional
+# accepted_return_codes = [0, 1, 2, 3]  # optional
+accepted_return_codes = [0]
+description = "Disable the maintenance mode of Wordpress if you're stuck after an upgrade"

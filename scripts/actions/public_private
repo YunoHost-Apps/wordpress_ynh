@@ -9,13 +9,20 @@
 source /usr/share/yunohost/helpers
 
 #=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
 
 # Get is_public
 is_public=${YNH_ACTION_IS_PUBLIC}
 
-app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
+app=$YNH_APP_INSTANCE_NAME
 
 #=================================================
 # CHECK IF ARGUMENTS ARE CORRECT

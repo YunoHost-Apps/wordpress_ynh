@@ -119,7 +119,7 @@ fi
 
 # If fpm_footprint doesn't exist, create it
 if [ -z "$fpm_footprint" ]; then
-    fpm_footprint=$usage
+    fpm_footprint=medium
     ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
 fi
 
@@ -223,14 +223,17 @@ ynh_script_progression --message="Configuring multisite..." --weight=2
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
+
+    ynh_store_file_checksum --file="/etc/nginx/conf.d/$domain.d/$app.conf"
+
+    ynh_systemd_action --service_name=nginx --action=reload
+	
 	plugin_network="--network"
 else
 	multisite=0
 	plugin_network=""
-	if [ $is_public -eq 0 ]
+	if [ $is_public -eq 1 ]
 	then
-		ynh_replace_string --match_string="#--PRIVATE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
-	else
 		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$final_path/wp-config.php
 	fi
 fi
@@ -332,10 +335,18 @@ ynh_maintenance_mode_OFF
 # Get main domain and buid the url of the admin panel of the app.
 admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-# Build the changelog
-ynh_app_changelog || true
+# If a html email is required. Apply html to the changelog.
+if [ "$admin_mail_html" -eq 1 ]; then
+    format=html
+else
+    format=plain
+fi
+ynh_app_changelog --format=$format
 
-echo "If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__.
+echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
+You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
+
+If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__.
 
 ---
 

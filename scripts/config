@@ -14,7 +14,9 @@ source _ynh_add_fpm_config
 # RETRIEVE ARGUMENTS
 #=================================================
 
-app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
+app=$YNH_APP_INSTANCE_NAME
+
+fpm_config_dir=$(ynh_app_setting_get --app=$app --key=fpm_config_dir)
 
 #=================================================
 # LOAD VALUES
@@ -61,6 +63,14 @@ free_footprint="${YNH_CONFIG_MAIN_PHP_FPM_CONFIG_FREE_FOOTPRINT:-$old_free_footp
 old_fpm_usage="$(ynh_app_setting_get --app=$app --key=fpm_usage)"
 fpm_usage="${YNH_CONFIG_MAIN_PHP_FPM_CONFIG_USAGE:-$old_fpm_usage}"
 
+# php_forced_max_children for php-fpm
+old_php_forced_max_children="$(ynh_app_setting_get --app=$app --key=php_forced_max_children)"
+# If php_forced_max_children isn't into settings.yml, get the current value from the fpm config
+if [ -z "$old_php_forced_max_children" ]; then
+    old_php_forced_max_children="$(grep "^pm.max_children" "$fpm_config_dir/pool.d/$app.conf" | awk '{print $3}')"
+fi
+php_forced_max_children="${YNH_CONFIG_MAIN_PHP_FPM_CONFIG_FORCE_MAX_CHILDREN:-$old_php_forced_max_children}"
+
 #=================================================
 # SHOW_CONFIG FUNCTION FOR 'SHOW' COMMAND
 #=================================================
@@ -79,6 +89,7 @@ show_config() {
     ynh_return "YNH_CONFIG_MAIN_PHP_FPM_CONFIG_FOOTPRINT=$fpm_footprint"
     ynh_return "YNH_CONFIG_MAIN_PHP_FPM_CONFIG_FREE_FOOTPRINT=$free_footprint"
     ynh_return "YNH_CONFIG_MAIN_PHP_FPM_CONFIG_USAGE=$fpm_usage"
+    ynh_return "YNH_CONFIG_MAIN_PHP_FPM_CONFIG_FORCE_MAX_CHILDREN=$php_forced_max_children"
 }
 
 #=================================================
@@ -88,11 +99,14 @@ show_config() {
 apply_config() {
 
     # Change public accessibility
-    if [ "$is_public" = "1" ]
+    if [ "$is_public" != "$old_is_public" ]
     then
-        yunohost app action run $app public_private --args is_public=1
-    else
-        yunohost app action run $app public_private --args is_public=0
+        if [ "$is_public" = "1" ]
+        then
+            yunohost app action run $app public_private --args is_public=1
+        else
+            yunohost app action run $app public_private --args is_public=0
+        fi
     fi
 
     #=================================================
@@ -116,12 +130,27 @@ apply_config() {
     # RECONFIGURE PHP-FPM
     #=================================================
 
-    if [ "$fpm_usage" != "$old_fpm_usage" ] || [ "$fpm_footprint" != "$old_fpm_footprint" ] || [ "$free_footprint" != "$old_free_footprint" ]
+    if [ "$fpm_usage" != "$old_fpm_usage" ] || \
+        [ "$fpm_footprint" != "$old_fpm_footprint" ] || \
+        [ "$free_footprint" != "$old_free_footprint" ] || \
+        [ "$php_forced_max_children" != "$old_php_forced_max_children" ]
     then
         # If fpm_footprint is set to 'specific', use $free_footprint value.
         if [ "$fpm_footprint" = "specific" ]
         then
             fpm_footprint=$free_footprint
+        fi
+
+        if [ "$php_forced_max_children" != "$old_php_forced_max_children" ]
+        then
+            # Set php_forced_max_children
+            if [ $php_forced_max_children -ne 0 ]
+            then
+                ynh_app_setting_set --app=$app --key=php_forced_max_children --value="$php_forced_max_children"
+            else
+                # If the value is set to 0, remove the setting
+                ynh_app_setting_delete --app=$app --key=php_forced_max_children
+            fi
         fi
 
         if [ "$fpm_footprint" != "0" ]

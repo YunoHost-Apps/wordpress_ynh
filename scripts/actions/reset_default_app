@@ -1,0 +1,128 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source scripts/_common.sh
+source /usr/share/yunohost/helpers
+source scripts/_ynh_add_fpm_config
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# RETRIEVE ARGUMENTS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+
+#=================================================
+# SPECIFIC ACTION
+#=================================================
+# ACTIVATE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Activating maintenance mode..."
+
+ynh_maintenance_mode_ON
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+
+ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=1
+
+# Create a dedicated nginx config
+yunohost app action run $app reset_default_nginx
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..."
+
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username=$app
+
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+
+ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=2
+
+# Create a dedicated php-fpm config
+yunohost app action run $app reset_default_phpfpm
+
+#=================================================
+# CREATE A CRON TASK FOR AUTOMATIC UPDATE
+#=================================================
+
+echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
+0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
+
+#=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+
+# Set permissions to app files
+# Files have to be own by the user of wordpress. To allow upgrade from the app.
+chown -R $app: $final_path
+# Except the file config wp-config.php
+chown root: $final_path/wp-config.php
+
+# Reset permissions
+find $final_path/ -type f -print0 | xargs -0 chmod 0644
+find $final_path/ -type d -print0 | xargs -0 chmod 0755
+
+#=================================================
+# UPGRADE FAIL2BAN
+#=================================================
+ynh_script_progression --message="Reconfiguring fail2ban..." --weight=5
+
+# Create a dedicated fail2ban config
+ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="PHP message: Leed: wrong login for .* client: <HOST>" --max_retry=5
+
+#=================================================
+# SETUP SSOWAT
+#=================================================
+ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
+
+# Remove skipped_uris if it's still present
+ynh_app_setting_delete --app=$app --key=skipped_uris
+if [ $is_public -eq 0 ]; then
+	# Remove the public access
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
+else
+	# Or replace skipped_uris by unprotected_uris
+	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
+fi
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading nginx web server..."
+
+ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Disabling maintenance mode..."
+
+ynh_maintenance_mode_OFF
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Execution completed" --last

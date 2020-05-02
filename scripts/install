@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+source _ynh_add_fpm_config
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -56,6 +57,10 @@ ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
+ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
+ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
+ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
+
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
@@ -63,7 +68,7 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --weight=9
 
-ynh_install_app_dependencies php5-cli
+ynh_install_app_dependencies php7.0-cli
 
 #=================================================
 # CREATE A MYSQL DATABASE
@@ -104,8 +109,15 @@ ynh_system_user_create --username=$app
 #=================================================
 ynh_script_progression --message="Configuring php-fpm..." --weight=2
 
+# If the app is private, set the usage to low, otherwise to high.
+if [ $is_public -eq 0 ]
+then
+    usage=low
+else
+    usage=high
+fi
 # Create a dedicated php-fpm config
-ynh_add_fpm_config
+ynh_add_fpm_config --usage=$usage --footprint=medium
 
 #=================================================
 # SPECIFIC SETUP
@@ -162,12 +174,12 @@ done
 ynh_script_progression --message="Installing wordpress plugins..." --weight=20
 
 wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
-$wpcli_alias plugin install wp-fail2ban
+$wpcli_alias plugin install wp-fail2ban-redux
 
 #=================================================
 # SET LANGUAGE
@@ -210,7 +222,7 @@ ynh_script_progression --message="Activating plugins..." --weight=4
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
-$wpcli_alias plugin activate wp-fail2ban $plugin_network
+$wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
@@ -251,7 +263,7 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 ynh_script_progression --message="Configuring SSOwat..."
 
-if [ $is_public -eq 0 ];
+if [ $is_public -eq 0 ]
 then
 	# Remove the public access
 	ynh_app_setting_delete --app=$app --key=unprotected_uris
@@ -274,7 +286,13 @@ ynh_secure_remove $final_path/wp-cli.phar
 # SEND A README FOR THE ADMIN
 #=================================================
 
-echo "If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/wordpress_ynh" > mail_to_send
+# Get main domain and buid the url of the admin panel of the app.
+admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
+
+echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
+You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
+
+If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__." > mail_to_send
 
 ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=install
 

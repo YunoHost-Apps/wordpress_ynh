@@ -1,0 +1,80 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source scripts/_common.sh
+source /usr/share/yunohost/helpers
+source scripts/_ynh_add_fpm_config
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# RETRIEVE ARGUMENTS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+
+type=$1
+
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+
+multisite=$(ynh_app_setting_get --app=$app --key=multisite)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+
+#=================================================
+# SPECIFIC ACTION
+#=================================================
+# RESET THE CONFIG FILE
+#=================================================
+
+if [ $type == nginx ]; then
+    name=Nginx
+elif [ $type == phpfpm ]; then
+    name=PHP-FPM
+else
+    ynh_die --message="The type $type is not recognized"
+fi
+
+ynh_script_progression --message="Resetting the specific configuration of $name for the app $app..." --weight=3
+
+if [ $type == nginx ]
+then
+    (cd scripts; ynh_add_nginx_config)
+
+    if [ $multisite -eq 1 ]
+    then
+        ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
+
+        ynh_store_file_checksum --file="/etc/nginx/conf.d/$domain.d/$app.conf"
+
+        ynh_systemd_action --service_name=nginx --action=reload
+    fi
+
+elif [ $type == phpfpm ]
+then
+    # If the app is private, set the usage to low, otherwise to high.
+    if [ $is_public -eq 0 ]
+    then
+        usage=low
+    else
+        usage=high
+    fi
+    (cd scripts; ynh_add_fpm_config --usage=$usage --footprint=medium)
+fi
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Execution completed" --last

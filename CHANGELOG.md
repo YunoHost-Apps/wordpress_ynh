@@ -4,11 +4,13 @@ Changelog
 ## Unreleased
 - Nothing for now...
 
-## [5.3.2~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85) - 2020-01-31
+## [5.4.0~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85) - 2020-05-02
 
 #### Added
 * [Add action and config-panel feature](https://github.com/YunoHost-Apps/wordpress_ynh/pull/79)
 * [Add changelog](https://github.com/YunoHost-Apps/wordpress_ynh/pull/82)
+* [New reset actions](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/10a1fe6bf94a8b2eed2386b614771a51e093d958)
+* [Add an action to remove maintenance mode](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/373685d5736eba2b42495867eb4119db9991a60d)
 
 #### Fixed
 - [fix config is_public](https://github.com/YunoHost-Apps/wordpress_ynh/pull/84)
@@ -16,6 +18,13 @@ Changelog
 #### Changed
 * [Use ynh_get_scalable_phpfpm](https://github.com/YunoHost-Apps/wordpress_ynh/pull/80)
 * [Update to 5.3.2](https://github.com/YunoHost-Apps/wordpress_ynh/pull/81)
+* [Update to 5.4.0](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/00a1a6e7dd5c814f5084c11c2810f886a32bdf61)
+- [Remove php template](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/9eb618f88afd8294a0c3c8e0573a055038ec5423)
+- [Fix buster install](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/5e68805ed1afa47778f7cd4823f636e417594c5a)
+- [specify php version to use](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/59baee2ef9d85e3284ecf47fc3c7bd16a3c08ac3)
+- [Always show YunoHost tile](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/1b63bd778af287f605314b0383e5bd21f25b8007)
+- [Replace wp-fail2ban by wp-fail2ban-redux](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/3faae6b27694ed363d4c3605c4718963eb3d994f)
+- [Add new badges](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85/commits/063a5404691d54b50b88a52addfd5e3d6de5ebd0)
 
 
 ## [5.3~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/77) - 2019-12-26

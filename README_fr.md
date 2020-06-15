@@ -9,7 +9,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 *[Read this readme in english.](./README.md)* 
 
 ## Vue d'ensemble
-WordPress est un logiciel libre que vous pouvez utiliser pour créer un beau site ou un blog.
+WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 **Version incluse :** 5.4
@@ -31,7 +31,7 @@ Utilisez le panneau d'administration de votre wordpress pour le configurer.
 
  * Intégration avec les utilisateurs YunoHost et le SSO :
    * en mode privé : Le blog ou le site est accessible uniquement aux utilisateurs YunoHost
-   * en mode public : Le blog ou le site est accessible par n'importe qui et les utilisateurs YunoHost sont automatiquements connectés
+   * en mode public : Le blog ou le site est accessible par n'importe qui et les utilisateurs YunoHost sont automatiquement connectés
  * Mises à jour automatiques du cœur de wordpress, extentions et thèmes.
  * Capable de configurer une instance [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
@@ -48,16 +48,16 @@ Supporté, avec LDAP et SSO.
 ## Limitations
 
 * Le multisite n'est disponible que sur des sous-domaines.
-* Comme les mises à jour automatiques ne fonctionnent pas correctement, prennez soin de bien mettre à jour wordpress via le panneau d'administration de wordpress et pas seulement via le panneau d'administration de Yunohost. Pour des raisons de sécurité, vérifiez bien que toutes les mises à jour sont bien installées dans le panneaud d'administration de wordpress comme dans le panneau d'administration de Yunohost.
+* Comme les mises à jour automatiques ne fonctionnent pas correctement, prennez soin de bien mettre à jour wordpress via le panneau d'administration de wordpress et pas seulement via le panneau d'administration de Yunohost. Pour des raisons de sécurité, vérifiez bien que toutes les mises à jour sont bien installées dans le panneau d'administration de wordpress comme dans le panneau d'administration de Yunohost.
 
 **Sécurité**
 
 Soyez conscients que wordpress est connu pour avoir souvent des risques de sécurité (https://en.wikipedia.org/wiki/WordPress#Vulnerabilities), donc comme c'est le gestionnaire de sites le plus populaire il est la cible des robots et pirates.
-Des vulnerabilités peuvent offrir une brêche dans votre wordpress ou dans votre serveur Yunohost (via l'escalade des droits).
+Des vulnérabilités peuvent offrir une brêche dans votre wordpress ou dans votre serveur Yunohost (via l'escalade des droits).
 
 N'oubliez pas d'appliquer tous les bons principes de sécurité (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre wordpress à jour le plus possible*.
 
-Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.wordpress.org/Hardening_WordPress. Vous pourriez avoir des avantages à installer des extensions wordpress de sécurité.
+Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.wordpress.org/Hardening_WordPress. Installer des extensions de sécurité peut-être une bonne chose.
 
 ## Liens
 

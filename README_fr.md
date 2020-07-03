@@ -1,12 +1,12 @@
 # Wordpress pour YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) [![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)](https://github.com/YunoHost/Apps/#what-to-do-if-i-cant-maintain-my-app-anymore-)  
-[![Install Wordpress with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)
-
-> *Ce package vous permet d'installer Wordpress rapidement et simplement sur un serveur Yunohost.   
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+[![Niveau d'intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
+[![Installer Wordpress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)
 
 *[Read this readme in english.](./README.md)* 
+
+> *Ce package vous permet d'installer Wordpress rapidement et simplement sur un serveur YunoHost.  
+Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
 
 ## Vue d'ensemble
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
@@ -18,15 +18,15 @@ Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wo
 
 ![](https://s.w.org/images/home/screen-themes.png?1)
 
+## Configuration
+
+Utilisez le panneau d'administration de votre wordpress pour le configurer.
+
 ## Documentation
 
  * Documentation officielle : https://codex.wordpress.org/
  * Documentation YunoHost : https://yunohost.org/#/app_wordpress
  
-## Configuration
-
-Utilisez le panneau d'administration de votre wordpress pour le configurer.
-
 ## Caractéristiques spécifiques YunoHost
 
  * Intégration avec les utilisateurs YunoHost et le SSO :
@@ -35,7 +35,7 @@ Utilisez le panneau d'administration de votre wordpress pour le configurer.
  * Mises à jour automatiques du cœur de wordpress, extentions et thèmes.
  * Capable de configurer une instance [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
-#### Support multi-utilisateurs
+#### Support multi-utilisateur
 
 Supporté, avec LDAP et SSO.
 
@@ -68,13 +68,15 @@ Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.w
  * Site de YunoHost : https://yunohost.org/
 
 ---
+
 Informations pour les développeurs
 ----------------
 
-Merci de faire votre « pull request » sur la [branche testing](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
-Pour tester la branche testing, faites comme ceci.
+Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
+
+Pour essayer la branche testing, procédez comme suit.
 ```
 sudo yunohost app install https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
-or
+ou
 sudo yunohost app upgrade wordpress -u https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
 ```

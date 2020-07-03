@@ -25,7 +25,7 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1	from_commit=cbb74263e33deb0ec36f99886a2f773e36d40fd9
+		upgrade=1	from_commit=00a1a6e7dd5c814f5084c11c2810f886a32bdf61
 		backup_restore=1
 		multi_instance=1
 		port_already_use=0
@@ -54,6 +54,6 @@
 Email=
 Notification=change
 ;;; Upgrade options
-	; commit=cbb74263e33deb0ec36f99886a2f773e36d40fd9
-		name=Upgrade 4.8
+	; commit=00a1a6e7dd5c814f5084c11c2810f886a32bdf61
+		name=Upgrade 5.4
 		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&language=fr_FR&multisite=0&is_public=1&

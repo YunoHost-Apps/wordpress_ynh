@@ -70,7 +70,7 @@
 				"name": "multisite",
 				"type": "boolean",
 				"ask": {
-					"en": "Enable multisite option ?",
+					"en": "Enable multisite option?",
 					"fr": "Activer l'option multisite ?"
 				},
 				"default": false
@@ -79,13 +79,13 @@
 				"name": "is_public",
 				"type": "boolean",
 				"ask": {
-					"en": "Is it a public WordPress site ?",
+					"en": "Is it a public WordPress site?",
 					"fr": "Est-ce un site public ?"
 				},
 				"default": true,
 				"help": {
-					"en": "A public wordpress will be publicly visible for everyone. If you're looking for a public blog, you should choose to install a public wordpress.",
-					"fr": "Un wordpress public sera visible publiquement pour tous. Si vous recherchez un blog public, vous devriez choisir d'installer un wordpress public."
+					"en": "A public Wordpress will be publicly visible for everyone. If you're looking for a public blog, you should choose to install a public Wordpress.",
+					"fr": "Un Wordpress public sera visible publiquement pour tous. Si vous recherchez un blog public, vous devriez choisir d'installer un Wordpress public."
 				}
 			}
 		]

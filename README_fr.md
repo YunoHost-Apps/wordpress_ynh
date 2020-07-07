@@ -20,7 +20,7 @@ Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wo
 
 ## Configuration
 
-Utilisez le panneau d'administration de votre wordpress pour le configurer.
+Utilisez le panneau d'administration de votre WordPress pour le configurer.
 
 ## Documentation
 

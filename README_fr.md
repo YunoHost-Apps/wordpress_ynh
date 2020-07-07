@@ -32,7 +32,7 @@ Utilisez le panneau d'administration de votre wordpress pour le configurer.
  * Intégration avec les utilisateurs YunoHost et le SSO :
    * en mode privé : Le blog ou le site est accessible uniquement aux utilisateurs YunoHost
    * en mode public : Le blog ou le site est accessible par n'importe qui et les utilisateurs YunoHost sont automatiquement connectés
- * Mises à jour automatiques du cœur de wordpress, extentions et thèmes.
+ * Mises à jour automatiques du cœur de WordPress, extentions et thèmes.
  * Capable de configurer une instance [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 #### Support multi-utilisateur

@@ -1,7 +1,7 @@
 # WordPress pour YunoHost
 
 [![Niveau d'intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
-[![Installer Wordpress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)
+[![Installer WordPress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)
 
 *[Read this readme in english.](./README.md)* 
 

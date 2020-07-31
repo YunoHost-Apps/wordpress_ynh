@@ -55,7 +55,7 @@ Supporté, avec LDAP et SSO.
 Soyez conscients que WordPress est connu pour avoir souvent des risques de sécurité (https://en.wikipedia.org/wiki/WordPress#Vulnerabilities), donc comme c'est le gestionnaire de sites le plus populaire il est la cible des robots et pirates.
 Des vulnérabilités peuvent offrir une brêche dans votre WordPress ou dans votre serveur YunoHost (via l'escalade des droits).
 
-N'oubliez pas d'appliquer tous les bons principes de sécurité (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre wordpress à jour le plus possible*.
+N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre Wordpress à jour le plus possible*.
 
 Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.wordpress.org/Hardening_WordPress. Installer des extensions de sécurité peut-être une bonne chose.
 

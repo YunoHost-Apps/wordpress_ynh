@@ -63,7 +63,7 @@ Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.w
 
  * Rapporter un bug : https://github.com/YunoHost-Apps/wordpress_ynh/issues
  * Site de WordPress : https://wordpress.org/
- * Dépôt de Wordpress : https://core.trac.wordpress.org/browser
+ * Dépôt de WordPress : https://core.trac.wordpress.org/browser
  https://build.trac.wordpress.org/browser
  * Site de YunoHost : https://yunohost.org/
 

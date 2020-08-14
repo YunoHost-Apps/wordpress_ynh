@@ -55,7 +55,7 @@ Some vulnerabilities might let an attacker breach into your wordpress, or even y
 
 Don't forget to comply with good security principles (strong password, frequent updates, don't add unknow code in your theme/extensions…). In particular, *please keep your wordpress as up-to-date as possible*.
 
-Furthermore, you might take a look at this guide: https://codex.wordpress.org/Hardening_WordPress. You might see some benefits in the use of wordpress security plugins.
+Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wordpress.org/support/article/hardening-wordpress/). You might see some benefits in the use of wordpress security plugins.
 
 ## Links
 

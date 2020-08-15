@@ -4,6 +4,14 @@ Changelog
 ## Unreleased
 - Nothing for now...
 
+## [5.5.0~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/108) - 2020-08-15
+
+#### Changed
+* [Update to 5.5.0](https://github.com/YunoHost-Apps/wordpress_ynh/commit/942ca57cbeb339d27454b32ba73c34006aa1c510)
+- [Fix typo](https://github.com/YunoHost-Apps/wordpress_ynh/pull/106)
+- [Update link to hardening Wordpress guide](https://github.com/YunoHost-Apps/wordpress_ynh/pull/97)
+
+
 ## [5.4.0~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/85) - 2020-05-02
 
 #### Added

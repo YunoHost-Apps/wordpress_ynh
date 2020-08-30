@@ -57,7 +57,7 @@ Des vulnérabilités peuvent offrir une brêche dans votre WordPress ou dans vot
 
 N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre Wordpress à jour le plus possible*.
 
-Par ailleurs, vous pourriez avoir besoin de regarder ce guide :  https://codex.wordpress.org/Hardening_WordPress. Installer des extensions de sécurité peut-être une bonne chose.
+Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpress.org/support/article/hardening-wordpress/). Installer des extensions de sécurité peut-être une bonne chose.
 
 ## Liens
 

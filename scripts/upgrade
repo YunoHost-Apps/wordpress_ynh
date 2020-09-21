@@ -169,13 +169,6 @@ ynh_script_progression --message="Activating maintenance mode..." --weight=2
 ynh_maintenance_mode_ON
 
 #=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=11
-
-ynh_install_app_dependencies php7.0-cli
-
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 

@@ -110,6 +110,7 @@ else
 fi
 # Create a dedicated php-fpm config
 ynh_add_fpm_config --usage=$usage --footprint=medium
+phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # SPECIFIC SETUP
@@ -166,7 +167,7 @@ done
 ynh_script_progression --message="Installing wordpress plugins..." --weight=20
 
 wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication

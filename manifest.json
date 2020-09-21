@@ -18,12 +18,12 @@
 		"email": "maniackc_dev@crudelis.fr"
 	}],
     "requirements": {
-        "yunohost": ">= 3.6"
+        "yunohost": ">= 3.8.1"
     },
 	"multi_instance": true,
 	"services": [
 		"nginx",
-		"php7.0-fpm",
+		"php7.3-fpm",
 		"mysql"
 	],
 	"arguments": {

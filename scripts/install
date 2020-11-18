@@ -8,7 +8,6 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-source _ynh_add_fpm_config
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -64,13 +63,6 @@ ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=9
-
-ynh_install_app_dependencies php7.0-cli
-
-#=================================================
 # CREATE A MYSQL DATABASE
 #=================================================
 ynh_script_progression --message="Creating a MySQL database..."
@@ -118,6 +110,7 @@ else
 fi
 # Create a dedicated php-fpm config
 ynh_add_fpm_config --usage=$usage --footprint=medium
+phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # SPECIFIC SETUP
@@ -174,7 +167,7 @@ done
 ynh_script_progression --message="Installing wordpress plugins..." --weight=20
 
 wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
 
 $wpcli_alias plugin install simple-ldap-login
 $wpcli_alias plugin install http-authentication

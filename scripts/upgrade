@@ -8,7 +8,6 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-source _ynh_add_fpm_config
 
 #=================================================
 # LOAD SETTINGS
@@ -32,6 +31,8 @@ admin_mail_html=$(ynh_app_setting_get --app=$app --key=admin_mail_html)
 
 fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
 fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
+
+phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # CHECK VERSION
@@ -129,9 +130,15 @@ if [ -z "$fpm_usage" ]; then
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 fi
 
+# If phpversion doesn't exist, create it
+if [ -z "$phpversion" ]; then
+    phpversion=$YNH_PHP_VERSION
+    ynh_app_setting_set --app=$app --key=phpversion --value=$phpversion
+fi
+
 # Replace wp-fail2ban by wp-fail2ban-redux
 wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
+wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
 if [ $multisite -eq 1 ]; then
         plugin_network="--network"
 fi
@@ -167,13 +174,6 @@ path_url=$(ynh_normalize_url_path --path_url=$path_url)
 ynh_script_progression --message="Activating maintenance mode..." --weight=2
 
 ynh_maintenance_mode_ON
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=11
-
-ynh_install_app_dependencies php7.0-cli
 
 #=================================================
 # NGINX CONFIGURATION
@@ -245,7 +245,7 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 ynh_script_progression --message="Updating plugins" --weight=11
 
 # wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-# wpcli_alias="php7.0 $final_path/wp-cli.phar --allow-root --path=$final_path"
+# wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }

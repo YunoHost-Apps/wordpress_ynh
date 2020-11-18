@@ -12,7 +12,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 WordPress is open source software you can use to create a beautiful website, blog, or app.  
 With this package, you can even activate the [multisite](https://codex.wordpress.org/Glossary#Multisite) option.
 
-**Shipped version:** 5.5.1
+**Shipped version:** 5.5.3
 
 ## Screenshots
 
@@ -43,7 +43,6 @@ Supported, with LDAP and SSO.
 
 * x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
-* Buster x86-64b - [![](https://ci-buster.nohost.me/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-buster.nohost.me/ci/apps/wordpress/)
 
 ## Limitations
 
@@ -69,8 +68,7 @@ Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wo
 
 ---
 
-Developers infos
-----------------
+## Developers infos
 
 Please do your pull request to the [testing branch](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
 

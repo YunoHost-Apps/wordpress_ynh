@@ -12,7 +12,7 @@ Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
-**Version incluse :** 5.5.1
+**Version incluse :** 5.5.3
 
 ## Captures d'écran
 
@@ -43,7 +43,6 @@ Supporté, avec LDAP et SSO.
 
 * x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
-* Buster x86-64b - [![](https://ci-buster.nohost.me/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-buster.nohost.me/ci/apps/wordpress/)
 
 ## Limitations
 
@@ -69,8 +68,7 @@ Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpres
 
 ---
 
-Informations pour les développeurs
-----------------
+## Informations pour les développeurs
 
 Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
 

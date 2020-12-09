@@ -25,7 +25,7 @@ Utilisez le panneau d'administration de votre WordPress pour le configurer.
 ## Documentation
 
  * Documentation officielle : https://codex.wordpress.org/
- * Documentation YunoHost : https://yunohost.org/#/app_wordpress
+ * Documentation YunoHost : https://yunohost.org/#/app_wordpress_fr
  
 ## Caractéristiques spécifiques YunoHost
 

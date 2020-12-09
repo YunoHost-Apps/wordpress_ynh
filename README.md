@@ -25,7 +25,7 @@ Use the admin panel of your WordPress to configure this app.
 ## Documentation
 
  * Official documentation: https://codex.wordpress.org/
- * YunoHost documentation: There no other documentations, feel free to contribute.
+ * YunoHost documentation: https://yunohost.org/#/app_wordpress
 
 ## YunoHost specific features
 

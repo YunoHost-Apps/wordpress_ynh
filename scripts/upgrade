@@ -172,7 +172,7 @@ ynh_maintenance_mode_ON
 # NGINX CONFIGURATION
 #=================================================
 
-# Overwrite the nginx configuration only if it's allowed
+# Overwrite the NGINX configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
     ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
@@ -191,11 +191,11 @@ ynh_system_user_create --username=$app
 # PHP-FPM CONFIGURATION
 #=================================================
 
-# Overwrite the php-fpm configuration only if it's allowed
+# Overwrite the PHP-FPM configuration only if it's allowed
 if [ $overwrite_phpfpm -eq 1 ]
 then
     ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
-    # Create a dedicated php-fpm config
+    # Create a dedicated PHP-FPM config
     ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 fi
 
@@ -283,7 +283,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=9
 
-# Create a dedicated fail2ban config
+# Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================

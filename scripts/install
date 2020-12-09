@@ -142,7 +142,7 @@ chown -R $app: $final_path
 # Set the app as temporarily public for cURL call
 ynh_permission_update --permission "main" --add "visitors"
 
-# Reload Nginx
+# Reload NGINX
 ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
@@ -151,9 +151,9 @@ ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_nam
 ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
 do
-	# The loop waits for wordpress to be installed, or 5 minutes.
+	# The loop waits for WordPress to be installed, or 5 minutes.
 	if ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
-		# If the table wp_options is found, wordpress has finished its installation.
+		# If the table wp_options is found, WordPress has finished its installation.
 		break
 	fi
 	sleep 1
@@ -162,7 +162,7 @@ done
 #=================================================
 # INSTALL WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Installing wordpress plugins..." --weight=20
+ynh_script_progression --message="Installing WordPress plugins..." --weight=20
 
 ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
 wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
@@ -226,7 +226,7 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
-echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
+echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal WordPress cron.
 0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
 
 #=================================================
@@ -246,7 +246,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 
-# Create a dedicated fail2ban config
+# Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================

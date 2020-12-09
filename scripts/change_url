@@ -31,7 +31,7 @@ multisite=$(ynh_app_setting_get  --app=$app --key=multisite)
 
 if [ $multisite -eq 1 ]
 then
-	echo "A multisite installation of Wordpress can't be moved easily. Please have a look at the Wordpress codex to learn more about that." >&2
+	echo "A multisite installation of WordPress can't be moved easily. Please have a look at the WordPress codex to learn more about that." >&2
 	ynh_die --message="https://codex.wordpress.org/Moving_WordPress#Moving_WordPress_Multisite"
 fi
 

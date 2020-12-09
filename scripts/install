@@ -83,9 +83,9 @@ ynh_setup_source --dest_dir="$final_path"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring nginx web server..." --weight=3
+ynh_script_progression --message="Configuring NGINX web server..." --weight=3
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
@@ -99,7 +99,7 @@ ynh_system_user_create --username=$app
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring php-fpm..." --weight=2
+ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 
 # If the app is private, set the usage to low, otherwise to high.
 if [ $is_public -eq 0 ]
@@ -108,7 +108,7 @@ then
 else
     usage=high
 fi
-# Create a dedicated php-fpm config
+# Create a dedicated PHP-FPM config
 ynh_add_fpm_config --usage=$usage --footprint=medium
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
@@ -117,7 +117,7 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configuring wordpress..."
+ynh_script_progression --message="Configuring WordPress..."
 
 cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
@@ -134,15 +134,13 @@ done
 #=================================================
 # SETTING UP WITH CURL
 #=================================================
-ynh_script_progression --message="Installing wordpress with Curl..." --weight=10
+ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
 
-# Set right permissions for curl install
+# Set right permissions for cURL install
 chown -R $app: $final_path
 
-# Set the app as temporarily public for curl call
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-# Regen SSOwat configuration
-yunohost app ssowatconf
+# Set the app as temporarily public for cURL call
+ynh_permission_update --permission "main" --add "visitors"
 
 # Reload Nginx
 ynh_systemd_action --service_name=nginx --action=reload
@@ -246,7 +244,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configuring fail2ban..." --weight=7
+ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
@@ -258,14 +256,13 @@ ynh_script_progression --message="Configuring SSOwat..."
 
 if [ $is_public -eq 0 ]
 then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
+	ynh_permission_update --permission "main" --remove "visitors"
 fi
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --weight=3
+ynh_script_progression --message="Reloading NGINX web server..." --weight=3
 
 ynh_systemd_action --service_name=nginx --action=reload
 

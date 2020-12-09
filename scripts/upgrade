@@ -162,13 +162,6 @@ ynh_clean_setup () {
 ynh_abort_if_errors
 
 #=================================================
-# CHECK THE PATH
-#=================================================
-
-# Normalize the URL path syntax
-path_url=$(ynh_normalize_url_path --path_url=$path_url)
-
-#=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
 ynh_script_progression --message="Activating maintenance mode..." --weight=2
@@ -182,7 +175,7 @@ ynh_maintenance_mode_ON
 # Overwrite the nginx configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
-    ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=2
+    ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
 	ynh_add_nginx_config
 fi
 
@@ -201,7 +194,7 @@ ynh_system_user_create --username=$app
 # Overwrite the php-fpm configuration only if it's allowed
 if [ $overwrite_phpfpm -eq 1 ]
 then
-    ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=4
+    ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
     # Create a dedicated php-fpm config
     ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 fi
@@ -288,7 +281,7 @@ chown root: $final_path/wp-config.php
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
-ynh_script_progression --message="Reconfiguring fail2ban..." --weight=9
+ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=9
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
@@ -311,7 +304,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 

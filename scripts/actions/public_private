@@ -69,7 +69,7 @@ ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 

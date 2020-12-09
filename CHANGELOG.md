@@ -4,6 +4,12 @@ Changelog
 ## Unreleased
 - Nothing for now...
 
+## [5.6~ynh1]()
+
+#### Changed
+* [Update to 5.6]()
+
+
 ## [5.5.0~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/108) - 2020-08-15
 
 #### Fixed

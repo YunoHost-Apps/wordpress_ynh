@@ -94,9 +94,7 @@ chown root: $final_path/wp-config.php
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
-
-ynh_add_fpm_config --package="$extra_php_dependencies"
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint --package="$extra_php_dependencies"
 
 #=================================================
 # RESTORE THE FAIL2BAN CONFIGURATION

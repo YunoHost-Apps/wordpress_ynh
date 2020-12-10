@@ -256,7 +256,8 @@ ynh_script_progression --message="Configuring SSOwat..."
 
 if [ $is_public -eq 0 ]
 then
-	ynh_permission_update --permission "main" --remove "visitors"
+	# Remove the public access
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 fi
 
 #=================================================

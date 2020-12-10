@@ -31,6 +31,9 @@ db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
+fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
+fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
+
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================

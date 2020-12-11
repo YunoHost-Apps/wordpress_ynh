@@ -8,7 +8,6 @@ Changelog
 
 #### Changed
 * [Update to 5.6](https://github.com/YunoHost-Apps/wordpress_ynh/pull/115/commits/2d72bf87c3e2e674e967058472586b31e0cb5c62)
-* [Use php-fpm.conf](https://github.com/YunoHost-Apps/wordpress_ynh/pull/115/commits/52b19005e83ad20a5a1bb11daa9ae22e945a2988)
 
 ## [5.5.0~ynh1](https://github.com/YunoHost-Apps/wordpress_ynh/pull/108) - 2020-08-15
 

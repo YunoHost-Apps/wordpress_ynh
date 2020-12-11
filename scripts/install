@@ -83,9 +83,9 @@ ynh_setup_source --dest_dir="$final_path"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring nginx web server..." --weight=3
+ynh_script_progression --message="Configuring NGINX web server..." --weight=3
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
@@ -99,7 +99,7 @@ ynh_system_user_create --username=$app
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring php-fpm..." --weight=2
+ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 
 # If the app is private, set the usage to low, otherwise to high.
 if [ $is_public -eq 0 ]
@@ -108,8 +108,8 @@ then
 else
     usage=high
 fi
-# Create a dedicated php-fpm config
-ynh_add_fpm_config --usage=$usage --footprint=medium
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config --usage=$usage --footprint=medium --package="$extra_php_dependencies"
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
@@ -117,7 +117,7 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configuring wordpress..."
+ynh_script_progression --message="Configuring WordPress..."
 
 cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
@@ -134,17 +134,15 @@ done
 #=================================================
 # SETTING UP WITH CURL
 #=================================================
-ynh_script_progression --message="Installing wordpress with Curl..." --weight=10
+ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
 
-# Set right permissions for curl install
+# Set right permissions for cURL install
 chown -R $app: $final_path
 
-# Set the app as temporarily public for curl call
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-# Regen SSOwat configuration
-yunohost app ssowatconf
+# Set the app as temporarily public for cURL call
+ynh_permission_update --permission "main" --add "visitors"
 
-# Reload Nginx
+# Reload NGINX
 ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
@@ -153,9 +151,9 @@ ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_nam
 ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
 do
-	# The loop waits for wordpress to be installed, or 5 minutes.
+	# The loop waits for WordPress to be installed, or 5 minutes.
 	if ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
-		# If the table wp_options is found, wordpress has finished its installation.
+		# If the table wp_options is found, WordPress has finished its installation.
 		break
 	fi
 	sleep 1
@@ -164,7 +162,7 @@ done
 #=================================================
 # INSTALL WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Installing wordpress plugins..." --weight=20
+ynh_script_progression --message="Installing WordPress plugins..." --weight=20
 
 ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
 wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
@@ -228,7 +226,7 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
-echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
+echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal WordPress cron.
 0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
 
 #=================================================
@@ -246,9 +244,9 @@ chown root: $final_path/wp-config.php
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configuring fail2ban..." --weight=7
+ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 
-# Create a dedicated fail2ban config
+# Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
@@ -265,7 +263,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --weight=3
+ynh_script_progression --message="Reloading NGINX web server..." --weight=3
 
 ynh_systemd_action --service_name=nginx --action=reload
 

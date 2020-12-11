@@ -12,7 +12,7 @@ Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
-**Version incluse :** 5.5.3
+**Version incluse :** 5.6
 
 ## Captures d'écran
 
@@ -25,7 +25,7 @@ Utilisez le panneau d'administration de votre WordPress pour le configurer.
 ## Documentation
 
  * Documentation officielle : https://codex.wordpress.org/
- * Documentation YunoHost : https://yunohost.org/#/app_wordpress
+ * Documentation YunoHost : https://yunohost.org/#/app_wordpress_fr
  
 ## Caractéristiques spécifiques YunoHost
 

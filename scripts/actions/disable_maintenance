@@ -36,7 +36,7 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 if [ ! -e "$final_path/.maintenance" ]
 then
-    ynh_die --message="Wordpress isn't currently under maintenance." --ret_code=0
+    ynh_die --message="WordPress isn't currently under maintenance." --ret_code=0
 fi
 
 #=================================================

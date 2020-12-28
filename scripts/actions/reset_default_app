@@ -40,7 +40,7 @@ ynh_maintenance_mode_ON
 # NGINX CONFIGURATION
 #=================================================
 
-ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=1
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
 
 # Create a dedicated nginx config
 yunohost app action run $app reset_default_nginx
@@ -57,7 +57,7 @@ ynh_system_user_create --username=$app
 # PHP-FPM CONFIGURATION
 #=================================================
 
-ynh_script_progression --message="Upgrading php-fpm configuration..." --weight=2
+ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=2
 
 # Create a dedicated php-fpm config
 yunohost app action run $app reset_default_phpfpm
@@ -86,7 +86,7 @@ find $final_path/ -type d -print0 | xargs -0 chmod 0755
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
-ynh_script_progression --message="Reconfiguring fail2ban..." --weight=5
+ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=5
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="PHP message: Leed: wrong login for .* client: <HOST>" --max_retry=5
@@ -109,7 +109,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 

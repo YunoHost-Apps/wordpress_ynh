@@ -18,6 +18,9 @@
  * @package WordPress
 */
 
+/** Disable the wordress cron because it's managed by the system */
+define('DISABLE_WP_CRON', true);
+
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
 define('DB_NAME', '__DB_USER__');

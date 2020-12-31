@@ -124,13 +124,6 @@ ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='ht
 ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='home'" --database=$app
 
 #=================================================
-# UPDATE THE CRON
-#=================================================
-
-echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
-0 3  *  *  * root wget -q -O - https://$new_domain$new_path/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
-
-#=================================================
 # GENERIC FINALISATION
 #=================================================
 # RELOAD NGINX

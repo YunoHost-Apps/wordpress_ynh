@@ -263,8 +263,8 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
-echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
-0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
+echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
+0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
 
 #=================================================
 # GENERIC FINALISATION

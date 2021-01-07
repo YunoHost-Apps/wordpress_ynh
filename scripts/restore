@@ -91,7 +91,8 @@ ynh_system_user_create --username=$app
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
 # Except the file config wp-config.php
-chown root: $final_path/wp-config.php
+chown root:$app $final_path/wp-config.php
+chmod 640 $final_path/wp-config.php
 
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION

@@ -77,11 +77,14 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
 # Except the file config wp-config.php
-chown root: $final_path/wp-config.php
+chown root:$app $final_path/wp-config.php
 
 # Reset permissions
 find $final_path/ -type f -print0 | xargs -0 chmod 0644
 find $final_path/ -type d -print0 | xargs -0 chmod 0755
+
+# Remove permissions for others
+chmod 640 $final_path/wp-config.php
 
 #=================================================
 # UPGRADE FAIL2BAN

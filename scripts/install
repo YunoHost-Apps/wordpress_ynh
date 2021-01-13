@@ -274,7 +274,7 @@ ynh_systemd_action --service_name=nginx --action=reload
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove $final_path/wp-cli.phar
+ynh_secure_remove --file=$final_path/wp-cli.phar
 
 #=================================================
 # SEND A README FOR THE ADMIN

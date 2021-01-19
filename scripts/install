@@ -215,6 +215,8 @@ ynh_script_progression --message="Activating plugins..." --weight=4
 $wpcli_alias plugin activate simple-ldap-login $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
+# Enable the auto update of major versions
+ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "UPDATE wp_auto_updates SET onoroff='on' WHERE wp_auto_updates.name='major';"
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 #=================================================

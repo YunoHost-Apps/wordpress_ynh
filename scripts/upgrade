@@ -247,15 +247,6 @@ $wpcli_alias plugin activate simple-ldap-login $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 
-if ynh_compare_current_package_version --comparison lt --version 5.6~ynh2
-then
-	# Get the database table prefix
-	db_prefix=$(grep '^$table_prefix' "$final_path/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
-	# Enable the auto update of major versions
-	db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "UPDATE ${db_prefix}auto_updates SET onoroff='on' WHERE ${db_prefix}auto_updates.name='major';"
-fi
-
 update_plugin wp-fail2ban-redux
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 

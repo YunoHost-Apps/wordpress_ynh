@@ -134,6 +134,9 @@ fi
 $wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate $plugin_network wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
 $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
 
+# Remove old ldap plugin
+$wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
+
 # Cleaning legacy permissions
 if ynh_legacy_permissions_exists; then
 	ynh_legacy_permissions_delete_all
@@ -214,6 +217,8 @@ ynh_backup_if_checksum_is_different --file="$final_path/wp-config.php"
 #=================================================
 ynh_script_progression --message="Configuring multisite..." --weight=2
 
+db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
+
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
@@ -222,9 +227,17 @@ then
 
     ynh_systemd_action --service_name=nginx --action=reload
 
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/multisite.sql
+
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	multisite=0
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/single.sql
+
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 	if ynh_permission_has_user --permission="main" --user="visitor"
 	then
@@ -243,8 +256,8 @@ ynh_script_progression --message="Updating plugins" --weight=11
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
-update_plugin simple-ldap-login
-$wpcli_alias plugin activate simple-ldap-login $plugin_network
+update_plugin authldap
+$wpcli_alias plugin activate authldap $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 

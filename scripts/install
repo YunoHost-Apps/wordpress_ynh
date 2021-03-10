@@ -171,7 +171,7 @@ ynh_script_progression --message="Installing WordPress plugins..." --weight=20
 ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
 wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
 
-$wpcli_alias plugin install simple-ldap-login
+$wpcli_alias plugin install authldap
 $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
 $wpcli_alias plugin install wp-fail2ban-redux
@@ -202,9 +202,15 @@ then
 	# Activate multisite in wordpress config
 	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$final_path/wp-config.php
 
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/multisite.sql
+
 	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/single.sql
+
 	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 fi
@@ -214,7 +220,7 @@ fi
 #=================================================
 ynh_script_progression --message="Activating plugins..." --weight=4
 
-$wpcli_alias plugin activate simple-ldap-login $plugin_network
+$wpcli_alias plugin activate authldap $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 # Enable the auto update of major versions

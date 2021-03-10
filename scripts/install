@@ -52,7 +52,6 @@ ynh_script_progression --message="Storing installation settings..." --weight=2
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
@@ -140,7 +139,7 @@ ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
 chown -R $app: $final_path
 
 # Set the app as temporarily public for cURL call
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
+ynh_permission_update --permission="main" --add="visitors"
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
@@ -149,6 +148,9 @@ ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
+
+# Remove the public access
+ynh_permission_update --permission="main" --remove="visitors"
 
 ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
@@ -257,13 +259,18 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..."
+ynh_script_progression --message="Configuring permissions..." --time --weight=1
 
-if [ $is_public -eq 0 ]
+# Make app public if necessary
+if [ $is_public -eq 1 ]
 then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
+	# Everyone can access the app.
+	# The "main" permission is automatically created before the install script.
+	ynh_permission_update --permission="main" --add="visitors"
 fi
+
+# Only the admin can access the admin panel of the app
+ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
 
 #=================================================
 # RELOAD NGINX

@@ -1,15 +1,3 @@
-[public_private]
-name = "Move to public or private"
-command = "/bin/bash scripts/actions/public_private"
-accepted_return_codes = [0]
-description = "Change the public access of the app."
-
-    [public_private.arguments]
-        [public_private.arguments.is_public]
-            type = "boolean"
-            ask = "Is it a public app?"
-            default = true
-
 [reset_default_nginx]
 name = "Reset the NGINX config for this app."
 command = "/bin/bash scripts/actions/reset_default_system nginx"

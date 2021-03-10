@@ -1,5 +1,5 @@
-SOURCE_URL=https://wordpress.org/wordpress-5.6.tar.gz
-SOURCE_SUM=47f466f375557bd4e3e1fff69b1ccbe29053423736b1af8f3dbf9d38c4c5fcd3
+SOURCE_URL=https://wordpress.org/wordpress-5.7.tar.gz
+SOURCE_SUM=92be8c4afd0186f783a12bad994baecc8f941a88535acddecbae0d7702169b71
 SOURCE_SUM_PRG=sha256sum
 ARCH_FORMAT=tar.gz
 SOURCE_IN_SUBDIR=true

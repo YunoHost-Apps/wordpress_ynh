@@ -52,7 +52,6 @@ ynh_script_progression --message="Storing installation settings..." --weight=2
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
@@ -140,7 +139,7 @@ ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
 chown -R $app: $final_path
 
 # Set the app as temporarily public for cURL call
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
+
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
@@ -259,10 +258,11 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 ynh_script_progression --message="Configuring SSOwat..."
 
-if [ $is_public -eq 0 ]
+
+# Make app public if necessary
+if [ "$is_public" -eq 1 ]
 then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
+	ynh_permission_update --permission="main" --add="visitors"
 fi
 
 #=================================================

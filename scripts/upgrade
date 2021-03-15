@@ -261,15 +261,6 @@ $wpcli_alias plugin activate authldap $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 
-if ynh_compare_current_package_version --comparison lt --version 5.6~ynh2
-then
-	# Get the database table prefix
-	db_prefix=$(grep '^$table_prefix' "$final_path/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
-	# Enable the auto update of major versions
-	db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "UPDATE ${db_prefix}auto_updates SET onoroff='on' WHERE ${db_prefix}auto_updates.name='major';"
-fi
-
 update_plugin wp-fail2ban-redux
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
@@ -346,7 +337,10 @@ else
 fi
 ynh_app_changelog --format=$format
 
-echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
+echo "Please manually trigger updates to major versions in the WordPress admin area.
+You can also activate the automatic update in the Companion Auto Update plugin settings.
+
+You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
 You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
 
 If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__.

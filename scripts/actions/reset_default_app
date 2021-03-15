@@ -24,7 +24,6 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
@@ -94,21 +93,6 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=5
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="PHP message: Leed: wrong login for .* client: <HOST>" --max_retry=5
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
-
-# Remove skipped_uris if it's still present
-ynh_app_setting_delete --app=$app --key=skipped_uris
-if [ $is_public -eq 0 ]; then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-else
-	# Or replace skipped_uris by unprotected_uris
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
 
 #=================================================
 # RELOAD NGINX

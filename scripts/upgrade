@@ -20,7 +20,6 @@ domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
 admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
 language=$(ynh_app_setting_get --app=$app --key=language)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 multisite=$(ynh_app_setting_get --app=$app --key=multisite)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
@@ -63,15 +62,6 @@ if [ -z "$language" ]; then
 	ynh_app_setting_set --app=$app --key=language --value=$language
 fi
 
-# Fix is_public as a boolean
-if [ "${is_public,,}" = "yes" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=1
-	is_public=1
-elif [ "${is_public,,}" = "no" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=0
-	is_public=0
-fi
-
 # Fix multisite as a boolean
 if [ "${multisite,,}" = "yes" ]; then
 	ynh_app_setting_set --app=$app --key=multisite --value=1
@@ -110,14 +100,6 @@ if [ -z "$overwrite_phpfpm" ]; then
     ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=$overwrite_phpfpm
 fi
 
-# If the app is private, set the usage to low, otherwise to high.
-if [ $is_public -eq 0 ]
-then
-    usage=low
-else
-    usage=high
-fi
-
 # If fpm_footprint doesn't exist, create it
 if [ -z "$fpm_footprint" ]; then
     fpm_footprint=medium
@@ -126,6 +108,13 @@ fi
 
 # If fpm_usage doesn't exist, create it
 if [ -z "$fpm_usage" ]; then
+	# If the app is private, set the usage to low, otherwise to high.
+	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
+	then
+		usage=low
+	else
+		usage=high
+	fi
     fpm_usage=$usage
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 fi
@@ -144,6 +133,21 @@ if [ $multisite -eq 1 ]; then
 fi
 $wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate $plugin_network wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
 $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
+
+# Remove old ldap plugin
+$wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
+
+# Cleaning legacy permissions
+if ynh_legacy_permissions_exists; then
+	ynh_legacy_permissions_delete_all
+
+	ynh_app_setting_delete --app=$app --key=is_public
+fi
+
+if ! ynh_permission_exists --permission="admin"; then
+	# Create the required permissions
+	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
+fi
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -213,6 +217,8 @@ ynh_backup_if_checksum_is_different --file="$final_path/wp-config.php"
 #=================================================
 ynh_script_progression --message="Configuring multisite..." --weight=2
 
+db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
+
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
@@ -221,11 +227,19 @@ then
 
     ynh_systemd_action --service_name=nginx --action=reload
 
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/multisite.sql
+
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	multisite=0
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
+	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 95))" --target_file=../conf/sql/single.sql
+
+	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
-	if [ $is_public -eq 1 ]
+	if ynh_permission_has_user --permission="main" --user="visitor"
 	then
 		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$final_path/wp-config.php
 	fi
@@ -242,8 +256,8 @@ ynh_script_progression --message="Updating plugins" --weight=11
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
-update_plugin simple-ldap-login
-$wpcli_alias plugin activate simple-ldap-login $plugin_network
+update_plugin authldap
+$wpcli_alias plugin activate authldap $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 
@@ -296,21 +310,6 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=9
 
 # Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..."
-
-# Remove skipped_uris if it's still present
-ynh_app_setting_delete --app=$app --key=skipped_uris
-if [ $is_public -eq 0 ]; then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-else
-	# Or replace skipped_uris by unprotected_uris
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
 
 #=================================================
 # RELOAD NGINX

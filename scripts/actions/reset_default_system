@@ -29,7 +29,6 @@ path_url=$(ynh_app_setting_get --app=$app --key=path)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 multisite=$(ynh_app_setting_get --app=$app --key=multisite)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 
 #=================================================
 # SPECIFIC ACTION
@@ -63,7 +62,7 @@ then
 elif [ $type == phpfpm ]
 then
     # If the app is private, set the usage to low, otherwise to high.
-    if [ $is_public -eq 0 ]
+	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
     then
         usage=low
     else

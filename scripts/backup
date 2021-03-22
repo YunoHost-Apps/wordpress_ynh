@@ -69,7 +69,7 @@ ynh_backup --src_path="/etc/fail2ban/filter.d/$app.conf"
 # BACKUP CRON
 #=================================================
 
-ynh_backup "/etc/cron.d/$app"
+ynh_backup --src_path="/etc/cron.d/$app"
 
 #=================================================
 # END OF SCRIPT

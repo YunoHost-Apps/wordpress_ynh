@@ -24,8 +24,8 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # SPECIFIC ACTION
@@ -66,8 +66,8 @@ yunohost app action run $app reset_default_phpfpm
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
-echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress cron.
-0 3  *  *  * root wget -q -O - https://$domain$path_url/wp-cron.php?doing_wp_cron >/dev/null 2>&1" > /etc/cron.d/$app
+echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
+0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
 
 #=================================================
 # SECURE FILES AND DIRECTORIES
@@ -77,11 +77,14 @@ echo "# Reach everyday wp-cron.php?doing_wp_cron to trig the internal wordpress 
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
 chown -R $app: $final_path
 # Except the file config wp-config.php
-chown root: $final_path/wp-config.php
+chown root:$app $final_path/wp-config.php
 
 # Reset permissions
 find $final_path/ -type f -print0 | xargs -0 chmod 0644
 find $final_path/ -type d -print0 | xargs -0 chmod 0755
+
+# Remove permissions for others
+chmod 640 $final_path/wp-config.php
 
 #=================================================
 # UPGRADE FAIL2BAN
@@ -90,21 +93,6 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=5
 
 # Create a dedicated fail2ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="PHP message: Leed: wrong login for .* client: <HOST>" --max_retry=5
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
-
-# Remove skipped_uris if it's still present
-ynh_app_setting_delete --app=$app --key=skipped_uris
-if [ $is_public -eq 0 ]; then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-else
-	# Or replace skipped_uris by unprotected_uris
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
 
 #=================================================
 # RELOAD NGINX

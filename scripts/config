@@ -26,10 +26,6 @@ fpm_config_dir=$(ynh_app_setting_get --app=$app --key=fpm_config_dir)
 # If the form has a value for a variable, take the value from the form,
 # Otherwise, keep the value from the app config.
 
-# is_public
-old_is_public="$(ynh_app_setting_get --app=$app --key=is_public)"
-is_public="${YNH_CONFIG_MAIN_IS_PUBLIC_IS_PUBLIC:-$old_is_public}"
-
 # Overwrite nginx configuration
 old_overwrite_nginx="$(ynh_app_setting_get --app=$app --key=overwrite_nginx)"
 overwrite_nginx="${YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX:-$old_overwrite_nginx}"
@@ -78,8 +74,6 @@ show_config() {
     # here you are supposed to read some config file/database/other then print the values
     # ynh_return "YNH_CONFIG_${PANEL_ID}_${SECTION_ID}_${OPTION_ID}=value"
 
-    ynh_return "YNH_CONFIG_MAIN_IS_PUBLIC_IS_PUBLIC=$is_public"
-
     ynh_return "YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX=$overwrite_nginx"
     ynh_return "YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_PHPFPM=$overwrite_phpfpm"
 
@@ -96,17 +90,6 @@ show_config() {
 #=================================================
 
 apply_config() {
-
-    # Change public accessibility
-    if [ "$is_public" != "$old_is_public" ]
-    then
-        if [ "$is_public" = "1" ]
-        then
-            yunohost app action run $app public_private --args is_public=1
-        else
-            yunohost app action run $app public_private --args is_public=0
-        fi
-    fi
 
     #=================================================
     # MODIFY OVERWRITTING SETTINGS

@@ -1,7 +1,7 @@
 # WordPress for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) [![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)](https://github.com/YunoHost/Apps/#what-to-do-if-i-cant-maintain-my-app-anymore-)  
-[![Install WordPress with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=wordpress)
+[![Install WordPress with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
 *[Lire ce readme en français.](./README_fr.md)*
 
@@ -10,9 +10,9 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 
 ## Overview
 WordPress is open source software you can use to create a beautiful website, blog, or app.  
-With this package, you can even activate the [multisite](https://codex.wordpress.org/Glossary#Multisite) option.
+With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
-**Shipped version:** 5.6
+**Shipped version:** 5.7
 
 ## Screenshots
 

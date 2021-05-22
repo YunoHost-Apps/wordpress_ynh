@@ -16,6 +16,7 @@ source /usr/share/yunohost/helpers
 app=$YNH_APP_INSTANCE_NAME
 
 fpm_config_dir=$(ynh_app_setting_get --app=$app --key=fpm_config_dir)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 #=================================================
 # LOAD VALUES

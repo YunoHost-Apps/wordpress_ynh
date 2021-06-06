@@ -30,7 +30,7 @@
 		multi_instance=1
 		port_already_use=0
 		change_url=1
-        actions=1
+        actions=0
         config_panel=1
 ;; Test avec multisite
 	; Manifest

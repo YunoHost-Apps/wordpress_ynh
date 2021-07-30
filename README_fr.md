@@ -3,30 +3,34 @@
 [![Niveau d'intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
 [![Installer WordPress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
-*[Read this readme in english.](./README.md)* 
+*[Read this readme in english.](./README.md)*
+*[Lire ce readme en français.](./README_fr.md)*
 
-> *Ce package vous permet d'installer WordPress rapidement et simplement sur un serveur YunoHost.  
-Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
+> *Ce package vous permet d'installer WordPress rapidement et simplement sur un serveur YunoHost.
+Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+
+## Vue d'ensemble
+
+Logiciel de création de blog ou de site Web
+
+**Version incluse :** 5.8~ynh1
+
+
+
+## Captures d'écran
+
+![](./doc/screenshots/screen-themes.png)
+
+## Avertissements / informations importantes
 
 ## Vue d'ensemble
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
-**Version incluse :** 5.7.2
-
-## Captures d'écran
-
-![](https://s.w.org/images/home/screen-themes.png?1)
-
 ## Configuration
 
 Utilisez le panneau d'administration de votre WordPress pour le configurer.
 
-## Documentation
-
- * Documentation officielle : https://codex.wordpress.org/
- * Documentation YunoHost : https://yunohost.org/#/app_wordpress_fr
- 
 ## Caractéristiques spécifiques YunoHost
 
  * Intégration avec les utilisateurs YunoHost et le SSO :
@@ -38,11 +42,6 @@ Utilisez le panneau d'administration de votre WordPress pour le configurer.
 #### Support multi-utilisateur
 
 Supporté, avec LDAP et SSO.
-
-#### Architectures supportées
-
-* x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/wordpress%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/wordpress/)
 
 ## Limitations
 
@@ -58,15 +57,14 @@ N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe for
 
 Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpress.org/support/article/hardening-wordpress/). Installer des extensions de sécurité peut-être une bonne chose.
 
-## Liens
+## Documentations et ressources
 
- * Rapporter un bug : https://github.com/YunoHost-Apps/wordpress_ynh/issues
- * Site de WordPress : https://wordpress.org/
- * Dépôt de WordPress : https://core.trac.wordpress.org/browser
- https://build.trac.wordpress.org/browser
- * Site de YunoHost : https://yunohost.org/
-
----
+* Site officiel de l'app : https://wordpress.org/
+* Documentation officielle utilisateur : https://yunohost.org/#/app_wordpress
+* Documentation officielle de l'admin : https://codex.wordpress.org/
+* Dépôt de code officiel de l'app : https://core.trac.wordpress.org/browser  
+* Documentation YunoHost pour cette app : https://yunohost.org/app_wordpress
+* Signaler un bug : https://github.com/YunoHost-Apps/wordpress_ynh/issues
 
 ## Informations pour les développeurs
 
@@ -78,3 +76,5 @@ sudo yunohost app install https://github.com/YunoHost-Apps/wordpress_ynh/tree/te
 ou
 sudo yunohost app upgrade wordpress -u https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
 ```
+
+**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps

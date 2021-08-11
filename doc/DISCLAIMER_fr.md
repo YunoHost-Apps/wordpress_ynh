@@ -1,28 +1,3 @@
-# WordPress pour YunoHost
-
-[![Niveau d'intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
-[![Installer WordPress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
-
-*[Read this readme in english.](./README.md)*
-*[Lire ce readme en français.](./README_fr.md)*
-
-> *Ce package vous permet d'installer WordPress rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
-
-## Vue d'ensemble
-
-Logiciel de création de blog ou de site Web
-
-**Version incluse :** 5.8~ynh1
-
-
-
-## Captures d'écran
-
-![](./doc/screenshots/screen-themes.png)
-
-## Avertissements / informations importantes
-
 ## Vue d'ensemble
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
@@ -56,25 +31,3 @@ Des vulnérabilités peuvent offrir une brêche dans votre WordPress ou dans vot
 N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre Wordpress à jour le plus possible*.
 
 Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpress.org/support/article/hardening-wordpress/). Installer des extensions de sécurité peut-être une bonne chose.
-
-## Documentations et ressources
-
-* Site officiel de l'app : https://wordpress.org/
-* Documentation officielle utilisateur : https://yunohost.org/#/app_wordpress
-* Documentation officielle de l'admin : https://codex.wordpress.org/
-* Dépôt de code officiel de l'app : https://core.trac.wordpress.org/browser  
-* Documentation YunoHost pour cette app : https://yunohost.org/app_wordpress
-* Signaler un bug : https://github.com/YunoHost-Apps/wordpress_ynh/issues
-
-## Informations pour les développeurs
-
-Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
-
-Pour essayer la branche testing, procédez comme suit.
-```
-sudo yunohost app install https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
-ou
-sudo yunohost app upgrade wordpress -u https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
-```
-
-**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps

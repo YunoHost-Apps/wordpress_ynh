@@ -6,8 +6,15 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "5.7.2~ynh1",
+	"version": "5.8~ynh1",
 	"url": "https://wordpress.org/",
+	"upstream": {
+        "license": "GPL-2.0",
+        "website": "https://wordpress.org/",
+        "admindoc": "https://codex.wordpress.org/",
+        "userdoc": "https://yunohost.org/#/app_wordpress",
+        "code": "https://core.trac.wordpress.org/browser  "
+    },
 	"license": "GPL-2.0",
 	"maintainer": {
 		"name": "kay0u",
@@ -23,7 +30,7 @@
 	"multi_instance": true,
 	"services": [
 		"nginx",
-		"php7.0-fpm",
+		"php7.3-fpm",
 		"mysql"
 	],
 	"arguments": {

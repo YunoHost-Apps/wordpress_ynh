@@ -12,7 +12,6 @@
         "license": "GPL-2.0",
         "website": "https://wordpress.org/",
         "admindoc": "https://codex.wordpress.org/",
-        "userdoc": "https://yunohost.org/#/app_wordpress",
         "code": "https://core.trac.wordpress.org/browser  "
     },
 	"license": "GPL-2.0",

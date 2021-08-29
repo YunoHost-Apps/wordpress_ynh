@@ -64,7 +64,6 @@ Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wo
 ## Documentation and resources
 
 * Official app website: https://wordpress.org/
-* Official user documentation: https://yunohost.org/#/app_wordpress
 * Official admin documentation: https://codex.wordpress.org/
 * Upstream app code repository: https://core.trac.wordpress.org/browser  
 * YunoHost documentation for this app: https://yunohost.org/app_wordpress

@@ -60,7 +60,6 @@ Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpres
 ## Documentations et ressources
 
 * Site officiel de l'app : https://wordpress.org/
-* Documentation officielle utilisateur : https://yunohost.org/#/app_wordpress
 * Documentation officielle de l'admin : https://codex.wordpress.org/
 * Dépôt de code officiel de l'app : https://core.trac.wordpress.org/browser  
 * Documentation YunoHost pour cette app : https://yunohost.org/app_wordpress

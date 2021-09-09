@@ -57,6 +57,14 @@ ynh_maintenance_mode_ON
 ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
+# RECREATE THE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Recreating the dedicated system user..." --weight=3
+
+# Create the dedicated user (if not existing)
+ynh_system_user_create --username=$app  --home_dir="$final_path"
+
+#=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
 ynh_script_progression --message="Restoring the app main directory..."
@@ -71,14 +79,6 @@ ynh_script_progression --message="Restoring the MySQL database..." --weight=3
 db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
 ynh_mysql_setup_db --db_user=$db_name --db_name=$db_name --db_pwd=$db_pwd
 ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ./db.sql
-
-#=================================================
-# RECREATE THE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Recreating the dedicated system user..." --weight=3
-
-# Create the dedicated user (if not existing)
-ynh_system_user_create --username=$app
 
 #=================================================
 # RESTORE USER RIGHTS

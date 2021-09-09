@@ -60,6 +60,14 @@ ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
 ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..." --weight=3
+
+# Create a dedicated system user
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # CREATE A MYSQL DATABASE
@@ -79,6 +87,10 @@ ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$final_path"
 
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
@@ -86,14 +98,6 @@ ynh_script_progression --message="Configuring NGINX web server..." --weight=3
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=3
-
-# Create a dedicated system user
-ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -118,10 +122,7 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 ynh_script_progression --message="Configuring WordPress..."
 
-cp ../conf/wp-config.php $final_path/wp-config.php
-# Change variables in Wordpress configuration
-ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_name --target_file=$final_path/wp-config.php
-ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file=$final_path/wp-config.php
+ynh_add_config --template="../conf/wp-config.php" --destination="$final_path/wp-config.php"
 
 for i in 1 2 3 4 5 6 7 8
 do
@@ -249,9 +250,6 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 # SECURING FILES AND DIRECTORIES
 #=================================================
 
-# Set permissions to app files
-# Files have to be own by the user of wordpress. To allow upgrade from the app.
-chown -R $app: $final_path
 # Except the file config wp-config.php
 chown root:$app $final_path/wp-config.php
 chmod 640 $final_path/wp-config.php

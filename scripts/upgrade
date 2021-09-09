@@ -40,6 +40,22 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
+# STANDARD UPGRADE STEPS
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..."
@@ -150,22 +166,6 @@ if ! ynh_permission_exists --permission="admin"; then
 fi
 
 #=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
-
-# Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
-	# restore it if the upgrade fails
-	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
 ynh_script_progression --message="Activating maintenance mode..." --weight=2
@@ -189,7 +189,7 @@ fi
 ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app
+ynh_system_user_create --username=$app  --home_dir="$final_path"
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -295,7 +295,10 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 
 # Set permissions to app files
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
-chown -R $app: $final_path
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
 # Except the file config wp-config.php
 chown root:$app $final_path/wp-config.php
 chmod 640 $final_path/wp-config.php

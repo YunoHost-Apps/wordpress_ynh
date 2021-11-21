@@ -99,7 +99,7 @@ chmod 640 $final_path/wp-config.php
 ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
 
 # Recreate a dedicated php-fpm config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint --package="$extra_php_dependencies"
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
 #=================================================
 # RESTORE THE FAIL2BAN CONFIGURATION
@@ -111,8 +111,17 @@ ynh_restore_file --origin_path="/etc/fail2ban/filter.d/$app.conf"
 ynh_systemd_action --action=restart --service_name=fail2ban
 
 #=================================================
+# REINSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Reinstalling dependencies..." --weight=1
+
+# Define and install dependencies
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # RESTORE THE CRON
 #=================================================
+ynh_script_progression --message="Restoring various files..." --weight=1
 
 ynh_restore_file "/etc/cron.d/$app"
 

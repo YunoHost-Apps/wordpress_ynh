@@ -24,7 +24,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	}],
     "requirements": {
-        "yunohost": ">= 4.2.4"
+        "yunohost": ">= 4.3.0"
     },
 	"multi_instance": true,
 	"services": [
@@ -36,8 +36,7 @@
 		"install" : [
 			{
 				"name": "domain",
-				"type": "domain",
-				"example": "domain.org"
+				"type": "domain"
 			},
 			{
 				"name": "path",
@@ -47,8 +46,7 @@
 			},
 			{
 				"name": "admin",
-				"type": "user",
-				"example": "john"
+				"type": "user"
 			},
 			{
 				"name": "language",

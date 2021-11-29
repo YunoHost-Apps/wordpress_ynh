@@ -1,6 +1,5 @@
-SOURCE_URL=https://wordpress.org/wordpress-5.8.tar.gz
-SOURCE_SUM=d29813ab55361318f519f2a8fa6631126a0a8f91ac30f62cb6002c108577e87f
+SOURCE_URL=https://wordpress.org/wordpress-5.8.1.tar.gz
+SOURCE_SUM=90ca90c4afa37dadc8a4743b5cb111b20cda5f983ce073c2c0bebdce64fa822a
 SOURCE_SUM_PRG=sha256sum
 ARCH_FORMAT=tar.gz
 SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=

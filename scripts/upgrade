@@ -196,7 +196,7 @@ ynh_install_app_dependencies $pkg_dependencies
 ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app
+ynh_system_user_create --username=$app --home_dir="$final_path"
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -302,7 +302,9 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 
 # Set permissions to app files
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
-chown -R $app: $final_path
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
 # Except the file config wp-config.php
 chown root:$app $final_path/wp-config.php
 chmod 640 $final_path/wp-config.php

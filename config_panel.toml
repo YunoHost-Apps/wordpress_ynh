@@ -1,5 +1,4 @@
-version = "0.1"
-name = "Wordpress configuration panel"
+version = "1.0"
 
 [main]
 name = "Wordpress configuration"

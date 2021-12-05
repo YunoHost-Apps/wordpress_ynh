@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Logiciel de création de blog ou de site Web
 
-**Version incluse :** 5.8.1~ynh1
+**Version incluse :** 5.8.2~ynh1
 
 
 

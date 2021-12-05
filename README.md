@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Create a beautiful blog or website easily
 
-**Shipped version:** 5.8.1~ynh1
+**Shipped version:** 5.8.2~ynh1
 
 
 

@@ -1,11 +1,12 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -19,7 +20,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading settings..." --weight=3
+ynh_script_progression --message="Loading installation settings..." --weight=3
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -27,8 +28,9 @@ domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
-admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
+db_user=$db_name
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
+admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
 
 fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
 fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
@@ -38,8 +40,6 @@ fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 #=================================================
 ynh_script_progression --message="Validating restoration parameters..."
 
-ynh_webpath_available --domain=$domain --path_url=$path_url \
-	|| ynh_die --message="Path not available: ${domain}${path_url}"
 test ! -d $final_path \
 	|| ynh_die --message="There is already a directory: $final_path "
 
@@ -55,24 +55,9 @@ ynh_maintenance_mode_ON
 #=================================================
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Restoring the NGINX web server configuration..."
 
 ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-
-#=================================================
-# RESTORE THE APP MAIN DIR
-#=================================================
-ynh_script_progression --message="Restoring the app main directory..."
-
-ynh_restore_file --origin_path="$final_path"
-
-#=================================================
-# RESTORE THE MYSQL DATABASE
-#=================================================
-ynh_script_progression --message="Restoring the MySQL database..." --weight=3
-
-db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-ynh_mysql_setup_db --db_user=$db_name --db_name=$db_name --db_pwd=$db_pwd
-ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
 # RECREATE THE DEDICATED USER
@@ -80,11 +65,14 @@ ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ./
 ynh_script_progression --message="Recreating the dedicated system user..." --weight=3
 
 # Create the dedicated user (if not existing)
-ynh_system_user_create --username=$app
+ynh_system_user_create --username=$app --home_dir="$final_path"
 
 #=================================================
-# RESTORE USER RIGHTS
+# RESTORE THE APP MAIN DIR
 #=================================================
+ynh_script_progression --message="Restoring the app main directory..."
+
+ynh_restore_file --origin_path="$final_path"
 
 # Set permissions to app files
 # Files have to be own by the user of wordpress. To allow upgrade from the app.
@@ -96,6 +84,7 @@ chmod 640 $final_path/wp-config.php
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
+ynh_script_progression --message="Restoring the PHP-FPM configuration..."
 
 # Restore the file first, so it can have a backup if different
 ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
@@ -104,7 +93,7 @@ ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
 ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint --package="$extra_php_dependencies"
 
 #=================================================
-# RESTORE THE FAIL2BAN CONFIGURATION
+# RESTORE FAIL2BAN CONFIGURATION
 #=================================================
 ynh_script_progression --message="Restoring the Fail2Ban configuration..." --weight=6
 
@@ -113,13 +102,23 @@ ynh_restore_file --origin_path="/etc/fail2ban/filter.d/$app.conf"
 ynh_systemd_action --action=restart --service_name=fail2ban
 
 #=================================================
-# RESTORE THE CRON
+# RESTORE THE MYSQL DATABASE
 #=================================================
+ynh_script_progression --message="Restoring the MySQL database..." --weight=3
 
-ynh_restore_file "/etc/cron.d/$app"
+db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
+ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
+ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
-# GENERIC FINALISATION
+# RESTORE VARIOUS FILES
+#=================================================
+ynh_script_progression --message="Restoring various files..."
+
+ynh_restore_file --origin_path="/etc/cron.d/$app"
+
+#=================================================
+# GENERIC FINALIZATION
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================

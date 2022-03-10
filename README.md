@@ -15,7 +15,10 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 ## Overview
 
-Create a beautiful blog or website easily
+## Overview
+WordPress is open source software you can use to create a beautiful website, blog, or app.  
+With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
+
 
 **Shipped version:** 5.8~ynh1
 
@@ -26,10 +29,6 @@ Create a beautiful blog or website easily
 ![](./doc/screenshots/screen-themes.png)
 
 ## Disclaimers / important information
-
-## Overview
-WordPress is open source software you can use to create a beautiful website, blog, or app.  
-With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 ## Configuration
 

@@ -11,7 +11,10 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 ## Vue d'ensemble
 
-Logiciel de création de blog ou de site Web
+## Overview
+WordPress is open source software you can use to create a beautiful website, blog, or app.  
+With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
+
 
 **Version incluse :** 5.8~ynh1
 

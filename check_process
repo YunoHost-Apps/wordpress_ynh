@@ -2,10 +2,10 @@
 	; Manifest
 		domain="domain.tld"
 		path="/path"
-		admin="john"
-		language="fr_FR"
-		multisite=0
 		is_public=1
+		language="fr_FR"
+		admin="john"
+		multisite=0
     ; Actions
         is_public=0|1
     ; Config_panel
@@ -36,10 +36,10 @@
 	; Manifest
 		domain="domain.tld"
 		path="/path"
-		admin="john"
-		language="fr_FR"
-		multisite=1
 		is_public=1
+		language="fr_FR"
+		admin="john"
+		multisite=1
 	; Checks
 		setup_sub_dir=1
 		setup_root=0

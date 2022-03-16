@@ -230,6 +230,10 @@ $wpcli_alias plugin activate authldap $plugin_network
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
 #=================================================
@@ -237,23 +241,15 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum --file="$final_path/wp-config.php"
 
+chmod 400 "$final_path/wp-config.php"
+chown $app:$app "$final_path/wp-config.php"
+
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
 echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
-
-#=================================================
-# SECURING FILES AND DIRECTORIES
-#=================================================
-
-# Set permissions to app files
-# Files have to be own by the user of wordpress. To allow upgrade from the app.
-chown -R $app: $final_path
-# Except the file config wp-config.php
-chown root:$app $final_path/wp-config.php
-chmod 640 $final_path/wp-config.php
 
 #=================================================
 # GENERIC FINALISATION

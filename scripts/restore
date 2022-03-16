@@ -74,12 +74,12 @@ ynh_script_progression --message="Restoring the app main directory..."
 
 ynh_restore_file --origin_path="$final_path"
 
-# Set permissions to app files
-# Files have to be own by the user of wordpress. To allow upgrade from the app.
-chown -R $app: $final_path
-# Except the file config wp-config.php
-chown root:$app $final_path/wp-config.php
-chmod 640 $final_path/wp-config.php
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
+chmod 400 "$final_path/wp-config.php"
+chown $app:$app "$final_path/wp-config.php"
 
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION

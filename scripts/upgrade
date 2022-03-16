@@ -154,6 +154,7 @@ fi
 # Replace wp-fail2ban by wp-fail2ban-redux
 ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
 wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
+plugin_network=""
 if [ $multisite -eq 1 ]; then
         plugin_network="--network"
 fi

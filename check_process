@@ -1,11 +1,11 @@
 ;; Test complet sans multisite
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
-		admin="john"	(USER)
+		domain="domain.tld"
+		path="/path"
+		is_public=1
 		language="fr_FR"
+		admin="john"
 		multisite=0
-		is_public=1	(PUBLIC|public=1|private=0)
     ; Actions
         is_public=0|1
     ; Config_panel
@@ -34,12 +34,12 @@
         config_panel=1
 ;; Test avec multisite
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
-		admin="john"	(USER)
+		domain="domain.tld"
+		path="/path"
+		is_public=1
 		language="fr_FR"
+		admin="john"
 		multisite=1
-		is_public=1	(PUBLIC|public=1|private=0)
 	; Checks
 		setup_sub_dir=1
 		setup_root=0

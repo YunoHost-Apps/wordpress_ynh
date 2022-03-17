@@ -24,7 +24,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	}],
     "requirements": {
-        "yunohost": ">= 4.1.2"
+        "yunohost": ">= 4.3.0"
     },
 	"multi_instance": true,
 	"services": [
@@ -36,22 +36,32 @@
 		"install" : [
 			{
 				"name": "domain",
-				"type": "domain",
-				"ask": {
-					"en": "Choose a domain for WordPress",
-					"fr": "Choisissez un domaine pour WordPress"
-				},
-				"example": "domain.org"
+				"type": "domain"
 			},
 			{
 				"name": "path",
 				"type": "path",
-				"ask": {
-					"en": "Choose a path for WordPress",
-					"fr": "Choisissez un chemin pour WordPress"
-				},
 				"example": "/blog",
 				"default": "/blog"
+			},
+			{
+				"name": "is_public",
+				"type": "boolean",
+				"default": true,
+				"help": {
+					"en": "A public WordPress will be publicly visible for everyone. If you're looking for a public blog, you should choose to install a public WordPress.",
+					"fr": "Un WordPress public sera visible publiquement pour tous. Si vous recherchez un blog public, vous devriez choisir d'installer un WordPress public."
+				}
+			},
+			{
+				"name": "language",
+				"type": "string",
+				"ask": {
+                    "en": "Choose the application language",
+                    "fr": "Choisissez la langue de l'application"
+                },
+				"choices": ["en_US", "fr_FR"],
+				"default": "en_US"
 			},
 			{
 				"name": "admin",
@@ -59,18 +69,7 @@
 				"ask": {
 					"en": "Choose the WordPress administrator (must be an existing YunoHost user)",
 					"fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
-				},
-				"example": "john"
-			},
-			{
-				"name": "language",
-				"type": "string",
-				"ask": {
-					"en": "Choose the language of the WordPress site",
-					"fr": "Choissisez la langue du WordPress"
-				},
-				"choices": ["en_US", "fr_FR"],
-				"default": "en_US"
+				}
 			},
 			{
 				"name": "multisite",
@@ -80,19 +79,6 @@
 					"fr": "Activer l'option multisite ?"
 				},
 				"default": false
-			},
-			{
-				"name": "is_public",
-				"type": "boolean",
-				"ask": {
-					"en": "Is it a public WordPress site?",
-					"fr": "Est-ce un site public ?"
-				},
-				"default": true,
-				"help": {
-					"en": "A public WordPress will be publicly visible for everyone. If you're looking for a public blog, you should choose to install a public WordPress.",
-					"fr": "Un WordPress public sera visible publiquement pour tous. Si vous recherchez un blog public, vous devriez choisir d'installer un WordPress public."
-				}
 			}
 		]
 	}

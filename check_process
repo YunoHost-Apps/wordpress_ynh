@@ -1,11 +1,11 @@
 ;; Test complet sans multisite
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
-		admin="john"	(USER)
+		domain="domain.tld"
+		path="/path"
+		is_public=1
 		language="fr_FR"
+		admin="john"
 		multisite=0
-		is_public=1	(PUBLIC|public=1|private=0)
     ; Actions
         is_public=0|1
     ; Config_panel
@@ -25,7 +25,10 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
+		# 5.4~ynh1
 		upgrade=1	from_commit=00a1a6e7dd5c814f5084c11c2810f886a32bdf61
+		# 5.8~ynh1
+		upgrade=1	from_commit=773073679873fbed3562c2d315f58eb4c1c0d4fc
 		backup_restore=1
 		multi_instance=1
 		port_already_use=0
@@ -34,12 +37,12 @@
         config_panel=1
 ;; Test avec multisite
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
-		admin="john"	(USER)
+		domain="domain.tld"
+		path="/path"
+		is_public=1
 		language="fr_FR"
+		admin="john"
 		multisite=1
-		is_public=1	(PUBLIC|public=1|private=0)
 	; Checks
 		setup_sub_dir=1
 		setup_root=0

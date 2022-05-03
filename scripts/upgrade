@@ -277,9 +277,13 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 # Disable broken plugin http-authentication
 $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication $plugin_network
 
+
+# Set file and directories ownership
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
+chmod g+s $final_path/wp-content/uploads
+chmod g+s $(find $final_path/wp-content/uploads -type d)
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
@@ -290,6 +294,8 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 
 chmod 400 "$final_path/wp-config.php"
 chown $app:$app "$final_path/wp-config.php"
+# We do not want www-data to get access to this file through the ACLs
+setfacl -b "$final_path/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE

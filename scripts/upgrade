@@ -279,6 +279,7 @@ $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deac
 
 
 # Set file and directories ownership
+mkdir -p $final_path/wp-content/uploads
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"

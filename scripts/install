@@ -231,6 +231,7 @@ $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 # Set file and directories ownership
+mkdir -p $final_path/wp-content/uploads
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"

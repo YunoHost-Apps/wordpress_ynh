@@ -14,8 +14,6 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		# 5.4~ynh1
-		upgrade=1	from_commit=00a1a6e7dd5c814f5084c11c2810f886a32bdf61
 		# 5.8~ynh1
 		upgrade=1	from_commit=773073679873fbed3562c2d315f58eb4c1c0d4fc
 		backup_restore=1
@@ -41,6 +39,6 @@
 Email=
 Notification=change
 ;;; Upgrade options
-	; commit=00a1a6e7dd5c814f5084c11c2810f886a32bdf61
-		name=Upgrade 5.4
+	; commit=773073679873fbed3562c2d315f58eb4c1c0d4fc
+		name=Upgrade 5.8
 		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&language=fr_FR&multisite=0&is_public=1&

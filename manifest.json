@@ -12,7 +12,7 @@
         "license": "GPL-2.0",
         "website": "https://wordpress.org/",
         "admindoc": "https://codex.wordpress.org/",
-        "code": "https://core.trac.wordpress.org/browser  "
+        "code": "https://core.trac.wordpress.org/browser"
     },
 	"license": "GPL-2.0",
 	"maintainer": {
@@ -29,7 +29,7 @@
 	"multi_instance": true,
 	"services": [
 		"nginx",
-		"php7.3-fpm",
+		"php8.0-fpm",
 		"mysql"
 	],
 	"arguments": {

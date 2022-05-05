@@ -12,7 +12,7 @@
         "license": "GPL-2.0",
         "website": "https://wordpress.org/",
         "admindoc": "https://codex.wordpress.org/",
-        "code": "https://core.trac.wordpress.org/browser  "
+        "code": "https://core.trac.wordpress.org/browser"
     },
 	"license": "GPL-2.0",
 	"maintainer": {
@@ -60,16 +60,12 @@
                     "en": "Choose the application language",
                     "fr": "Choisissez la langue de l'application"
                 },
-				"choices": ["en_US", "fr_FR"],
+				"choices": ["de_DE", "en_US", "es_ES", "fr_FR", "it_IT", "nl_NL", "pt_PT"],
 				"default": "en_US"
 			},
 			{
 				"name": "admin",
-				"type": "user",
-				"ask": {
-					"en": "Choose the WordPress administrator (must be an existing YunoHost user)",
-					"fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
-				}
+				"type": "user"
 			},
 			{
 				"name": "multisite",

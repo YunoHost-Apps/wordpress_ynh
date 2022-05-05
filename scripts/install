@@ -117,7 +117,7 @@ else
     usage=high
 fi
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$usage --footprint=medium --package="$extra_php_dependencies"
+ynh_add_fpm_config --usage=$usage --footprint=medium
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================

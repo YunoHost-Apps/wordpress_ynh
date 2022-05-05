@@ -26,6 +26,7 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
 admin_wordpress=$YNH_APP_ARG_ADMIN
 multisite=$YNH_APP_ARG_MULTISITE
+phpversion=$YNH_PHP_VERSION
 
 app=$YNH_APP_INSTANCE_NAME
 

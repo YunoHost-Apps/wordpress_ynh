@@ -196,6 +196,13 @@ then
 fi
 
 #=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..." --weight=5
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
 

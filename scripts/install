@@ -26,6 +26,7 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
 admin_wordpress=$YNH_APP_ARG_ADMIN
 multisite=$YNH_APP_ARG_MULTISITE
+phpversion=$YNH_PHP_VERSION
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -58,6 +59,13 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
 ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
 ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
+
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Installing dependencies..." --weight=5
+
+ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -109,7 +117,7 @@ else
     usage=high
 fi
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$usage --footprint=medium --package="$extra_php_dependencies"
+ynh_add_fpm_config --usage=$usage --footprint=medium
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================

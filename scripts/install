@@ -127,6 +127,7 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 ynh_script_progression --message="Configuring WordPress..."
 
+__FILE__="__FILE__"
 # Change variables in WordPress configuration
 ynh_add_config --template="../conf/wp-config.php" --destination="$final_path/wp-config.php"
 

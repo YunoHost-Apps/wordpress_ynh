@@ -238,9 +238,12 @@ $wpcli_alias plugin activate authldap $plugin_network
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
+# Set file and directories ownership
+mkdir -p $final_path/wp-content/uploads
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
+chmod g+s $final_path/wp-content/uploads
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
@@ -251,6 +254,8 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 
 chmod 400 "$final_path/wp-config.php"
 chown $app:$app "$final_path/wp-config.php"
+# We do not want www-data to get access to this file through the ACLs
+setfacl -b "$final_path/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE

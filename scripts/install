@@ -215,7 +215,6 @@ then
 	# Activate multisite in wordpress config
 	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$final_path/wp-config.php
 
-	db_prefix="$db_prefix"
 	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
@@ -223,7 +222,6 @@ then
 	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
-	db_prefix="$db_prefix"
 	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/single.sql
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql

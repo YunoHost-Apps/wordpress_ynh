@@ -23,6 +23,8 @@ admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
 multisite=$(ynh_app_setting_get --app=$app --key=multisite)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+db_user=$db_name
+db_prefix=$(ynh_app_setting_get --app=$app --key=db_prefix)
 
 overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
 overwrite_phpfpm=$(ynh_app_setting_get --app=$app --key=overwrite_phpfpm)
@@ -148,6 +150,12 @@ fi
 if [ -z "$phpversion" ]; then
     phpversion=$YNH_PHP_VERSION
     ynh_app_setting_set --app=$app --key=phpversion --value=$phpversion
+fi
+
+# If db_prefix doesn't exist, create it
+if [ -z "$db_prefix" ]; then
+	table_prefix="wp_"
+	ynh_app_setting_set --app=$app --key=db_prefix --value=$db_prefix
 fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux

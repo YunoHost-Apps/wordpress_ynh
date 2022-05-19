@@ -23,7 +23,7 @@ define('DISABLE_WP_CRON', true);
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', '__DB_USER__');
+define('DB_NAME', '__DB_NAME__');
 
 /** MySQL database username */
 define('DB_USER', '__DB_USER__');
@@ -66,7 +66,7 @@ define('NONCE_SALT',       'KEY8');
  * You can have multiple installations in one database if you give each
  * a unique prefix. Only numbers, letters, and underscores please!
 */
-$table_prefix  = 'wp_';
+$table_prefix  = '__DB_PREFIX__';
 
 /**
  * For developers: WordPress debugging mode.

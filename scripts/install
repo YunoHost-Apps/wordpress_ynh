@@ -27,6 +27,7 @@ language=$YNH_APP_ARG_LANGUAGE
 admin_wordpress=$YNH_APP_ARG_ADMIN
 multisite=$YNH_APP_ARG_MULTISITE
 phpversion=$YNH_PHP_VERSION
+db_prefix=$YNH_PHP_DB_PREFIX
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -55,6 +56,7 @@ ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
+ynh_app_setting_set --app=$app --key=db_prefix --value=$db_prefix
 
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
 ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
@@ -129,8 +131,10 @@ ynh_script_progression --message="Configuring WordPress..."
 
 cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
-ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_name --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_user --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="__DB_NAME__" --replace_string=$db_name --target_file=$final_path/wp-config.php
 ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="___DB_PREFIX__" --replace_string="$db_prefix" --target_file=$final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
 do

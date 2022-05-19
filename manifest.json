@@ -68,6 +68,15 @@
 				"type": "user"
 			},
 			{
+				"name": "db_prefix",
+				"type": "string",
+				"ask": {
+                    "en": "Choose a WordPress Database Table prefix",
+                    "fr": "Choisissez un préfixe de table de base de données WordPress"
+                },
+                "default": "wp_"
+			},
+			{
 				"name": "multisite",
 				"type": "boolean",
 				"ask": {

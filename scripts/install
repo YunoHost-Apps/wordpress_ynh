@@ -27,7 +27,7 @@ language=$YNH_APP_ARG_LANGUAGE
 admin_wordpress=$YNH_APP_ARG_ADMIN
 multisite=$YNH_APP_ARG_MULTISITE
 phpversion=$YNH_PHP_VERSION
-db_prefix=$YNH_DB_PREFIX
+db_prefix=$YNH_APP_ARG_DB_PREFIX
 
 app=$YNH_APP_INSTANCE_NAME
 

@@ -15,7 +15,7 @@
 		setup_public=1
 		upgrade=1
 		# 5.8~ynh1
-		upgrade=1	from_commit=773073679873fbed3562c2d315f58eb4c1c0d4fc
+		upgrade=1	from_commit=a42dbf35fde78effd3513fc0c734f78e7457dcca
 		backup_restore=1
 		multi_instance=1
 		change_url=1
@@ -39,6 +39,6 @@
 Email=
 Notification=change
 ;;; Upgrade options
-	; commit=773073679873fbed3562c2d315f58eb4c1c0d4fc
-		name=Upgrade 5.8
+	; commit=a42dbf35fde78effd3513fc0c734f78e7457dcca
+		name=Merge pull request #155 from YunoHost-Apps/testing
 		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&language=fr_FR&multisite=0&is_public=1&

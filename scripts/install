@@ -246,8 +246,6 @@ ynh_store_file_checksum --file="$final_path/wp-config.php"
 
 chmod 400 "$final_path/wp-config.php"
 chown $app:$app "$final_path/wp-config.php"
-# We do not want www-data to get access to this file through the ACLs
-setfacl -b "$final_path/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE

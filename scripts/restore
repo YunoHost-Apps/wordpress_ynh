@@ -83,8 +83,6 @@ chmod g+s $(find $final_path/wp-content/uploads -type d)
 
 chmod 400 "$final_path/wp-config.php"
 chown $app:$app "$final_path/wp-config.php"
-# We do not want www-data to get access to this file through the ACLs
-setfacl -b "$final_path/wp-config.php"
 
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION

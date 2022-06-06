@@ -128,7 +128,8 @@ ynh_script_progression --message="Configuring WordPress..."
 
 cp ../conf/wp-config.php $final_path/wp-config.php
 # Change variables in Wordpress configuration
-ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_name --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_user --target_file=$final_path/wp-config.php
+ynh_replace_string --match_string="__DB_NAME__" --replace_string=$db_name --target_file=$final_path/wp-config.php
 ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file=$final_path/wp-config.php
 
 for i in 1 2 3 4 5 6 7 8
@@ -215,7 +216,7 @@ then
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
+	ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	db_prefix="wp_"
@@ -223,7 +224,7 @@ else
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
+	ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 fi
 

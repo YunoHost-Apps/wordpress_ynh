@@ -165,7 +165,7 @@ ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
 do
 	# The loop waits for WordPress to be installed, or 5 minutes.
-	if ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
+	if ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
 		# If the table wp_options is found, WordPress has finished its installation.
 		break
 	fi
@@ -243,7 +243,7 @@ mkdir -p $final_path/wp-content/uploads
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
-chmod g+s $final_path/wp-content/uploads
+chmod -R g+s $final_path/wp-content/uploads
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM

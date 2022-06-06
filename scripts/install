@@ -60,6 +60,13 @@ ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
 ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 
 #=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Installing dependencies..." --weight=10
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # CREATE DEDICATED USER
@@ -109,7 +116,7 @@ else
     usage=high
 fi
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$usage --footprint=medium --package="$extra_php_dependencies"
+ynh_add_fpm_config --usage=$usage --footprint=medium
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================

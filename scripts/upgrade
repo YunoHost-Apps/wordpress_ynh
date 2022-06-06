@@ -185,6 +185,13 @@ ynh_script_progression --message="Making sure dedicated system user exists..."
 ynh_system_user_create --username=$app --home_dir="$final_path"
 
 #=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..." --weight=10
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
@@ -204,7 +211,7 @@ if [ $overwrite_phpfpm -eq 1 ]
 then
     ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
     # Create a dedicated PHP-FPM config
-    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint --package="$extra_php_dependencies"
+    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 fi
 
 #=================================================

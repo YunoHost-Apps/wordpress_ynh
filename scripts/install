@@ -243,8 +243,7 @@ mkdir -p $final_path/wp-content/uploads
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
-#chmod g+s $final_path/wp-content/uploads
-chmod 6755 $final_path/wp-content/uploads
+chmod g+s $final_path/wp-content/uploads
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM

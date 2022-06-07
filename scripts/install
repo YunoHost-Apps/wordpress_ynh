@@ -124,13 +124,9 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configuring WordPress..."
+ynh_script_progression --message="Configuring WordPress..." --weight=2
 
-cp ../conf/wp-config.php $final_path/wp-config.php
-# Change variables in Wordpress configuration
-ynh_replace_string --match_string="__DB_USER__" --replace_string=$db_user --target_file=$final_path/wp-config.php
-ynh_replace_string --match_string="__DB_NAME__" --replace_string=$db_name --target_file=$final_path/wp-config.php
-ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file=$final_path/wp-config.php
+ynh_add_config --template="../conf/wp-config.php" --destination="$final_path/wp-config.php"
 
 for i in 1 2 3 4 5 6 7 8
 do
@@ -258,9 +254,11 @@ chown $app:$app "$final_path/wp-config.php"
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
+ynh_script_progression --message="Setuping a cron..." --weight=1
 
-echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
+ynh_add_config --template="../conf/cron" --destination="/etc/cron.d/$app"
+chown root: "/etc/cron.d/$app"
+chmod 644 "/etc/cron.d/$app"
 
 #=================================================
 # GENERIC FINALISATION

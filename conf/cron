@@ -1,0 +1,2 @@
+# Reach everyday wp-cron.php to trig the internal WordPress cron.
+0 3  *  *  * __APP__ /usr/bin/php__PHPVERSION__ __FINALPATH__/wp-cron.php > /dev/null

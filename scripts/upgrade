@@ -36,7 +36,6 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CHECK VERSION
 #=================================================
-ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -161,7 +160,7 @@ fi
 $wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate $plugin_network wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
 $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
 
-# Remove old ldap plugin
+# Remove old LDAP plugin
 $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
 
 # Cleaning legacy permissions
@@ -306,9 +305,11 @@ chown $app:$app "$final_path/wp-config.php"
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
+ynh_script_progression --message="Setuping a cron..." --weight=1
 
-echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
+ynh_add_config --template="../conf/cron" --destination="/etc/cron.d/$app"
+chown root: "/etc/cron.d/$app"
+chmod 644 "/etc/cron.d/$app"
 
 #=================================================
 # GENERIC FINALISATION

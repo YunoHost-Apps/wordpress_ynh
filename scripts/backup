@@ -1,11 +1,12 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -44,13 +45,13 @@ ynh_print_info --message="Declaring files to be backed up..."
 ynh_backup --src_path="$final_path"
 
 #=================================================
-# BACKUP NGINX CONFIGURATION
+# BACKUP THE NGINX CONFIGURATION
 #=================================================
 
 ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# BACKUP PHP-FPM CONFIGURATION
+# BACKUP THE PHP-FPM CONFIGURATION
 #=================================================
 
 ynh_backup --src_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
@@ -63,7 +64,7 @@ ynh_backup --src_path="/etc/fail2ban/jail.d/$app.conf"
 ynh_backup --src_path="/etc/fail2ban/filter.d/$app.conf"
 
 #=================================================
-# BACKUP CRON
+# BACKUP VARIOUS FILES
 #=================================================
 
 ynh_backup --src_path="/etc/cron.d/$app"

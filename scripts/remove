@@ -56,6 +56,14 @@ ynh_script_progression --message="Removing PHP-FPM configuration..." --weight=2
 ynh_remove_fpm_config
 
 #=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Removing dependencies..." --weight=3
+
+# Remove metapackage and its dependencies
+ynh_remove_app_dependencies
+
+#=================================================
 # REMOVE FAIL2BAN CONFIGURATION
 #=================================================
 ynh_script_progression --message="Removing Fail2Ban configuration..." --weight=8

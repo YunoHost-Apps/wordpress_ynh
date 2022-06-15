@@ -78,7 +78,7 @@ ynh_install_app_dependencies $pkg_dependencies
 ynh_script_progression --message="Configuring system user..." --weight=3
 
 # Create a dedicated system user
-ynh_system_user_create --username=$app --home_dir="$final_path"
+ynh_system_user_create --username=$app
 
 #=================================================
 # CREATE A MYSQL DATABASE

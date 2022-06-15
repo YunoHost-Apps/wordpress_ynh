@@ -36,31 +36,17 @@
 		"install" : [
 			{
 				"name": "domain",
-				"type": "domain",
-				"ask": {
-					"en": "Choose a domain for WordPress",
-					"fr": "Choisissez un domaine pour WordPress"
-				},
-				"example": "domain.org"
+				"type": "domain"
 			},
 			{
 				"name": "path",
 				"type": "path",
-				"ask": {
-					"en": "Choose a path for WordPress",
-					"fr": "Choisissez un chemin pour WordPress"
-				},
 				"example": "/blog",
 				"default": "/blog"
 			},
 			{
 				"name": "admin",
-				"type": "user",
-				"ask": {
-					"en": "Choose the WordPress administrator (must be an existing YunoHost user)",
-					"fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
-				},
-				"example": "john"
+				"type": "user"
 			},
 			{
 				"name": "language",

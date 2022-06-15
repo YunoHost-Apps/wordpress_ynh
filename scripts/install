@@ -13,6 +13,10 @@ source /usr/share/yunohost/helpers
 # MANAGE FAILURE OF THE SCRIPT
 #=================================================
 
+ynh_clean_setup () {
+	### Remove this function if there's nothing to clean before calling the remove script.
+	true
+}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
@@ -22,10 +26,10 @@ ynh_abort_if_errors
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
-admin_wordpress=$YNH_APP_ARG_ADMIN
-language=$YNH_APP_ARG_LANGUAGE
-multisite=$YNH_APP_ARG_MULTISITE
 is_public=$YNH_APP_ARG_IS_PUBLIC
+language=$YNH_APP_ARG_LANGUAGE
+admin_wordpress=$YNH_APP_ARG_ADMIN
+multisite=$YNH_APP_ARG_MULTISITE
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -41,7 +45,7 @@ test ! -e "$final_path" || ynh_die --message="This path already contains a folde
 ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
 if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
-	ynh_die --message="Multisite option of wordpress doesn't work at the root of a domain."
+	ynh_die --message="Multisite option of WordPress doesn't work at the root of a domain."
 fi
 
 #=================================================
@@ -51,8 +55,8 @@ ynh_script_progression --message="Storing installation settings..." --weight=2
 
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 ynh_app_setting_set --app=$app --key=language --value=$language
+ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
@@ -69,9 +73,19 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..." --weight=3
+
+# Create a dedicated system user
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
 # CREATE A MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Creating a MySQL database..."
+ynh_script_progression --message="Creating a MySQL database..." --weight=2
 
 db_name=$(ynh_sanitize_dbid --db_name=$app)
 db_user=$db_name
@@ -94,14 +108,6 @@ ynh_script_progression --message="Configuring NGINX web server..." --weight=3
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=3
-
-# Create a dedicated system user
-ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -216,7 +222,7 @@ then
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
+	ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	db_prefix="wp_"
@@ -224,7 +230,7 @@ else
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
 	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
+	ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 fi
 

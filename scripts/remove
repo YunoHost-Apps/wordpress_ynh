@@ -58,7 +58,7 @@ ynh_remove_fpm_config
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Removing dependencies..." --weight=3
+ynh_script_progression --message="Removing dependencies..." --weight=8
 
 # Remove metapackage and its dependencies
 ynh_remove_app_dependencies
@@ -66,15 +66,19 @@ ynh_remove_app_dependencies
 #=================================================
 # REMOVE FAIL2BAN CONFIGURATION
 #=================================================
-ynh_script_progression --message="Removing Fail2Ban configuration..." --weight=8
+ynh_script_progression --message="Removing Fail2Ban configuration..." --weight=2
 
 # Remove the dedicated Fail2Ban config
 ynh_remove_fail2ban_config
 
 #=================================================
-# REMOVE THE CRON
+# SPECIFIC REMOVE
 #=================================================
+# REMOVE VARIOUS FILES
+#=================================================
+ynh_script_progression --message="Removing various files..." --weight=1
 
+# Remove a cron file
 ynh_secure_remove /etc/cron.d/$app
 
 #=================================================
@@ -82,7 +86,7 @@ ynh_secure_remove /etc/cron.d/$app
 #=================================================
 # REMOVE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Removing the dedicated system user..." --weight=3
+ynh_script_progression --message="Removing the dedicated system user..." --weight=1
 
 # Delete dedicated system user
 ynh_system_user_delete --username=$app

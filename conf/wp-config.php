@@ -23,7 +23,7 @@ define('DISABLE_WP_CRON', true);
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', '__DB_USER__');
+define('DB_NAME', '__DB_NAME__');
 
 /** MySQL database username */
 define('DB_USER', '__DB_USER__');

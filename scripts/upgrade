@@ -36,7 +36,6 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CHECK VERSION
 #=================================================
-ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -185,15 +184,11 @@ ynh_script_progression --message="Making sure dedicated system user exists..."
 ynh_system_user_create --username=$app --home_dir="$final_path"
 
 #=================================================
-# NGINX CONFIGURATION
+# UPGRADE DEPENDENCIES
 #=================================================
+ynh_script_progression --message="Upgrading dependencies..." --weight=8
 
-# Overwrite the NGINX configuration only if it's allowed
-if [ $overwrite_nginx -eq 1 ]
-then
-    ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
-	ynh_add_nginx_config
-fi
+ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -204,7 +199,18 @@ if [ $overwrite_phpfpm -eq 1 ]
 then
     ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
     # Create a dedicated PHP-FPM config
-    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint --package="$extra_php_dependencies"
+    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+fi
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+
+# Overwrite the NGINX configuration only if it's allowed
+if [ $overwrite_nginx -eq 1 ]
+then
+    ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
+	ynh_add_nginx_config
 fi
 
 #=================================================

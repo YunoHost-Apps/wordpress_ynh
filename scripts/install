@@ -232,10 +232,14 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 # Set file and directories ownership
 mkdir -p $final_path/wp-content/uploads
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
+mkdir -p $final_path/wp-content/temp
 chown -R $app:www-data "$final_path"
-chmod g+s $final_path/wp-content/uploads
+find "$final_path" -type d -exec chmod 750 {} \;
+find "$final_path" -type f -exec chmod 640 {} \;
+find "$final_path/wp-content/uploads" -type d -exec chmod 770 {} \;
+find "$final_path/wp-content/temp" -type d -exec chmod 770 {} \;
+setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/uploads"
+setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/temp"
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM

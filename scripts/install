@@ -79,7 +79,7 @@ ynh_system_user_create --username=$app --home_dir="$final_path"
 #=================================================
 # CREATE A MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Creating a MySQL database..."
+ynh_script_progression --message="Creating a MySQL database..." --weight=2
 
 db_name=$(ynh_sanitize_dbid --db_name=$app)
 db_user=$db_name
@@ -124,7 +124,7 @@ phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configuring WordPress..."
+ynh_script_progression --message="Configuring WordPress..." --weight=1
 
 # Change variables in Wordpress configuration
 file=__FILE__

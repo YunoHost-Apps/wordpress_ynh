@@ -38,7 +38,7 @@ fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-ynh_script_progression --message="Validating restoration parameters..."
+ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
 test ! -d $final_path \
 	|| ynh_die --message="There is already a directory: $final_path "
@@ -46,7 +46,7 @@ test ! -d $final_path \
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Activating maintenance mode..."
+ynh_script_progression --message="Activating maintenance mode..." --weight=1
 
 ynh_maintenance_mode_ON
 
@@ -55,7 +55,7 @@ ynh_maintenance_mode_ON
 #=================================================
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Restoring the NGINX web server configuration..."
+ynh_script_progression --message="Restoring the NGINX web server configuration..." --weight=2
 
 ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
@@ -70,7 +70,7 @@ ynh_system_user_create --username=$app --home_dir="$final_path"
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..."
+ynh_script_progression --message="Restoring the app main directory..." --weight=5
 
 ynh_restore_file --origin_path="$final_path"
 
@@ -87,7 +87,7 @@ chown $app:$app "$final_path/wp-config.php"
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Restoring the PHP-FPM configuration..."
+ynh_script_progression --message="Restoring the PHP-FPM configuration..." --weight=2
 
 # Restore the file first, so it can have a backup if different
 ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
@@ -124,7 +124,7 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 # RESTORE VARIOUS FILES
 #=================================================
-ynh_script_progression --message="Restoring various files..."
+ynh_script_progression --message="Restoring various files..." --weight=1
 
 ynh_restore_file --origin_path="/etc/cron.d/$app"
 

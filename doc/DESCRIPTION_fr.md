@@ -1,2 +1,2 @@
-WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
-Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
+WordPress est un logiciel libre que vous pouvez utiliser pour crÃ©er un site ou un blog.
+Avec ce package, vous pouvez mÃªme activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).

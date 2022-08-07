@@ -29,7 +29,7 @@
 	"multi_instance": true,
 	"services": [
 		"nginx",
-		"php7.3-fpm",
+		"php7.4-fpm",
 		"mysql"
 	],
 	"arguments": {

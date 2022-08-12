@@ -21,6 +21,7 @@ With this package, you can even activate the [multisite](https://wordpress.org/s
 
 **Shipped version:** 6.0~ynh1
 
+
 ## Screenshots
 
 ![Screenshot of WordPress](./doc/screenshots/screen-themes.png)

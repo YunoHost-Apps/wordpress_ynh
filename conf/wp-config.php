@@ -48,14 +48,14 @@ define( 'DB_COLLATE', '' );
  *
  * @since 2.6.0
  */
-define( 'AUTH_KEY',         'put your unique phrase here' );
-define( 'SECURE_AUTH_KEY',  'put your unique phrase here' );
-define( 'LOGGED_IN_KEY',    'put your unique phrase here' );
-define( 'NONCE_KEY',        'put your unique phrase here' );
-define( 'AUTH_SALT',        'put your unique phrase here' );
-define( 'SECURE_AUTH_SALT', 'put your unique phrase here' );
-define( 'LOGGED_IN_SALT',   'put your unique phrase here' );
-define( 'NONCE_SALT',       'put your unique phrase here' );
+define( 'AUTH_KEY',         'KEY1' );
+define( 'SECURE_AUTH_KEY',  'KEY2' );
+define( 'LOGGED_IN_KEY',    'KEY3' );
+define( 'NONCE_KEY',        'KEY4' );
+define( 'AUTH_SALT',        'KEY5' );
+define( 'SECURE_AUTH_SALT', 'KEY6' );
+define( 'LOGGED_IN_SALT',   'KEY7' );
+define( 'NONCE_SALT',       'KEY8' );
 
 /**#@-*/
 

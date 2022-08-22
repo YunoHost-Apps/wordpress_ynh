@@ -53,13 +53,6 @@ ynh_maintenance_mode_ON
 #=================================================
 # STANDARD RESTORATION STEPS
 #=================================================
-# RESTORE THE NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Restoring the NGINX web server configuration..." --weight=2
-
-ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-
-#=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
 ynh_script_progression --message="Recreating the dedicated system user..." --weight=3
@@ -89,6 +82,14 @@ chmod 400 "$final_path/wp-config.php"
 chown $app:$app "$final_path/wp-config.php"
 
 #=================================================
+# REINSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Reinstalling dependencies..." --weight=5
+
+# Define and install dependencies
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
 ynh_script_progression --message="Restoring the PHP-FPM configuration..." --weight=2
@@ -98,6 +99,13 @@ ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
 
 # Recreate a dedicated php-fpm config
 ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+
+#=================================================
+# RESTORE THE NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the NGINX web server configuration..." --weight=2
+
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # RESTORE FAIL2BAN CONFIGURATION
@@ -116,14 +124,6 @@ ynh_script_progression --message="Restoring the MySQL database..." --weight=3
 db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
 ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
-
-#=================================================
-# REINSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Reinstalling dependencies..." --weight=5
-
-# Define and install dependencies
-ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # RESTORE VARIOUS FILES

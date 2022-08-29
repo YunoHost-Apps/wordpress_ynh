@@ -19,7 +19,8 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Shipped version:** 5.9.3~ynh2
+**Shipped version:** 6.0.1~ynh1
+
 
 ## Screenshots
 
@@ -61,7 +62,7 @@ Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wo
 
 * Official app website: <https://wordpress.org/>
 * Official admin documentation: <https://codex.wordpress.org/>
-* Upstream app code repository: <https://core.trac.wordpress.org/browser  >
+* Upstream app code repository: <https://core.trac.wordpress.org/browser>
 * YunoHost documentation for this app: <https://yunohost.org/app_wordpress>
 * Report a bug: <https://github.com/YunoHost-Apps/wordpress_ynh/issues>
 

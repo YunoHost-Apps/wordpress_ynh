@@ -19,7 +19,8 @@ WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou 
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 
-**Version incluse :** 5.9.3~ynh2
+**Version incluse :** 6.0.1~ynh1
+
 
 ## Captures d'écran
 
@@ -61,7 +62,7 @@ Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpres
 
 * Site officiel de l'app : <https://wordpress.org/>
 * Documentation officielle de l'admin : <https://codex.wordpress.org/>
-* Dépôt de code officiel de l'app : <https://core.trac.wordpress.org/browser  >
+* Dépôt de code officiel de l'app : <https://core.trac.wordpress.org/browser>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_wordpress>
 * Signaler un bug : <https://github.com/YunoHost-Apps/wordpress_ynh/issues>
 

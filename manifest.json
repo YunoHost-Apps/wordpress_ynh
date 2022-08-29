@@ -6,13 +6,14 @@
 		"en": "Create a beautiful blog or website easily",
 		"fr": "Logiciel de création de blog ou de site Web"
 	},
-	"version": "5.9.3~ynh2",
+	"version": "6.0.1~ynh1",
 	"url": "https://wordpress.org/",
 	"upstream": {
         "license": "GPL-2.0",
         "website": "https://wordpress.org/",
         "admindoc": "https://codex.wordpress.org/",
-        "code": "https://core.trac.wordpress.org/browser  "
+        "code": "https://core.trac.wordpress.org/browser",
+        "cpe": "cpe:2.3:a:wordpress:wordpress"
     },
 	"license": "GPL-2.0",
 	"maintainer": {
@@ -24,12 +25,12 @@
 		"email": "maniackc_dev@crudelis.fr"
 	}],
     "requirements": {
-        "yunohost": ">= 4.3.0"
+        "yunohost": ">= 11.0.9"
     },
 	"multi_instance": true,
 	"services": [
 		"nginx",
-		"php7.3-fpm",
+		"php8.0-fpm",
 		"mysql"
 	],
 	"arguments": {

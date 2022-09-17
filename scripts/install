@@ -108,15 +108,23 @@ ynh_add_nginx_config
 #=================================================
 ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 
+fpm_footprint="medium"
+fpm_free_footprint=0
+
 # If the app is private, set the usage to low, otherwise to high.
 if [ $is_public -eq 0 ]
 then
-    usage=low
+    fpm_usage="low"
 else
-    usage=high
+    fpm_usage="high"
 fi
+
+ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
+ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
+ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
+
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$usage --footprint=medium
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================

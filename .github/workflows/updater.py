@@ -57,7 +57,7 @@ def generate_src_files(repo: str, release: Any):
 def sha256sum_of_url(url: str) -> str:
     """Compute checksum without saving the file"""
     checksum = hashlib.sha256()
-    for chunk in requests.get(url, stream=True).iter_content():
+    for chunk in requests.get(url, stream=True).iter_content(10*1024):
         checksum.update(chunk)
     return checksum.hexdigest()
 

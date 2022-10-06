@@ -19,7 +19,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Shipped version:** 6.0.2~ynh1
+**Shipped version:** 6.0.2~ynh2 *(:warning: This is the `testing` branch. The [`master` branch](https://github.com/YunoHost-Apps/wordpress_ynh/tree/master) used in the catalog is currently on version 6.0.2\~ynh1.)*
 
 
 ## Screenshots

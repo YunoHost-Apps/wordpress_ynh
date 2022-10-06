@@ -58,6 +58,12 @@ Don't forget to comply with good security principles (strong password, frequent 
 
 Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wordpress.org/support/article/hardening-wordpress/). You might see some benefits in the use of Wordpress security plugins.
 
+## :red_circle: Antifeatures
+
+- **Non-free Addons**: Promotes other non-free applications or plugins.
+
+- **Paid content**: Promotes or depends, entirely or partially, on a paid service.
+
 ## Documentation and resources
 
 * Official app website: <https://wordpress.org/>

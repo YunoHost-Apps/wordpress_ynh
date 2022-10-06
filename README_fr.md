@@ -58,6 +58,12 @@ N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe for
 
 Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpress.org/support/article/hardening-wordpress/). Installer des extensions de sécurité peut-être une bonne chose.
 
+## :red_circle: Fonctions indésirables
+
+- **Non-free Addons**: Promotes other non-free applications or plugins.
+
+- **Paid content**: Promotes or depends, entirely or partially, on a paid service.
+
 ## Documentations et ressources
 
 * Site officiel de l'app : <https://wordpress.org/>

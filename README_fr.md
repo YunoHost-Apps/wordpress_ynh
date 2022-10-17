@@ -19,8 +19,7 @@ WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou 
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 
-**Version incluse :** 6.0.2~ynh2 *(:warning: Il s'agit de la branche `testing`. La [branche `master`](https://github.com/YunoHost-Apps/wordpress_ynh/tree/master) utilisée dans le catalogue est actuellement en 6.0.2\~ynh1.)*
-
+**Version incluse :** 6.0.2~ynh2
 
 ## Captures d'écran
 

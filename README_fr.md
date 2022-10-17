@@ -19,7 +19,7 @@ WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou 
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 
-**Version incluse :** 6.0.2~ynh1
+**Version incluse :** 6.0.2~ynh2 *(:warning: Il s'agit de la branche `testing`. La [branche `master`](https://github.com/YunoHost-Apps/wordpress_ynh/tree/master) utilisée dans le catalogue est actuellement en 6.0.2\~ynh1.)*
 
 
 ## Captures d'écran
@@ -57,6 +57,12 @@ Des vulnérabilités peuvent offrir une brêche dans votre WordPress ou dans vot
 N'oubliez pas d'appliquer les principes de sécurité de base (mots de passe forts, mises à jours fréquentes, ne pas ajouter du code inconnu dans le thème et les extensionts…). En particuler, *gardez votre Wordpress à jour le plus possible*.
 
 Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpress.org/support/article/hardening-wordpress/). Installer des extensions de sécurité peut-être une bonne chose.
+
+## :red_circle: Fonctions indésirables
+
+- **Non-free Addons**: Promotes other non-free applications or plugins.
+
+- **Paid content**: Promotes or depends, entirely or partially, on a paid service.
 
 ## Documentations et ressources
 

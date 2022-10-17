@@ -19,7 +19,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Shipped version:** 6.0.2~ynh1
+**Shipped version:** 6.0.2~ynh2 *(:warning: This is the `testing` branch. The [`master` branch](https://github.com/YunoHost-Apps/wordpress_ynh/tree/master) used in the catalog is currently on version 6.0.2\~ynh1.)*
 
 
 ## Screenshots
@@ -57,6 +57,12 @@ Some vulnerabilities might let an attacker breach into your WordPress, or even y
 Don't forget to comply with good security principles (strong password, frequent updates, don't add unknow code in your theme/extensions…). In particular, *please keep your WordPress as up-to-date as possible*.
 
 Furthermore, you might take a look at the [Hardening Wordpress Guide](https://wordpress.org/support/article/hardening-wordpress/). You might see some benefits in the use of Wordpress security plugins.
+
+## :red_circle: Antifeatures
+
+- **Non-free Addons**: Promotes other non-free applications or plugins.
+
+- **Paid content**: Promotes or depends, entirely or partially, on a paid service.
 
 ## Documentation and resources
 

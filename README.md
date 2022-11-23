@@ -19,7 +19,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Shipped version:** 6.0.3~ynh1
+**Shipped version:** 6.1.1~ynh1
 
 ## Screenshots
 

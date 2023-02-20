@@ -5,7 +5,8 @@ It shall NOT be edited by hand.
 
 # WordPress for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Working status](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Working status](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
+
 [![Install WordPress with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
 *[Lire ce readme en français.](./README_fr.md)*

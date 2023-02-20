@@ -5,15 +5,16 @@ It shall NOT be edited by hand.
 
 # WordPress pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)  
+[![Niveau d’intégration](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
+
 [![Installer WordPress avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer WordPress rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+> *Ce package vous permet d’installer WordPress rapidement et simplement sur un serveur YunoHost.
+Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l’installer et en profiter.*
 
-## Vue d'ensemble
+## Vue d’ensemble
 
 WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou un blog.
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
@@ -21,9 +22,9 @@ Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wo
 
 **Version incluse :** 6.1.1~ynh1
 
-## Captures d'écran
+## Captures d’écran
 
-![Capture d'écran de WordPress](./doc/screenshots/screen-themes.png)
+![Capture d’écran de WordPress](./doc/screenshots/screen-themes.png)
 
 ## Avertissements / informations importantes
 
@@ -65,9 +66,9 @@ Par ailleurs, vous pourriez avoir besoin de regarder [ce guide](https://wordpres
 
 ## Documentations et ressources
 
-* Site officiel de l'app : <https://wordpress.org/>
-* Documentation officielle de l'admin : <https://codex.wordpress.org/>
-* Dépôt de code officiel de l'app : <https://core.trac.wordpress.org/browser>
+* Site officiel de l’app : <https://wordpress.org/>
+* Documentation officielle de l’admin : <https://codex.wordpress.org/>
+* Dépôt de code officiel de l’app : <https://core.trac.wordpress.org/browser>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_wordpress>
 * Signaler un bug : <https://github.com/YunoHost-Apps/wordpress_ynh/issues>
 
@@ -83,4 +84,4 @@ ou
 sudo yunohost app upgrade wordpress -u https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** <https://yunohost.org/packaging_apps>
+**Plus d’infos sur le packaging d’applications :** <https://yunohost.org/packaging_apps>

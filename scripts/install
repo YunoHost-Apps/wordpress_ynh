@@ -240,9 +240,30 @@ fi
 ynh_script_progression --message="Activating plugins..." --weight=4
 
 $wpcli_alias plugin activate authldap $plugin_network
+# configure the plugin from a json config file
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/plugin_authldap_single.json
 $wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap_single.json
-# to display the list of all the possibles options, from your server:
+
+# Set "default user role" as 'subscriber' if no LDAP group found. (Same settings as previous "permission managment" system)
+# Setting not included in the "upgrade script" if the setting has been manually changed by an admin in the app. So it is not overwritten by a package upgrade
+# TODO: could be asked while installing the package the default setting
+$wpcli_alias option patch insert authLDAPOptions DefaultRole "subscriber"
+# To display the list of all the possibles options for this plugin, from your server, enter:
 #   $ php8.0 ./wp-cli.phar --path=/var/www/wordpress --allow-root option get authLDAPOptions --json | jq
+#              ^ you might need to download it from the projet
+
+
+#$wpcli_alias option pluck authLDAPOptions DefaultRole --format=json | jq --raw-output
+#is_empty=$($wpcli_alias option pluck authLDAPOptions DefaultRole --format=json | jq --raw-output)
+#if [[ -z "$is_empty" ]]; then
+#	# $var is empty, do what you want
+#	$wpcli_alias option patch insert authLDAPOptions DefaultRole "subscriber"
+#else
+#	$wpcli_alias option patch update authLDAPOptions DefaultRole "subscriber"
+#fi
+
+
+
 
 
 # Do not activate http-authentication, this plugin is sometimes unstable
@@ -301,7 +322,11 @@ then
 fi
 
 # Only the admin can access the admin panel of the app
+# - "admin" has full rights in the app
+# - "main" can login and do almost nothing
+# See https://wordpress.org/documentation/article/roles-and-capabilities/
 ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
+ynh_permission_update --permission="main" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=all_users
 
 #=================================================
 # RELOAD NGINX

@@ -1,10 +1,22 @@
 {
     "Enabled": "1",
     "URI": "ldap://localhost/ou=users,dc=yunohost,dc=org",
-    "Filter": "(&(objectclass=posixAccount)(|(uid=%1$s)(mail=%1$s))(permission=cn=wordpress.admin,ou=permission,dc=yunohost,dc=org))",
+    "Filter": "(&(objectclass=posixAccount)(|(uid=%1$s)(mail=%1$s)))",
     "NameAttr": "givenName",
     "SecName": "sn",
     "UidAttr": "uid",
     "MailAttr": "mail",
-    "DefaultRole": "subscriber"
-}  
+    "Groups": {
+      "administrator": "__APP__.admin",
+      "editor": "",
+      "author": "",
+      "contributor": "",
+      "subscriber": "__APP__.main"
+    },
+    "GroupAttr": "cn",
+    "GroupFilter": "(&(objectClass=posixGroup)(memberUid=%s))",
+    "GroupEnable": "1",
+    "GroupOverUser": "1",
+    "Version": 1,
+    "GroupBase": "ou=permission,dc=yunohost,dc=org"
+}

@@ -240,7 +240,7 @@ fi
 ynh_script_progression --message="Activating plugins..." --weight=4
 
 $wpcli_alias plugin activate authldap $plugin_network
-$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap.json
+$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap_single.json
 # to display the list of all the possibles options, from your server:
 #   $ php8.0 ./wp-cli.phar --path=/var/www/wordpress --allow-root option get authLDAPOptions --json | jq
 

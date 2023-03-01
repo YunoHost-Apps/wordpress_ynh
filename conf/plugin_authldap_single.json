@@ -1,0 +1,10 @@
+{
+    "Enabled": "1",
+    "URI": "ldap://localhost/ou=users,dc=yunohost,dc=org",
+    "Filter": "(&(objectclass=posixAccount)(|(uid=%1$s)(mail=%1$s))(permission=cn=wordpress.admin,ou=permission,dc=yunohost,dc=org))",
+    "NameAttr": "givenName",
+    "SecName": "sn",
+    "UidAttr": "uid",
+    "MailAttr": "mail",
+    "DefaultRole": "subscriber"
+}  

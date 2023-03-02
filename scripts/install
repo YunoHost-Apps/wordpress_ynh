@@ -325,7 +325,8 @@ fi
 # - "admin" has full rights in the app
 # - "main" can login and do almost nothing
 # See https://wordpress.org/documentation/article/roles-and-capabilities/
-ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress --label="$app - admin"
+ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress --show_tile=true
+#ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress --label="$app - admin" --show_tile=true
 # Add "label" for user panel
 #ynh_permission_update --permission="main" --label="$app - subscriber"
 

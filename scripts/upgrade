@@ -281,6 +281,9 @@ update_plugin () {
 }
 update_plugin authldap
 $wpcli_alias plugin activate authldap $plugin_network
+# re-apply the default LDAP configuration, hoping that admininstrator did not change these settings.
+$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap.json
+
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 

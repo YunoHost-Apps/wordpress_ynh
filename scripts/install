@@ -220,20 +220,8 @@ then
 	# Activate multisite in wordpress config
 	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$final_path/wp-config.php
 
-	db_prefix="wp_"
-	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
-
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
-	#db_prefix="wp_"
-	#ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/single.sql
-	#ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
-	#ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql
-
-	#ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
 	plugin_network=""
 fi
 
@@ -244,16 +232,19 @@ ynh_script_progression --message="Activating plugins..." --weight=4
 
 $wpcli_alias plugin activate authldap $plugin_network
 # configure the plugin from a json config file
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/plugin_authldap_single.json
-$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap_single.json
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/plugin_authldap.json
+$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap.json
 # To display the list of all the possibles options for this plugin, from your server, enter:
 #   $ php8.0 ./wp-cli.phar --path=/var/www/wordpress --allow-root option get authLDAPOptions --json | jq
 #              ^ you might need to download it from the projet
 
+# Sources for writing the json file and permission management
+# - https://moulinette.readthedocs.io/en/latest/ldap.html
+# - https://github.com/YunoHost-Apps/nextcloud_ynh/blob/master/conf/config.json
 
 # Set "default user role" as 'subscriber' if no permision (aka LDAP group) found for the user. (Same settings as previous "permission managment" system. So it should no break stuff...)
 #
-# This setting is not included in the "plugin_authldap_single.json script" so the json file can be used for "install" and "upgrade"
+# This setting is not included in the "plugin_authldap.json script" so the json file can be used for "install" and "upgrade"
 # - Install => Set "default user role" choosen by the packager 
 # - Upgrade => Do not modify the default setting as the Wordpress administrator could have changed the defaut role for its use case.
 # TODO: could be asked to the admin while installing the app and set it up here somehow?

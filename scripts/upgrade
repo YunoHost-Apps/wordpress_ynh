@@ -179,7 +179,11 @@ fi
 
 if ! ynh_permission_exists --permission="admin"; then
 	# Create the required permissions
-	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
+	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress --show_tile=true
+else
+	# Add "label" for user panel
+	ynh_permission_update --permission="admin" --show_tile=true
+fi
 fi
 
 #=================================================
@@ -282,7 +286,8 @@ update_plugin () {
 update_plugin authldap
 $wpcli_alias plugin activate authldap $plugin_network
 # re-apply the default LDAP configuration, hoping that admininstrator did not change these settings.
-$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap.json
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/plugin_authldap_single.json
+$wpcli_alias option update authLDAPOptions --format=json < ../conf/plugin_authldap_single.json
 
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network

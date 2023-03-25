@@ -184,6 +184,11 @@ else
 	# Add "label" for user panel
 	ynh_permission_update --permission="admin" --show_tile=true
 fi
+
+# If missing, create "editor permission"
+if ! ynh_permission_exists --permission="editor"; then
+	ynh_script_progression --message="Creating the missing 'editor permission'..."
+	ynh_permission_create --permission="editor" --url="/wp-login.php" --additional_urls="/wp-admin.php" --show_tile=true
 fi
 
 #=================================================

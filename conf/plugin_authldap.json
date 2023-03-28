@@ -8,7 +8,7 @@
     "MailAttr": "mail",
     "Groups": {
       "administrator": "__APP__.admin",
-      "editor": "",
+      "editor": "__APP__.editor",
       "author": "",
       "contributor": "",
       "subscriber": "__APP__.main"

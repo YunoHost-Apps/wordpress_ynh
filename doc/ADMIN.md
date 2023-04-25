@@ -10,10 +10,6 @@ Use the admin panel of your WordPress to configure this app.
  * Automatic update of wordpress core, plugins and themes.
  * Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
 
-#### Multi-users support
-
-Supported, with LDAP and SSO.
-
 ## Limitations
 
 * Multisite only available on subdirectories.

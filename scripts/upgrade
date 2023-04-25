@@ -10,56 +10,14 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
-#=================================================
-#REMOVEME? ynh_script_progression --message="Loading installation settings..." --weight=5
-
-#REMOVEME? app=$YNH_APP_INSTANCE_NAME
-
-#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
-#REMOVEME? path=$(ynh_app_setting_get --app=$app --key=path)
-#REMOVEME? language=$(ynh_app_setting_get --app=$app --key=language)
-#REMOVEME? admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
-#REMOVEME? multisite=$(ynh_app_setting_get --app=$app --key=multisite)
-#REMOVEME? #REMOVEME? install_dir=$(ynh_app_setting_get --app=$app --key=install_dir)
-#REMOVEME? db_name=$(ynh_app_setting_get --app=$app --key=db_name)
-
-#REMOVEME? overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
-#REMOVEME? overwrite_phpfpm=$(ynh_app_setting_get --app=$app --key=overwrite_phpfpm)
-#REMOVEME? admin_mail_html=$(ynh_app_setting_get --app=$app --key=admin_mail_html)
-
-#REMOVEME? fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
-#REMOVEME? fpm_free_footprint=$(ynh_app_setting_get --app=$app --key=fpm_free_footprint)
-#REMOVEME? fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
-
-#REMOVEME? phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
-
-#=================================================
 # CHECK VERSION
 #=================================================
 
 upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-#REMOVEME? ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
-
-# Backup the current version of the app
-#REMOVEME? ynh_backup_before_upgrade
-#REMOVEME? ynh_clean_setup () {
-	# Restore it if the upgrade fails
-#REMOVEME? 	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-#REMOVEME? ynh_abort_if_errors
-
-#=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Activating maintenance mode..." --weight=2
 
 ynh_maintenance_mode_ON
 
@@ -170,26 +128,6 @@ $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin instal
 # Remove old ldap plugin
 $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
 
-# Cleaning legacy permissions
-#REMOVEME? if ynh_legacy_permissions_exists; then
-#REMOVEME? 	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
-
-#REMOVEME? if ! ynh_permission_exists --permission="admin"; then
-	# Create the required permissions
-#REMOVEME? 	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
-fi
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-#REMOVEME? ynh_script_progression --message="Making sure dedicated system user exists..."
-
-# Create a dedicated user (if not existing)
-#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
-
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
@@ -200,13 +138,6 @@ then
     ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
 	ynh_add_nginx_config
 fi
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-#REMOVEME? ynh_script_progression --message="Upgrading dependencies..." --weight=5
-
-#REMOVEME? ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -234,15 +165,13 @@ ynh_backup_if_checksum_is_different --file="$install_dir/wp-config.php"
 #=================================================
 ynh_script_progression --message="Configuring multisite..." --weight=2
 
-#REMOVEME? db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-
 if [ $multisite -eq 1 ]
 then
 	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
 
     ynh_store_file_checksum --file="/etc/nginx/conf.d/$domain.d/$app.conf"
 
-#REMOVEME?     ynh_systemd_action --service_name=nginx --action=reload
+	ynh_systemd_action --service_name=nginx --action=reload
 
 	db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
@@ -330,54 +259,16 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=9
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
-# RELOAD NGINX
-#=================================================
-#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..."
-
-#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
-
-#=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-#REMOVEME? ynh_secure_remove --file=$install_dir/wp-cli.phar
+ynh_secure_remove --file=$install_dir/wp-cli.phar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Disabling maintenance mode..." --weight=5
 
 ynh_maintenance_mode_OFF
-
-#=================================================
-# SEND A README FOR THE ADMIN
-#=================================================
-
-# Get main domain and buid the url of the admin panel of the app.
-admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
-
-# If a html email is required. Apply html to the changelog.
-if [ "$admin_mail_html" -eq 1 ]; then
-    format=html
-else
-    format=plain
-fi
-ynh_app_changelog --format=$format
-
-echo "Please manually trigger updates to major versions in the WordPress admin area.
-You can also activate the automatic update in the Companion Auto Update plugin settings.
-
-You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
-You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
-
-If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__.
-
----
-
-Changelog since your last upgrade:
-$(cat changelog)" > mail_to_send
-
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=upgrade
 
 #=================================================
 # END OF SCRIPT

@@ -4,15 +4,24 @@ Use the admin panel of your WordPress to configure this app.
 
 ## YunoHost specific features
 
- * Integration with YunoHost users and SSO:
-   * private mode: Blog only accessible by YunoHost users
-   * public mode: Visible by anyone, YunoHost users automatically connected
- * Automatic update of wordpress core, plugins and themes.
- * Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
+* Integration with SSO does not work (automatic login of the user if previously logged on the YunoHost web portal)
+  * **private mode:** Blog only accessible by YunoHost users
+  * **public mode:** Visible by anyone
+* Allow one user to be the administrator (set at the installation)
+* Integration with [YunoHost permission](https://yunohost.org/groups_and_permissions):
+  * Users rights should be managed from the [Managing groups](https://yunohost.org/en/groups_and_permissions) to give these rights:
+    * `admin`: can do everything, has "super powers"
+    * `editor`: can edit all the posts and pages but cannot edit the Worpdress configuration (plugins, user rights, etc)
+    * `main`: can access with the "default right" (is `subscriber` right now for the package)
+  * Complete list: https://wordpress.org/documentation/article/roles-and-capabilities/#summary-of-roles
+  * ⚠️ Permissions defined in YunoHost take precedence over those setted in Wordpress ⚠️
+    * FIXME: not sure about which has priority, need testing
+* ~~Automatic update of wordpress core, plugins and themes.~~
+* Allow to set up a [multisite](https://codex.wordpress.org/Glossary#Multisite) instance.
 
 #### Multi-users support
 
-Supported, with LDAP and SSO.
+Supported, with LDAP ~~and SSO~~.
 
 ## Limitations
 

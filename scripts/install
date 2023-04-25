@@ -24,10 +24,6 @@ fi
 ynh_app_setting_set --app=$app --key=language --value=$language
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 
-#ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
-#ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
-#REMOVEME? ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
-
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -100,7 +96,7 @@ yunohost app ssowatconf
 ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
-ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
+ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin@$domain" "Submit=Install+WordPress"
 
 ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`

@@ -28,20 +28,14 @@ ynh_maintenance_mode_ON
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..."
 
-if [ -z "$admin_wordpress" ]; then
+if [ -z "${admin:-}" ]; then
 	ynh_mysql_execute_as_root --sql="select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" --database=$db_name
-	admin_wordpress=$(cat /tmp/wordpressuser)
+	admin=$(cat /tmp/wordpressuser)
 	ynh_secure_remove --file=/tmp/wordpressuser
-#REMOVEME? 	ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
+	ynh_app_setting_set --app=$app --key=admin --value=$admin
 fi
 
-# If install_dir doesn't exist, create it
-if [ -z "$install_dir" ]; then
-#REMOVEME? 	install_dir=/var/www/$app
-#REMOVEME? 	ynh_app_setting_set --app=$app --key=install_dir --value=$install_dir
-fi
-
-if [ -z "$language" ]; then
+if [ -z "${language:-}" ]; then
 	language=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
 	ynh_app_setting_set --app=$app --key=language --value=$language
 fi
@@ -55,51 +49,27 @@ elif [ "${multisite,,}" = "no" ]; then
 	multisite=0
 fi
 
-# If db_name doesn't exist, create it
-if [ -z "$db_name" ]; then
-	db_name=$(ynh_sanitize_dbid --db_name=$app)
-#REMOVEME? 	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-fi
-
 # If some 'add_filter' are still in wp_config, remove them
 if grep add_filter.*auto_update $install_dir/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $install_dir/wp-config.php
 fi
 
-# If admin_mail_html doesn't exist, create it
-if [ -z "$admin_mail_html" ]; then
-	admin_mail_html=1
-#REMOVEME? 	ynh_app_setting_set --app=$app --key=admin_mail_html --value=$admin_mail_html
-fi
-
-# If overwrite_nginx doesn't exist, create it
-if [ -z "$overwrite_nginx" ]; then
-	overwrite_nginx=1
-	ynh_app_setting_set $app overwrite_nginx $overwrite_nginx
-fi
-
-# If overwrite_phpfpm doesn't exist, create it
-if [ -z "$overwrite_phpfpm" ]; then
-    overwrite_phpfpm=1
-    ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=$overwrite_phpfpm
-fi
-
 # If fpm_footprint doesn't exist, create it
-if [ -z "$fpm_footprint" ]; then
+if [ -z "${fpm_footprint:-}" ]; then
     fpm_footprint=medium
     ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
 fi
 
 # If fpm_free_footprint doesn't exist, create it
-if [ -z "$fpm_free_footprint" ]; then
+if [ -z "${fpm_free_footprint:-}" ]; then
 	fpm_free_footprint=0
 	ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
 fi
 
 # If fpm_usage doesn't exist, create it
-if [ -z "$fpm_usage" ]; then
+if [ -z "${fpm_usage:-}" ]; then
 	# If the app is private, set the usage to low, otherwise to high.
-#REMOVEME? 	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
+	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
 	then
 		usage=low
 	else
@@ -107,12 +77,6 @@ if [ -z "$fpm_usage" ]; then
 	fi
     fpm_usage=$usage
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
-fi
-
-# If phpversion doesn't exist, create it
-if [ -z "$phpversion" ]; then
-    phpversion=$YNH_PHP_VERSION
-    ynh_app_setting_set --app=$app --key=phpversion --value=$phpversion
 fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux
@@ -131,25 +95,17 @@ $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deacti
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
 
-# Overwrite the NGINX configuration only if it's allowed
-if [ $overwrite_nginx -eq 1 ]
-then
-    ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
-	ynh_add_nginx_config
-fi
+ynh_add_nginx_config
 
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
+ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
 
-# Overwrite the PHP-FPM configuration only if it's allowed
-if [ $overwrite_phpfpm -eq 1 ]
-then
-    ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
-    # Create a dedicated PHP-FPM config
-    ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
-fi
+ # Create a dedicated PHP-FPM config
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
 #=================================================
 # SPECIFIC UPGRADE

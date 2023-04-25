@@ -67,11 +67,7 @@
             },
             {
                 "name": "admin",
-                "type": "user",
-                "ask": {
-                    "en": "Choose the WordPress administrator (must be an existing YunoHost user)",
-                    "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
-                }
+                "type": "user"
             },
             {
                 "name": "multisite",

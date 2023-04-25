@@ -4,9 +4,9 @@
 # COMMON VARIABLES
 #=================================================
 
-YNH_PHP_VERSION="8.0"
+#REMOVEME? YNH_PHP_VERSION="8.0"
 
-pkg_dependencies="php${YNH_PHP_VERSION}-mysql php${YNH_PHP_VERSION}-curl php${YNH_PHP_VERSION}-json php${YNH_PHP_VERSION}-mbstring php${YNH_PHP_VERSION}-xml php${YNH_PHP_VERSION}-zip php${YNH_PHP_VERSION}-gd php${YNH_PHP_VERSION}-soap php${YNH_PHP_VERSION}-ssh2 php${YNH_PHP_VERSION}-tokenizer php${YNH_PHP_VERSION}-ldap" 
+#REMOVEME? pkg_dependencies="php${YNH_PHP_VERSION}-mysql php${YNH_PHP_VERSION}-curl php${YNH_PHP_VERSION}-json php${YNH_PHP_VERSION}-mbstring php${YNH_PHP_VERSION}-xml php${YNH_PHP_VERSION}-zip php${YNH_PHP_VERSION}-gd php${YNH_PHP_VERSION}-soap php${YNH_PHP_VERSION}-ssh2 php${YNH_PHP_VERSION}-tokenizer php${YNH_PHP_VERSION}-ldap" 
 
 #=================================================
 # EXPERIMENTAL HELPERS
@@ -35,7 +35,7 @@ ynh_send_readme_to_admin() {
 	type="${type:-install}"
 
 	# Get the value of admin_mail_html
-	admin_mail_html=$(ynh_app_setting_get $app admin_mail_html)
+#REMOVEME? 	admin_mail_html=$(ynh_app_setting_get $app admin_mail_html)
 	admin_mail_html="${admin_mail_html:-0}"
 
 	# Retrieve the email of users
@@ -154,12 +154,12 @@ __PRE_TAG1__$(yunohost tools diagnosis | grep -B 100 "services:" | sed '/service
 #=================================================
 
 ynh_maintenance_mode_ON () {
-	# Load value of $path_url and $domain from the config if their not set
-	if [ -z $path_url ]; then
-		path_url=$(ynh_app_setting_get $app path)
+	# Load value of $path and $domain from the config if their not set
+	if [ -z $path ]; then
+#REMOVEME? 		path=$(ynh_app_setting_get $app path)
 	fi
 	if [ -z $domain ]; then
-		domain=$(ynh_app_setting_get $app domain)
+#REMOVEME? 		domain=$(ynh_app_setting_get $app domain)
 	fi
 
 	mkdir -p /var/www/html/
@@ -186,10 +186,10 @@ ynh_maintenance_mode_ON () {
 </html>" > "/var/www/html/maintenance.$app.html"
 
 	# Create a new nginx config file to redirect all access to the app to the maintenance notice instead.
-	echo "# All request to the app will be redirected to ${path_url}_maintenance and fall on the maintenance notice
-rewrite ^${path_url}/(.*)$ ${path_url}_maintenance/? redirect;
+	echo "# All request to the app will be redirected to ${path}_maintenance and fall on the maintenance notice
+rewrite ^${path}/(.*)$ ${path}_maintenance/? redirect;
 # Use another location, to not be in conflict with the original config file
-location ${path_url}_maintenance/ {
+location ${path}_maintenance/ {
 alias /var/www/html/ ;
 
 try_files maintenance.$app.html =503;
@@ -200,7 +200,7 @@ include conf.d/yunohost_panel.conf.inc;
 
 	# The current config file will redirect all requests to the root of the app.
 	# To keep the full path, we can use the following rewrite rule:
-	# 	rewrite ^${path_url}/(.*)$ ${path_url}_maintenance/\$1? redirect;
+	# 	rewrite ^${path}/(.*)$ ${path}_maintenance/\$1? redirect;
 	# The difference will be in the $1 at the end, which keep the following queries.
 	# But, if it works perfectly for a html request, there's an issue with any php files.
 	# This files are treated as simple files, and will be downloaded by the browser.
@@ -210,16 +210,16 @@ include conf.d/yunohost_panel.conf.inc;
 }
 
 ynh_maintenance_mode_OFF () {
-	# Load value of $path_url and $domain from the config if their not set
-	if [ -z $path_url ]; then
-		path_url=$(ynh_app_setting_get $app path)
+	# Load value of $path and $domain from the config if their not set
+	if [ -z $path ]; then
+#REMOVEME? 		path=$(ynh_app_setting_get $app path)
 	fi
 	if [ -z $domain ]; then
-		domain=$(ynh_app_setting_get $app domain)
+#REMOVEME? 		domain=$(ynh_app_setting_get $app domain)
 	fi
 
-	# Rewrite the nginx config file to redirect from ${path_url}_maintenance to the real url of the app.
-	echo "rewrite ^${path_url}_maintenance/(.*)$ ${path_url}/\$1 redirect;" > "/etc/nginx/conf.d/$domain.d/maintenance.$app.conf"
+	# Rewrite the nginx config file to redirect from ${path}_maintenance to the real url of the app.
+	echo "rewrite ^${path}_maintenance/(.*)$ ${path}/\$1 redirect;" > "/etc/nginx/conf.d/$domain.d/maintenance.$app.conf"
 	systemctl reload nginx
 
 	# Sleep 4 seconds to let the browser reload the pages and redirect the user to the app.
@@ -269,7 +269,7 @@ ynh_app_changelog () {
         return 0
     fi
 
-    local current_version=$(ynh_read_manifest --manifest="/etc/yunohost/apps/$YNH_APP_INSTANCE_NAME/manifest.json" --manifest_key="version")
+#REMOVEME?     local current_version=$(ynh_read_manifest --manifest="/etc/yunohost/apps/$YNH_APP_INSTANCE_NAME/manifest.json" --manifest_key="version")
     local update_version=$(ynh_read_manifest --manifest="../manifest.json" --manifest_key="version")
 
     # Get the line of the version to update to into the changelog

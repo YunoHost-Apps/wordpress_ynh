@@ -12,27 +12,27 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=5
+#REMOVEME? ynh_script_progression --message="Loading installation settings..." --weight=5
 
-app=$YNH_APP_INSTANCE_NAME
+#REMOVEME? app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-language=$(ynh_app_setting_get --app=$app --key=language)
-admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
-multisite=$(ynh_app_setting_get --app=$app --key=multisite)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
+#REMOVEME? path=$(ynh_app_setting_get --app=$app --key=path)
+#REMOVEME? language=$(ynh_app_setting_get --app=$app --key=language)
+#REMOVEME? admin_wordpress=$(ynh_app_setting_get --app=$app --key=admin)
+#REMOVEME? multisite=$(ynh_app_setting_get --app=$app --key=multisite)
+#REMOVEME? #REMOVEME? install_dir=$(ynh_app_setting_get --app=$app --key=install_dir)
+#REMOVEME? db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
-overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
-overwrite_phpfpm=$(ynh_app_setting_get --app=$app --key=overwrite_phpfpm)
-admin_mail_html=$(ynh_app_setting_get --app=$app --key=admin_mail_html)
+#REMOVEME? overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
+#REMOVEME? overwrite_phpfpm=$(ynh_app_setting_get --app=$app --key=overwrite_phpfpm)
+#REMOVEME? admin_mail_html=$(ynh_app_setting_get --app=$app --key=admin_mail_html)
 
-fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
-fpm_free_footprint=$(ynh_app_setting_get --app=$app --key=fpm_free_footprint)
-fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
+#REMOVEME? fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
+#REMOVEME? fpm_free_footprint=$(ynh_app_setting_get --app=$app --key=fpm_free_footprint)
+#REMOVEME? fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 
-phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
+#REMOVEME? phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # CHECK VERSION
@@ -45,16 +45,16 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
+#REMOVEME? ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=15
 
 # Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
+#REMOVEME? ynh_backup_before_upgrade
+#REMOVEME? ynh_clean_setup () {
 	# Restore it if the upgrade fails
-	ynh_restore_upgradebackup
+#REMOVEME? 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
+#REMOVEME? ynh_abort_if_errors
 
 #=================================================
 # ACTIVATE MAINTENANCE MODE
@@ -74,17 +74,17 @@ if [ -z "$admin_wordpress" ]; then
 	ynh_mysql_execute_as_root --sql="select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" --database=$db_name
 	admin_wordpress=$(cat /tmp/wordpressuser)
 	ynh_secure_remove --file=/tmp/wordpressuser
-	ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
+#REMOVEME? 	ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
 fi
 
-# If final_path doesn't exist, create it
-if [ -z "$final_path" ]; then
-	final_path=/var/www/$app
-	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
+# If install_dir doesn't exist, create it
+if [ -z "$install_dir" ]; then
+#REMOVEME? 	install_dir=/var/www/$app
+#REMOVEME? 	ynh_app_setting_set --app=$app --key=install_dir --value=$install_dir
 fi
 
 if [ -z "$language" ]; then
-	language=$(grep WPLANG $final_path/wp-config.php | cut -d"'" -f4)
+	language=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
 	ynh_app_setting_set --app=$app --key=language --value=$language
 fi
 
@@ -100,18 +100,18 @@ fi
 # If db_name doesn't exist, create it
 if [ -z "$db_name" ]; then
 	db_name=$(ynh_sanitize_dbid --db_name=$app)
-	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
+#REMOVEME? 	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
 fi
 
 # If some 'add_filter' are still in wp_config, remove them
-if grep add_filter.*auto_update $final_path/wp-config.php; then
-	sed --in-place '/add_filter.*auto_update/d' $final_path/wp-config.php
+if grep add_filter.*auto_update $install_dir/wp-config.php; then
+	sed --in-place '/add_filter.*auto_update/d' $install_dir/wp-config.php
 fi
 
 # If admin_mail_html doesn't exist, create it
 if [ -z "$admin_mail_html" ]; then
 	admin_mail_html=1
-	ynh_app_setting_set --app=$app --key=admin_mail_html --value=$admin_mail_html
+#REMOVEME? 	ynh_app_setting_set --app=$app --key=admin_mail_html --value=$admin_mail_html
 fi
 
 # If overwrite_nginx doesn't exist, create it
@@ -141,7 +141,7 @@ fi
 # If fpm_usage doesn't exist, create it
 if [ -z "$fpm_usage" ]; then
 	# If the app is private, set the usage to low, otherwise to high.
-	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
+#REMOVEME? 	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
 	then
 		usage=low
 	else
@@ -158,8 +158,8 @@ if [ -z "$phpversion" ]; then
 fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux
-ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
+ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
+wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 plugin_network=""
 if [ $multisite -eq 1 ]; then
         plugin_network="--network"
@@ -171,24 +171,24 @@ $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin instal
 $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
 
 # Cleaning legacy permissions
-if ynh_legacy_permissions_exists; then
-	ynh_legacy_permissions_delete_all
+#REMOVEME? if ynh_legacy_permissions_exists; then
+#REMOVEME? 	ynh_legacy_permissions_delete_all
 
 	ynh_app_setting_delete --app=$app --key=is_public
 fi
 
-if ! ynh_permission_exists --permission="admin"; then
+#REMOVEME? if ! ynh_permission_exists --permission="admin"; then
 	# Create the required permissions
-	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
+#REMOVEME? 	ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
 fi
 
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..."
+#REMOVEME? ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app --home_dir="$final_path"
+#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -204,9 +204,9 @@ fi
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=5
+#REMOVEME? ynh_script_progression --message="Upgrading dependencies..." --weight=5
 
-ynh_install_app_dependencies $pkg_dependencies
+#REMOVEME? ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -227,14 +227,14 @@ fi
 #=================================================
 
 # Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-ynh_backup_if_checksum_is_different --file="$final_path/wp-config.php"
+ynh_backup_if_checksum_is_different --file="$install_dir/wp-config.php"
 
 #=================================================
 # CONFIGURE MULTISITE
 #=================================================
 ynh_script_progression --message="Configuring multisite..." --weight=2
 
-db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
+#REMOVEME? db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
 
 if [ $multisite -eq 1 ]
 then
@@ -242,9 +242,9 @@ then
 
     ynh_store_file_checksum --file="/etc/nginx/conf.d/$domain.d/$app.conf"
 
-    ynh_systemd_action --service_name=nginx --action=reload
+#REMOVEME?     ynh_systemd_action --service_name=nginx --action=reload
 
-	db_prefix=$(grep '^$table_prefix' "$final_path/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+	db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
 	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
@@ -254,7 +254,7 @@ then
 	plugin_network="--network"
 else
 	multisite=0
-	db_prefix=$(grep '^$table_prefix' "$final_path/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+	db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
 	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/single.sql
 	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
@@ -264,7 +264,7 @@ else
 	plugin_network=""
 	if ynh_permission_has_user --permission="main" --user="visitor"
 	then
-		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$final_path/wp-config.php
+		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$install_dir/wp-config.php
 	fi
 fi
 ynh_app_setting_set --app=$app --key=multisite --value=$multisite
@@ -274,8 +274,8 @@ ynh_app_setting_set --app=$app --key=multisite --value=$multisite
 #=================================================
 ynh_script_progression --message="Updating plugins" --weight=11
 
-# wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $final_path/wp-cli.phar
-# wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
+# wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $install_dir/wp-cli.phar
+# wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
@@ -292,32 +292,32 @@ $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deac
 
 
 # Set file and directories ownership
-mkdir -p $final_path/wp-content/uploads
-mkdir -p $final_path/wp-content/temp
-chown -R $app:www-data "$final_path"
-find "$final_path" -type d -exec chmod 750 {} \;
-find "$final_path" -type f -exec chmod 640 {} \;
-find "$final_path/wp-content/uploads" -type d -exec chmod 770 {} \;
-find "$final_path/wp-content/temp" -type d -exec chmod 770 {} \;
-setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/uploads"
-setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/temp"
+mkdir -p $install_dir/wp-content/uploads
+mkdir -p $install_dir/wp-content/temp
+chown -R $app:www-data "$install_dir"
+find "$install_dir" -type d -exec chmod 750 {} \;
+find "$install_dir" -type f -exec chmod 640 {} \;
+find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
+find "$install_dir/wp-content/temp" -type d -exec chmod 770 {} \;
+setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/uploads"
+setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
 #=================================================
 
 # Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="$final_path/wp-config.php"
+ynh_store_file_checksum --file="$install_dir/wp-config.php"
 
-chmod 400 "$final_path/wp-config.php"
-chown $app:$app "$final_path/wp-config.php"
+chmod 400 "$install_dir/wp-config.php"
+chown $app:$app "$install_dir/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
 echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
+0 3  *  *  * $app php$phpversion  $install_dir/wp-cron.php" > /etc/cron.d/$app
 
 #=================================================
 # GENERIC FINALISATION
@@ -332,15 +332,15 @@ ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authenticatio
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
+#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..."
 
-ynh_systemd_action --service_name=nginx --action=reload
+#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove --file=$final_path/wp-cli.phar
+#REMOVEME? ynh_secure_remove --file=$install_dir/wp-cli.phar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE

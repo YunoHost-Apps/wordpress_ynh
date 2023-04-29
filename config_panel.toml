@@ -11,30 +11,6 @@ name = "WordPress configuration"
         type = "boolean"
         default = "0"
 
-    [main.overwrite_files]
-    name = "Overwriting config files"
-
-        [main.overwrite_files.overwrite_nginx]
-        ask = "Overwrite the NGINX config file?"
-        type = "boolean"
-        default = true
-        help = "If the file is overwritten, a backup will be created."
-
-        [main.overwrite_files.overwrite_phpfpm]
-        ask = "Overwrite the PHP-FPM config file?"
-        type = "boolean"
-        default = true
-        help = "If the file is overwritten, a backup will be created."
-
-    [main.global_config]
-    name = "Global configuration"
-
-        [main.global_config.admin_mail_html]
-        ask = "Send HTML email to admin?"
-        type = "boolean"
-        default = true
-        help = "Allow app scripts to send HTML mails instead of plain text."
-
     [main.php_fpm_config]
     name = "PHP-FPM configuration"
 

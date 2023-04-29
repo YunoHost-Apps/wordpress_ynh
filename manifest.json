@@ -6,7 +6,7 @@
         "en": "Create a beautiful blog or website easily",
         "fr": "Logiciel de création de blog ou de site Web"
     },
-    "version": "6.1.1~ynh1",
+    "version": "6.2~ynh1",
     "url": "https://wordpress.org/",
     "upstream": {
         "license": "GPL-2.0",
@@ -67,11 +67,7 @@
             },
             {
                 "name": "admin",
-                "type": "user",
-                "ask": {
-                    "en": "Choose the WordPress administrator (must be an existing YunoHost user)",
-                    "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
-                }
+                "type": "user"
             },
             {
                 "name": "multisite",

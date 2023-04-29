@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch the source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -25,7 +25,7 @@ jobs:
 
       - name: Create Pull Request
         if: ${{ env.PROCEED == 'true' }}
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: Upgrade ${{ env.APP_NAME }} to version ${{ env.VERSION }}

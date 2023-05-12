@@ -1,6 +1,6 @@
 ## Configuration
 
-Utilisez le panneau d'administration de votre WordPress pour le configurer.
+Utilisez le panneau d'administration de WordPress pour configurer l'application.
 
 ## Caractéristiques spécifiques YunoHost
 
@@ -9,10 +9,6 @@ Utilisez le panneau d'administration de votre WordPress pour le configurer.
    * en mode public : Le blog ou le site est accessible par n'importe qui et les utilisateurs YunoHost sont automatiquement connectés
  * Mises à jour automatiques du cœur de WordPress, extentions et thèmes.
  * Capable de configurer une instance [multisite](https://codex.wordpress.org/Glossary#Multisite).
-
-#### Support multi-utilisateur
-
-Supporté, avec LDAP et SSO.
 
 ## Limitations
 

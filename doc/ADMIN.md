@@ -1,6 +1,6 @@
 ## Configuration
 
-Use the admin panel of your WordPress to configure this app.
+Use WordPress admin panel to configure this app.
 
 ## YunoHost specific features
 

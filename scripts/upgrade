@@ -68,14 +68,7 @@ fi
 
 # If fpm_usage doesn't exist, create it
 if [ -z "${fpm_usage:-}" ]; then
-	# If the app is private, set the usage to low, otherwise to high.
-	if [ $(ynh_app_setting_get --app=$app --key=is_public) -eq 0 ]
-	then
-		usage=low
-	else
-		usage=high
-	fi
-    fpm_usage=$usage
+    fpm_usage=low
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 fi
 

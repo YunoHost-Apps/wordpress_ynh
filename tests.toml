@@ -27,5 +27,5 @@ test_format = 1.0
 
     only = ["install.subdir"]
 
-    args.language = "en_GB"
+    args.language = "en_US"
     args.multisite = 1

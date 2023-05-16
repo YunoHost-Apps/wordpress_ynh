@@ -1,0 +1,75 @@
+packaging_format = 2
+
+id = "wordpress"
+name = "WordPress"
+description.en = "Create a beautiful blog or website easily"
+description.fr = "Logiciel de création de blog ou de site Web"
+
+version = "6.2~ynh1"
+
+maintainers = ["kay0u"]
+
+[upstream]
+license = "GPL-2.0"
+website = "https://wordpress.org/"
+admindoc = "https://codex.wordpress.org/"
+code = "https://core.trac.wordpress.org/browser"
+
+[integration]
+yunohost = ">= 11.1.19"
+architectures = "all"
+multi_instance = true
+ldap = true
+sso = true
+disk = "50M"
+ram.build = "50M"
+ram.runtime = "50M"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.path]
+    type = "path"
+    default = "/blog"
+
+    [install.init_main_permission]
+    type = "group"
+    default = "visitors"
+
+    [install.language]
+    ask.en = "Choose the application language"
+    ask.fr = "Choisissez la langue de l'application"
+    type = "string"
+    choices = ["en_US", "fr_FR"]
+    default = "en_US"
+
+    [install.admin]
+    type = "user"
+
+    [install.multisite]
+    ask.en = "Enable multisite option?"
+    ask.fr = "Activer l'option multisite ?"
+    type = "boolean"
+    default = false
+
+[resources]
+        [resources.sources.main]
+        url = "https://downloads.wordpress.org/release/wordpress-6.2.zip"
+        sha256 = "0078e0483d3447a465f71d6bbdab5c799cad2e57c221ec1d639d235b0ffced55"
+
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.permissions]
+    main.url = "/"
+    admin.url = "/wp-login.php"
+    admin.additional_urls = ["/wp-admin.php"]
+    admin.allowed = "admins"
+
+    [resources.apt]
+    packages = "mariadb-server php8.2-mysql php8.2-curl php8.2-json php8.2-mbstring php8.2-xml php8.2-zip php8.2-gd php8.2-soap php8.2-ssh2 php8.2-tokenizer php8.2-ldap"
+
+    [resources.database]
+    type = "mysql"

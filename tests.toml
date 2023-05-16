@@ -1,0 +1,31 @@
+test_format = 1.0
+
+[default]
+
+    # ------------
+    # Tests to run
+    # ------------
+
+    exclude = ["install.private", "install.multi"]  # The test IDs to be used in only/exclude statements are: install.root, install.subdir, install.nourl, install.multi, backup_restore, upgrade, upgrade.someCommitId change_url
+
+    # -------------------------------
+    # Default args to use for install
+    # -------------------------------
+
+    args.multisite = 0
+
+    # -------------------------------
+    # Commits to test upgrade from
+    # -------------------------------
+
+    test_upgrade_from.773073679873fbed3562c2d315f58eb4c1c0d4fc.name = "Upgrade from 5.8"
+
+# This is an additional test suite
+[with_multisite]
+
+    # On additional tests suites, you can decide to run only specific tests
+
+    only = ["install.subdir"]
+
+    args.language = "en_US"
+    args.multisite = 1

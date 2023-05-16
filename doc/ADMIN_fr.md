@@ -1,21 +1,8 @@
-## Configuration
+### Mises à jour de wordpress
 
-Utilisez le panneau d'administration de WordPress pour configurer l'application.
+Comme les mises à jour automatiques ne fonctionnent pas correctement, prenez soin de bien mettre à jour WordPress via le panneau d'administration de WordPress et pas seulement via le panneau d'administration de YunoHost. Pour des raisons de sécurité, vérifiez bien que toutes les mises à jour sont bien installées dans le panneau d'administration de WordPress comme dans le panneau d'administration de YunoHost.
 
-## Caractéristiques spécifiques YunoHost
-
- * Intégration avec les utilisateurs YunoHost et le SSO :
-   * en mode privé : Le blog ou le site est accessible uniquement aux utilisateurs YunoHost
-   * en mode public : Le blog ou le site est accessible par n'importe qui et les utilisateurs YunoHost sont automatiquement connectés
- * Mises à jour automatiques du cœur de WordPress, extentions et thèmes.
- * Capable de configurer une instance [multisite](https://codex.wordpress.org/Glossary#Multisite).
-
-## Limitations
-
-* Le multisite n'est disponible que sur des sous-domaines.
-* Comme les mises à jour automatiques ne fonctionnent pas correctement, prenez soin de bien mettre à jour WordPress via le panneau d'administration de WordPress et pas seulement via le panneau d'administration de YunoHost. Pour des raisons de sécurité, vérifiez bien que toutes les mises à jour sont bien installées dans le panneau d'administration de WordPress comme dans le panneau d'administration de YunoHost.
-
-**Sécurité**
+### Securité
 
 Soyez conscients que WordPress est connu pour avoir souvent des risques de sécurité (https://en.wikipedia.org/wiki/WordPress#Vulnerabilities), donc comme c'est le gestionnaire de sites le plus populaire il est la cible des robots et pirates.
 Des vulnérabilités peuvent offrir une brêche dans votre WordPress ou dans votre serveur YunoHost (via l'escalade des droits).

@@ -69,7 +69,7 @@ ram.runtime = "50M"
     admin.allowed = "admins"
 
     [resources.apt]
-    packages = "mariadb-server php8.0-mysql php8.0-curl php8.0-json php8.0-mbstring php8.0-xml php8.0-zip php8.0-gd php8.0-soap php8.0-ssh2 php8.0-tokenizer php8.0-ldap"
+    packages = "mariadb-server php8.2-mysql php8.2-curl php8.2-json php8.2-mbstring php8.2-xml php8.2-zip php8.2-gd php8.2-soap php8.2-ssh2 php8.2-tokenizer php8.2-ldap"
 
     [resources.database]
     type = "mysql"

@@ -1,4 +1,4 @@
-### Mises à jour de wordpress
+### Mises à jour de WordPress
 
 Comme les mises à jour automatiques ne fonctionnent pas correctement, prenez soin de bien mettre à jour WordPress via le panneau d'administration de WordPress et pas seulement via le panneau d'administration de YunoHost. Pour des raisons de sécurité, vérifiez bien que toutes les mises à jour sont bien installées dans le panneau d'administration de WordPress comme dans le panneau d'administration de YunoHost.
 

@@ -1,4 +1,4 @@
-### Updating wordpress
+### Updating WordPress
 
 As the automatic update plugin isn't working as expected, pay attention to keep your WordPress up to date from the WordPress admin panel, and not only from YunoHost admin panel. For security reason, you should control that all updates are regularly applied in WordPress admin panel as well as in YunoHost admin panel.
 

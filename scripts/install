@@ -21,7 +21,6 @@ fi
 # STORE SETTINGS FROM MANIFEST
 #=================================================
 
-ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE

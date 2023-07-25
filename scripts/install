@@ -10,90 +10,25 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
-#=================================================
-
-domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
-language=$YNH_APP_ARG_LANGUAGE
-admin_wordpress=$YNH_APP_ARG_ADMIN
-multisite=$YNH_APP_ARG_MULTISITE
-
-app=$YNH_APP_INSTANCE_NAME
-
-#=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
-ynh_script_progression --message="Validating installation parameters..." --weight=2
 
-final_path=/var/www/$app
-test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
-
-if [ "$path_url" == "/" ] && [ $multisite -eq 1 ]; then
+if [ "$path" == "/" ] && [ $multisite -eq 1 ]; then
 	ynh_die --message="Multisite option of WordPress doesn't work at the root of a domain."
 fi
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=2
 
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=language --value=$language
-ynh_app_setting_set --app=$app --key=admin --value=$admin_wordpress
-ynh_app_setting_set --app=$app --key=multisite --value=$multisite
-
-ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
-ynh_app_setting_set --app=$app --key=overwrite_phpfpm --value=1
-ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
-
-#=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=5
-
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# STANDARD MODIFICATIONS
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=3
-
-# Create a system user
-ynh_system_user_create --username=$app --home_dir="$final_path"
-
-#=================================================
-# CREATE A MYSQL DATABASE
-#=================================================
-ynh_script_progression --message="Creating a MySQL database..." --weight=2
-
-db_name=$(ynh_sanitize_dbid --db_name=$app)
-db_user=$db_name
-ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=4
 
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir="$final_path"
+ynh_setup_source --dest_dir="$install_dir"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -110,14 +45,7 @@ ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 
 fpm_footprint="medium"
 fpm_free_footprint=0
-
-# If the app is private, set the usage to low, otherwise to high.
-if [ $is_public -eq 0 ]
-then
-    fpm_usage="low"
-else
-    fpm_usage="high"
-fi
+fpm_usage="low"
 
 ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
 ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
@@ -125,7 +53,6 @@ ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 
 # Create a dedicated PHP-FPM config
 ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
-phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # SPECIFIC SETUP
@@ -136,12 +63,12 @@ ynh_script_progression --message="Configuring WordPress..." --weight=1
 
 # Change variables in Wordpress configuration
 dir=__DIR__
-ynh_add_config --template="../conf/wp-config.php" --destination="$final_path/wp-config.php"
+ynh_add_config --template="../conf/wp-config.php" --destination="$install_dir/wp-config.php"
 
 for i in 1 2 3 4 5 6 7 8
 do
 	j=$(ynh_string_random --length=40)
-	ynh_replace_string --match_string="KEY$i" --replace_string="$j" --target_file=$final_path/wp-config.php
+	ynh_replace_string --match_string="KEY$i" --replace_string="$j" --target_file=$install_dir/wp-config.php
 	sleep 0.5
 done
 
@@ -151,10 +78,8 @@ done
 ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
 
 # Set right permissions for cURL install
-chown -R $app: $final_path
+chown -R $app: $install_dir
 
-# Set the app as temporarily public for cURL call
-ynh_permission_update --permission="main" --add="visitors"
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
@@ -162,10 +87,7 @@ yunohost app ssowatconf
 ynh_systemd_action --service_name=nginx --action=reload
 
 # Wordpress installation
-ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin_wordpress" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin_wordpress@$domain" "Submit=Install+WordPress"
-
-# Remove the public access
-ynh_permission_update --permission="main" --remove="visitors"
+ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin@$domain" "Submit=Install+WordPress"
 
 ynh_print_info --message="Please wait during Wordpress installation..."
 for i in `seq 1 300`
@@ -183,8 +105,8 @@ done
 #=================================================
 ynh_script_progression --message="Installing WordPress plugins..." --weight=20
 
-ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$final_path/wp-cli.phar
-wpcli_alias="php$phpversion $final_path/wp-cli.phar --allow-root --path=$final_path"
+ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
+wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 
 $wpcli_alias plugin install authldap
 $wpcli_alias plugin install http-authentication
@@ -209,13 +131,13 @@ then
 
 	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
 	# Allow multisite
-	ynh_replace_string --match_string="//--MULTISITE1--define" --replace_string="define " --target_file=$final_path/wp-config.php
+	ynh_replace_string --match_string="//--MULTISITE1--define" --replace_string="define " --target_file=$install_dir/wp-config.php
 
 	# Activate multisite via wp-cli
-	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path_url/
+	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path/
 
 	# Activate multisite in wordpress config
-	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$final_path/wp-config.php
+	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$install_dir/wp-config.php
 
 	db_prefix="wp_"
 	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
@@ -245,32 +167,32 @@ $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 # Set file and directories ownership
-mkdir -p $final_path/wp-content/uploads
-mkdir -p $final_path/wp-content/temp
-chown -R $app:www-data "$final_path"
-find "$final_path" -type d -exec chmod 750 {} \;
-find "$final_path" -type f -exec chmod 640 {} \;
-find "$final_path/wp-content/uploads" -type d -exec chmod 770 {} \;
-find "$final_path/wp-content/temp" -type d -exec chmod 770 {} \;
-setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/uploads"
-setfacl -Rm d:g:www-data:rwX "$final_path/wp-content/temp"
+mkdir -p $install_dir/wp-content/uploads
+mkdir -p $install_dir/wp-content/temp
+chown -R $app:www-data "$install_dir"
+find "$install_dir" -type d -exec chmod 750 {} \;
+find "$install_dir" -type f -exec chmod 640 {} \;
+find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
+find "$install_dir/wp-content/temp" -type d -exec chmod 770 {} \;
+setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/uploads"
+setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$final_path/wp-config.php"
+ynh_store_file_checksum --file="$install_dir/wp-config.php"
 
-chmod 400 "$final_path/wp-config.php"
-chown $app:$app "$final_path/wp-config.php"
+chmod 400 "$install_dir/wp-config.php"
+chown $app:$app "$install_dir/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
 echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $final_path/wp-cron.php" > /etc/cron.d/$app
+0 3  *  *  * $app php$phpversion  $install_dir/wp-cron.php" > /etc/cron.d/$app
 
 #=================================================
 # GENERIC FINALISATION
@@ -283,50 +205,10 @@ ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
 
 #=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring permissions..." --weight=1
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-# Only the admin can access the admin panel of the app
-ynh_permission_create --permission="admin" --url="/wp-login.php" --additional_urls="/wp-admin.php" --allowed=$admin_wordpress
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=3
-
-ynh_systemd_action --service_name=nginx --action=reload
-
-#=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove --file=$final_path/wp-cli.phar
-
-#=================================================
-# SEND A README FOR THE ADMIN
-#=================================================
-
-# Get main domain and buid the url of the admin panel of the app.
-admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
-
-echo "Please manually trigger updates to major versions in the WordPress admin area.
-You can also activate the automatic update in the Companion Auto Update plugin settings.
-
-You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
-You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
-
-If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/wordpress_ynh__URL_TAG3__." > mail_to_send
-
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="$admin_wordpress" --type=install
+ynh_secure_remove --file=$install_dir/wp-cli.phar
 
 #=================================================
 # END OF SCRIPT

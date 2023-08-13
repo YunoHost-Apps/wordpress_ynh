@@ -18,11 +18,6 @@ if [ "$path" == "/" ] && [ $multisite -eq 1 ]; then
 fi
 
 #=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-
-
-#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=4

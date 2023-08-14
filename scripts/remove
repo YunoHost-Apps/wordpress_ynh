@@ -17,28 +17,11 @@ ynh_script_progression --message="Removing NGINX web server configuration..." --
 # Remove the dedicated NGINX config
 ynh_remove_nginx_config
 
-#=================================================
-# REMOVE PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Removing PHP-FPM configuration..." --weight=2
-
 # Remove the dedicated PHP-FPM config
 ynh_remove_fpm_config
 
-#=================================================
-# REMOVE FAIL2BAN CONFIGURATION
-#=================================================
-ynh_script_progression --message="Removing Fail2Ban configuration..." --weight=8
-
 # Remove the dedicated Fail2Ban config
 ynh_remove_fail2ban_config
-
-#=================================================
-# SPECIFIC REMOVE
-#=================================================
-# REMOVE VARIOUS FILES
-#=================================================
-ynh_script_progression --message="Removing various files..." --weight=1
 
 # Remove a cron file
 ynh_secure_remove --file="/etc/cron.d/$app"

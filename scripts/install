@@ -104,8 +104,6 @@ ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/bu
 wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 
 $wpcli_alias plugin install authldap
-$wpcli_alias plugin install http-authentication
-$wpcli_alias plugin install companion-auto-update
 $wpcli_alias plugin install wp-fail2ban-redux
 
 #=================================================

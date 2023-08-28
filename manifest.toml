@@ -67,6 +67,7 @@ ram.runtime = "50M"
     admin.url = "/wp-login.php"
     admin.additional_urls = ["/wp-admin.php"]
     admin.allowed = "admins"
+    admin.show_tile = false
 
     [resources.apt]
     packages = "mariadb-server php8.2-mysql php8.2-curl php8.2-mbstring php8.2-xml php8.2-zip php8.2-gd php8.2-soap php8.2-ssh2 php8.2-tokenizer php8.2-ldap"

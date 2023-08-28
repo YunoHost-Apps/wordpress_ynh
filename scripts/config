@@ -24,7 +24,7 @@ current_fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
 
 get__maintenance_mode() {
     # Maintenance mode status
-    if [ -f $final_path/.maintenance ]
+    if [ -f $install_dir/.maintenance ]
     then
         echo "1"
     else
@@ -62,12 +62,12 @@ get__free_footprint() {
 set__maintenance_mode() {
     if [ "$maintenance_mode" -eq "1" ]; then
         # If maintenance_mode was set to 1, enable maintenance mode
-        (cd "$final_path" && ynh_exec_as "$app" \
+        (cd "$install_dir" && ynh_exec_as "$app" \
             echo "Site under maintenance." > .maintenance)
         ynh_print_info "Maintenance mode disabled"
     elif [ "$maintenance_mode" -eq "0" ]; then
         # If maintenance_mode was set to 0, disable maintenance mode
-        ynh_secure_remove --file=$final_path/.maintenance
+        ynh_secure_remove --file=$install_dir/.maintenance
         ynh_print_info "Maintenance mode enabled"
     fi
     ynh_app_setting_set --app=$app --key=maintenance_mode --value="$maintenance_mode"

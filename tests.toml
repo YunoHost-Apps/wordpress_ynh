@@ -29,3 +29,17 @@ test_format = 1.0
 
     args.language = "en_US"
     args.multisite = 1
+
+[with_php8.0]
+
+    only = ["install.subdir"]
+
+    args.language = "en_US"
+    args.phpversion = "8.0"
+
+[with_php8.1]
+
+    only = ["install.subdir"]
+
+    args.language = "en_US"
+    args.phpversion = "8.1"

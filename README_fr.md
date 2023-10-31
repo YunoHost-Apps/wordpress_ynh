@@ -37,7 +37,7 @@ Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wo
 * Site officiel de l’app : <https://wordpress.org/>
 * Documentation officielle de l’admin : <https://codex.wordpress.org/>
 * Dépôt de code officiel de l’app : <https://core.trac.wordpress.org/browser>
-* Documentation YunoHost pour cette app : <https://yunohost.org/app_wordpress>
+* YunoHost Store: <https://apps.yunohost.org/app/wordpress>
 * Signaler un bug : <https://github.com/YunoHost-Apps/wordpress_ynh/issues>
 
 ## Informations pour les développeurs

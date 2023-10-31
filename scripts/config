@@ -68,7 +68,7 @@ set__maintenance_mode() {
     elif [ "$maintenance_mode" -eq "0" ]; then
         # If maintenance_mode was set to 0, disable maintenance mode
         ynh_secure_remove --file=$install_dir/.maintenance
-        ynh_print_info "Maintenance mode enabled"
+        ynh_print_info "Maintenance mode disabled"
     fi
     ynh_app_setting_set --app=$app --key=maintenance_mode --value="$maintenance_mode"
 }

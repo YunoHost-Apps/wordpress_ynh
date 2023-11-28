@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.3.0~ynh1"
+version = "6.3.1~ynh1"
 
 maintainers = ["kay0u"]
 
@@ -40,7 +40,7 @@ ram.runtime = "50M"
     [install.language]
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
-    type = "string"
+    type = "select"
     choices = ["en_US", "fr_FR"]
     default = "en_US"
 
@@ -55,8 +55,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://downloads.wordpress.org/release/wordpress-6.3.zip"
-        sha256 = "b4f0b53c9652b2d24d8762bec96a0604538b44b15f05187367112c0c8ea3abcf"
+        url = "https://downloads.wordpress.org/release/wordpress-6.3.1.zip"
+        sha256 = "8a3c60c390b1e29143ba49292a5e38d8f7bff2ff6b67a3e4988d157f555a0601"
 
     [resources.system_user]
 
@@ -67,9 +67,10 @@ ram.runtime = "50M"
     admin.url = "/wp-login.php"
     admin.additional_urls = ["/wp-admin.php"]
     admin.allowed = "admins"
+    admin.show_tile = false
 
     [resources.apt]
-    packages = "mariadb-server php8.2-mysql php8.2-curl php8.2-mbstring php8.2-xml php8.2-zip php8.2-gd php8.2-soap php8.2-ssh2 php8.2-tokenizer php8.2-ldap"
+    packages = "mariadb-server, php8.2-mysql, php8.2-curl, php8.2-mbstring, php8.2-xml, php8.2-zip, php8.2-gd, php8.2-soap, php8.2-ssh2, php8.2-tokenizer, php8.2-ldap"
 
     [resources.database]
     type = "mysql"

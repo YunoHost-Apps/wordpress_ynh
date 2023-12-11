@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.4.1~ynh1"
+version = "6.4.2~ynh1"
 
 maintainers = ["kay0u"]
 
@@ -19,8 +19,11 @@ code = "https://core.trac.wordpress.org/browser"
 yunohost = ">= 11.2"
 architectures = "all"
 multi_instance = true
+
 ldap = true
+
 sso = true
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "50M"
@@ -55,11 +58,10 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://downloads.wordpress.org/release/wordpress-6.4.1.zip"
-        sha256 = "280d1e4cbbf862ef48b92e28ac495f729536e10b5403c154f8303279c012f69e"
+        url = "https://downloads.wordpress.org/release/wordpress-6.4.2.zip"
+        sha256 = "24dac66b4aab05521e0a0eb536ff23fcfdb82f940fc6c380735c2d54fa01f311"
 
     [resources.system_user]
-    allow_email = true
 
     [resources.install_dir]
 

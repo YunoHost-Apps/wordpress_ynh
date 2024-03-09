@@ -103,7 +103,7 @@ ynh_script_progression --message="Installing WordPress plugins..." --weight=20
 ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
 wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 
-$wpcli_alias plugin install authldap
+$wpcli_alias plugin install wpdirauth
 $wpcli_alias plugin install http-authentication
 $wpcli_alias plugin install companion-auto-update
 $wpcli_alias plugin install wp-fail2ban-redux
@@ -156,7 +156,7 @@ fi
 #=================================================
 ynh_script_progression --message="Activating plugins..." --weight=4
 
-$wpcli_alias plugin activate authldap $plugin_network
+$wpcli_alias plugin activate wpdirauth $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network

@@ -82,8 +82,9 @@ fi
 $wpcli_alias plugin is-installed wp-fail2ban && $wpcli_alias plugin deactivate $plugin_network wp-fail2ban && $wpcli_alias plugin uninstall wp-fail2ban
 $wpcli_alias plugin is-installed wp-fail2ban-redux || $wpcli_alias plugin install wp-fail2ban-redux
 
-# Remove old ldap plugin
+# Remove old ldap plugins
 $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deactivate $plugin_network simple-ldap-login && $wpcli_alias plugin uninstall simple-ldap-login
+$wpcli_alias plugin is-installed authldap && $wpcli_alias plugin deactivate $plugin_network authldap && $wpcli_alias plugin uninstall authldap
 
 #=================================================
 # NGINX CONFIGURATION
@@ -157,8 +158,8 @@ ynh_script_progression --message="Updating plugins" --weight=11
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
-update_plugin authldap
-$wpcli_alias plugin activate authldap $plugin_network
+update_plugin wpdirauth
+$wpcli_alias plugin activate wpdirauth $plugin_network
 update_plugin companion-auto-update
 $wpcli_alias plugin activate companion-auto-update $plugin_network
 

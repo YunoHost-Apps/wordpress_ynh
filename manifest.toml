@@ -40,6 +40,13 @@ ram.runtime = "50M"
     type = "group"
     default = "visitors"
 
+    [install.phpversion]
+    ask.en = "Choose a PHP version you want to use for your app"
+    ask.fr = "Choisissez une version PHP que vous souhaitez utiliser pour votre application"
+    type = "select"
+    choices = ["8.0", "8.1", "8.2"]
+    default = "8.2"
+
     [install.language]
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
@@ -73,7 +80,11 @@ ram.runtime = "50M"
     admin.show_tile = false
 
     [resources.apt]
-    packages = "mariadb-server, php8.2-mysql, php8.2-curl, php8.2-mbstring, php8.2-xml, php8.2-zip, php8.2-gd, php8.2-soap, php8.2-ssh2, php8.2-tokenizer, php8.2-ldap"
+    packages = "mariadb-server"
+    packages_from_raw_bash = """
+      echo "php${phpversion}-mysql php${phpversion}-curl php${phpversion}-mbstring php${phpversion}-xml php${phpversion}-zip php${phpversion}-gd php${phpversion}-soap"
+      echo "php${phpversion}-ssh2 php${phpversion}-tokenizer php${phpversion}-ldap"
+    """
 
     [resources.database]
     type = "mysql"

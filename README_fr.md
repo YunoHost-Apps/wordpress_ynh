@@ -20,7 +20,7 @@ WordPress est un logiciel libre que vous pouvez utiliser pour créer un site ou 
 Avec ce package, vous pouvez même activer l'option [multisite](https://codex.wordpress.org/Glossary#Multisite).
 
 
-**Version incluse :** 6.4.3~ynh1
+**Version incluse :** 6.5~ynh1
 
 ## Captures d’écran
 

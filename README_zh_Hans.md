@@ -3,7 +3,7 @@
 请勿手动编辑。
 -->
 
-# YunoHost 的 WordPress
+# YunoHost 上的 WordPress
 
 [![集成程度](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![工作状态](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
 

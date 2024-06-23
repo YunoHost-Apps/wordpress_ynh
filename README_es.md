@@ -26,7 +26,7 @@ With this package, you can even activate the [multisite](https://wordpress.org/s
 
 ![Captura de WordPress](./doc/screenshots/screen-themes.png)
 
-## :red_circle: funcionalidades no deseadas
+## :red_circle: Características no deseables
 
 - **Non-free Addons**: Promotes other non-free applications or plugins.
 - **Paid content**: Promotes or depends, entirely or partially, on a paid service.

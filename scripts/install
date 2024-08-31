@@ -1,26 +1,22 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
+
+ynh_app_setting_set --key=php_memory_limit --value=64M
 
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
 
 if [ "$path" == "/" ] && [ $multisite -eq 1 ]; then
-	ynh_die --message="Multisite option of WordPress doesn't work at the root of a domain."
+	ynh_die "Multisite option of WordPress doesn't work at the root of a domain."
 fi
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Setting up source files..." --weight=4
+ynh_script_progression "Setting up source files..."
 
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
@@ -28,67 +24,66 @@ ynh_setup_source --dest_dir="$install_dir"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=3
+ynh_script_progression "Configuring NGINX web server..."
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
+ynh_script_progression "Configuring PHP-FPM..."
 
-fpm_footprint="medium"
-fpm_free_footprint=0
-fpm_usage="low"
+#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... | fpm_footprint="medium"
+#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... | fpm_free_footprint=0
+#REMOVEME? Everything about fpm_usage is removed in helpers2.1... | fpm_usage="low"
 
-ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
-ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
-ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
+#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... | ynh_app_setting_set --key=fpm_footprint --value=$fpm_footprint
+#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... | ynh_app_setting_set --key=fpm_free_footprint --value=$fpm_free_footprint
+#REMOVEME? Everything about fpm_usage is removed in helpers2.1... | ynh_app_setting_set --key=fpm_usage --value=$fpm_usage
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+ynh_config_add_phpfpm
 
 #=================================================
 # SPECIFIC SETUP
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression --message="Configuring WordPress..." --weight=1
+ynh_script_progression "Configuring WordPress..."
 
 # Change variables in Wordpress configuration
 dir=__DIR__
-ynh_add_config --template="../conf/wp-config.php" --destination="$install_dir/wp-config.php"
+ynh_config_add --template="wp-config.php" --destination="$install_dir/wp-config.php"
 
 for i in 1 2 3 4 5 6 7 8
 do
 	j=$(ynh_string_random --length=40)
-	ynh_replace_string --match_string="KEY$i" --replace_string="$j" --target_file=$install_dir/wp-config.php
+	ynh_replace --match="KEY$i" --replace="$j" --file=$install_dir/wp-config.php
 	sleep 0.5
 done
 
 #=================================================
 # SETTING UP WITH CURL
 #=================================================
-ynh_script_progression --message="Installing wordpress with cURL..." --weight=10
+ynh_script_progression "Installing wordpress with cURL..."
 
 # Set right permissions for cURL install
-chown -R $app: $install_dir
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: $install_dir
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
 # Reload NGINX
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemctl --service=nginx --action=reload
 
 # Wordpress installation
 ynh_local_curl "/wp-admin/install.php?step=2" "&weblog_title=YunoBlog" "user_name=$admin" "admin_password=$db_pwd" "admin_password2=$db_pwd" "admin_email=$admin@$domain" "Submit=Install+WordPress"
 
-ynh_print_info --message="Please wait during Wordpress installation..."
+ynh_print_info "Please wait during Wordpress installation..."
 for i in `seq 1 300`
 do
 	# The loop waits for WordPress to be installed, or 5 minutes.
-	if ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name <<< "show tables" | grep --quiet "wp_options"; then
+	if ynh_mysql_db_shell <<< "show tables" | grep --quiet "wp_options"; then
 		# If the table wp_options is found, WordPress has finished its installation.
 		break
 	fi
@@ -98,10 +93,10 @@ done
 #=================================================
 # INSTALL WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Installing WordPress plugins..." --weight=20
+ynh_script_progression "Installing WordPress plugins..."
 
-ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
-wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
+ynh_hide_warnings wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
+wpcli_alias="php$php_version $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 
 $wpcli_alias plugin install authldap
 $wpcli_alias plugin install http-authentication
@@ -111,7 +106,7 @@ $wpcli_alias plugin install wp-fail2ban-redux
 #=================================================
 # SET LANGUAGE
 #=================================================
-ynh_script_progression --message="Configuring language..." --weight=3
+ynh_script_progression "Configuring language..."
 
 $wpcli_alias core language install $language
 $wpcli_alias site switch-language $language
@@ -122,39 +117,39 @@ $wpcli_alias site switch-language $language
 
 if [ $multisite -eq 1 ]
 then
-	ynh_script_progression --message="Configuring multisite..." --weight=2
+	ynh_script_progression "Configuring multisite..."
 
-	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace --match="#--MULTISITE--" --replace="" --file=/etc/nginx/conf.d/$domain.d/$app.conf
 	# Allow multisite
-	ynh_replace_string --match_string="//--MULTISITE1--define" --replace_string="define " --target_file=$install_dir/wp-config.php
+	ynh_replace --match="//--MULTISITE1--define" --replace="define " --file=$install_dir/wp-config.php
 
 	# Activate multisite via wp-cli
-	ynh_exec_fully_quiet $wpcli_alias core multisite-convert --base=$path/
+	$wpcli_alias core multisite-convert --base=$path/
 
 	# Activate multisite in wordpress config
-	ynh_replace_string --match_string="//--MULTISITE2--define" --replace_string="define" --target_file=$install_dir/wp-config.php
+	ynh_replace --match="//--MULTISITE2--define" --replace="define" --file=$install_dir/wp-config.php
 
 	db_prefix="wp_"
-	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
+	ynh_replace --match="__DB_PREFIX__" --replace="$db_prefix" --file=../conf/sql/multisite.sql
+	ynh_replace --match="__APP__" --replace="$app" --file=../conf/sql/multisite.sql
+	ynh_replace --match="__LENGTH__" --replace="$((${#app} + 108))" --file=../conf/sql/multisite.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
+	ynh_mysql_db_shell < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	db_prefix="wp_"
-	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/single.sql
-	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
-	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql
+	ynh_replace --match="__DB_PREFIX__" --replace="$db_prefix" --file=../conf/sql/single.sql
+	ynh_replace --match="__APP__" --replace="$app" --file=../conf/sql/single.sql
+	ynh_replace --match="__LENGTH__" --replace="$((${#app} + 108))" --file=../conf/sql/single.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
+	ynh_mysql_db_shell < ../conf/sql/single.sql
 	plugin_network=""
 fi
 
 #=================================================
 # ACTIVATE WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Activating plugins..." --weight=4
+ynh_script_progression "Activating plugins..."
 
 $wpcli_alias plugin activate authldap $plugin_network
 # Do not activate http-authentication, this plugin is sometimes unstable
@@ -164,7 +159,7 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 # Set file and directories ownership
 mkdir -p $install_dir/wp-content/uploads
 mkdir -p $install_dir/wp-content/temp
-chown -R $app:www-data "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
 find "$install_dir" -type d -exec chmod 750 {} \;
 find "$install_dir" -type f -exec chmod 640 {} \;
 find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
@@ -177,36 +172,34 @@ setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$install_dir/wp-config.php"
+ynh_store_file_checksum "$install_dir/wp-config.php"
 
-chmod 400 "$install_dir/wp-config.php"
-chown $app:$app "$install_dir/wp-config.php"
+#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 400 "$install_dir/wp-config.php"
+#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown $app:$app "$install_dir/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
 echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $install_dir/wp-cron.php" > /etc/cron.d/$app
+0 3  *  *  * $app php$php_version  $install_dir/wp-cron.php" > /etc/cron.d/$app
 
-#=================================================
-# GENERIC FINALISATION
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
+ynh_script_progression "Configuring Fail2Ban..."
 
 # Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
+ynh_config_add_fail2ban --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>"
 
 #=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove --file=$install_dir/wp-cli.phar
+ynh_safe_rm $install_dir/wp-cli.phar
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"

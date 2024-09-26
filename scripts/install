@@ -34,19 +34,8 @@ ynh_config_add_nginx
 #=================================================
 ynh_script_progression "Configuring PHP-FPM..."
 
-#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... | fpm_footprint="medium"
-#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... | fpm_free_footprint=0
-#REMOVEME? Everything about fpm_usage is removed in helpers2.1... | fpm_usage="low"
-
-#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... | ynh_app_setting_set --key=fpm_footprint --value=$fpm_footprint
-#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... | ynh_app_setting_set --key=fpm_free_footprint --value=$fpm_free_footprint
-#REMOVEME? Everything about fpm_usage is removed in helpers2.1... | ynh_app_setting_set --key=fpm_usage --value=$fpm_usage
-
-# Create a dedicated PHP-FPM config
 ynh_config_add_phpfpm
 
-#=================================================
-# SPECIFIC SETUP
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
@@ -69,7 +58,7 @@ done
 ynh_script_progression "Installing wordpress with cURL..."
 
 # Set right permissions for cURL install
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: $install_dir
+chown -R $app: $install_dir
 # Regen SSOwat configuration
 yunohost app ssowatconf
 
@@ -159,7 +148,7 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 # Set file and directories ownership
 mkdir -p $install_dir/wp-content/uploads
 mkdir -p $install_dir/wp-content/temp
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
+chown -R $app:www-data "$install_dir"
 find "$install_dir" -type d -exec chmod 750 {} \;
 find "$install_dir" -type f -exec chmod 640 {} \;
 find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
@@ -174,9 +163,6 @@ setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$install_dir/wp-config.php"
 
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 400 "$install_dir/wp-config.php"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown $app:$app "$install_dir/wp-config.php"
-
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
@@ -189,7 +175,6 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 #=================================================
 ynh_script_progression "Configuring Fail2Ban..."
 
-# Create a dedicated Fail2Ban config
 ynh_config_add_fail2ban --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>"
 
 #=================================================

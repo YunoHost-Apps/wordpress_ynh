@@ -24,11 +24,7 @@ if [ -z "${admin:-}" ]; then
 	ynh_app_setting_set --key=admin --value=$admin
 fi
 
-# FIXMEhelpers2.1: maybe replace with: ynh_app_setting_set_default --key=language --value=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
-if [ -z "${language:-}" ]; then
-	language=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
-	ynh_app_setting_set --key=language --value=$language
-fi
+ynh_app_setting_set_default --key=language --value=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
 
 # Fix multisite as a boolean
 if [ "${multisite,,}" = "yes" ]; then
@@ -42,24 +38,6 @@ fi
 # If some 'add_filter' are still in wp_config, remove them
 if grep add_filter.*auto_update $install_dir/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $install_dir/wp-config.php
-fi
-
-# If fpm_footprint doesn't exist, create it
-if [ -z "${fpm_footprint:-}" ]; then
-    fpm_footprint=medium
-#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_footprint --value=$fpm_footprint
-fi
-
-# If fpm_free_footprint doesn't exist, create it
-if [ -z "${fpm_free_footprint:-}" ]; then
-	fpm_free_footprint=0
-#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... | 	ynh_app_setting_set --key=fpm_free_footprint --value=$fpm_free_footprint
-fi
-
-# If fpm_usage doesn't exist, create it
-if [ -z "${fpm_usage:-}" ]; then
-    fpm_usage=low
-#REMOVEME? Everything about fpm_usage is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_usage --value=$fpm_usage
 fi
 
 # Replace wp-fail2ban by wp-fail2ban-redux
@@ -82,19 +60,12 @@ ynh_script_progression "Upgrading NGINX web server configuration..."
 
 ynh_config_add_nginx
 
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression "Upgrading PHP-FPM configuration..."
-
- # Create a dedicated PHP-FPM config
 ynh_config_add_phpfpm
 
 #=================================================
 # SAVE THE CONFIG FILE IF IT HAS BEEN MODIFIED
 #=================================================
 
-# Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
 ynh_backup_if_checksum_is_different "$install_dir/wp-config.php"
 
 #=================================================
@@ -159,7 +130,7 @@ $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deac
 # Set file and directories ownership
 mkdir -p $install_dir/wp-content/uploads
 mkdir -p $install_dir/wp-content/temp
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
+chown -R $app:www-data "$install_dir"
 find "$install_dir" -type d -exec chmod 750 {} \;
 find "$install_dir" -type f -exec chmod 640 {} \;
 find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
@@ -174,9 +145,6 @@ setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 # Recalculate and store the checksum of the file for the next upgrade.
 ynh_store_file_checksum "$install_dir/wp-config.php"
 
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 400 "$install_dir/wp-config.php"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown $app:$app "$install_dir/wp-config.php"
-
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
@@ -189,7 +157,6 @@ echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
 #=================================================
 ynh_script_progression "Reconfiguring Fail2Ban..."
 
-# Create a dedicated Fail2Ban config
 ynh_config_add_fail2ban --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>"
 
 #=================================================

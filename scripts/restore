@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -20,16 +19,13 @@ ynh_restore "$install_dir"
 # Set file and directories ownership
 mkdir -p $install_dir/wp-content/uploads
 mkdir -p $install_dir/wp-content/temp
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
+chown -R $app:www-data "$install_dir"
 find "$install_dir" -type d -exec chmod 750 {} \;
 find "$install_dir" -type f -exec chmod 640 {} \;
 find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
 find "$install_dir/wp-content/temp" -type d -exec chmod 770 {} \;
 setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/uploads"
 setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
-
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 400 "$install_dir/wp-config.php"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown $app:$app "$install_dir/wp-config.php"
 
 #=================================================
 # RESTORE THE MYSQL DATABASE
@@ -43,10 +39,8 @@ ynh_mysql_db_shell < ./db.sql
 #=================================================
 ynh_script_progression "Restoring the PHP-FPM configuration..."
 
-# Restore the file first, so it can have a backup if different
 ynh_restore "/etc/php/$php_version/fpm/pool.d/$app.conf"
 
-# Recreate a dedicated php-fpm config
 ynh_config_add_phpfpm
 
 ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"

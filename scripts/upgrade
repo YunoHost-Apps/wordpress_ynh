@@ -1,19 +1,9 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# CHECK VERSION
-#=================================================
-
-upgrade_type=$(ynh_check_app_version_changed)
+ynh_app_setting_set_default --key=php_memory_limit --value=64M
 
 #=================================================
 # ACTIVATE MAINTENANCE MODE
@@ -22,30 +12,26 @@ upgrade_type=$(ynh_check_app_version_changed)
 ynh_maintenance_mode_ON
 
 #=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression "Ensuring downward compatibility..."
 
 if [ -z "${admin:-}" ]; then
-	ynh_mysql_execute_as_root --sql="select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';" --database=$db_name
+	ynh_mysql_db_shell <<< "select MAX(user_login) from wp_users where user_status=0 INTO OUTFILE '/tmp/wordpressuser';"
+
 	admin=$(cat /tmp/wordpressuser)
-	ynh_secure_remove --file=/tmp/wordpressuser
-	ynh_app_setting_set --app=$app --key=admin --value=$admin
+	ynh_safe_rm /tmp/wordpressuser
+	ynh_app_setting_set --key=admin --value=$admin
 fi
 
-if [ -z "${language:-}" ]; then
-	language=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
-	ynh_app_setting_set --app=$app --key=language --value=$language
-fi
+ynh_app_setting_set_default --key=language --value=$(grep WPLANG $install_dir/wp-config.php | cut -d"'" -f4)
 
 # Fix multisite as a boolean
 if [ "${multisite,,}" = "yes" ]; then
-	ynh_app_setting_set --app=$app --key=multisite --value=1
+	ynh_app_setting_set --key=multisite --value=1
 	multisite=1
 elif [ "${multisite,,}" = "no" ]; then
-	ynh_app_setting_set --app=$app --key=multisite --value=0
+	ynh_app_setting_set --key=multisite --value=0
 	multisite=0
 fi
 
@@ -54,27 +40,9 @@ if grep add_filter.*auto_update $install_dir/wp-config.php; then
 	sed --in-place '/add_filter.*auto_update/d' $install_dir/wp-config.php
 fi
 
-# If fpm_footprint doesn't exist, create it
-if [ -z "${fpm_footprint:-}" ]; then
-    fpm_footprint=medium
-    ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
-fi
-
-# If fpm_free_footprint doesn't exist, create it
-if [ -z "${fpm_free_footprint:-}" ]; then
-	fpm_free_footprint=0
-	ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
-fi
-
-# If fpm_usage doesn't exist, create it
-if [ -z "${fpm_usage:-}" ]; then
-    fpm_usage=low
-    ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
-fi
-
 # Replace wp-fail2ban by wp-fail2ban-redux
-ynh_exec_warn_less wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
-wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
+ynh_hide_warnings wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
+wpcli_alias="php$php_version $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 plugin_network=""
 if [ $multisite -eq 1 ]; then
         plugin_network="--network"
@@ -88,72 +56,63 @@ $wpcli_alias plugin is-installed simple-ldap-login && $wpcli_alias plugin deacti
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
+ynh_script_progression "Upgrading NGINX web server configuration..."
 
-ynh_add_nginx_config
+ynh_config_add_nginx
 
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=4
+ynh_config_add_phpfpm
 
- # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
-
-#=================================================
-# SPECIFIC UPGRADE
 #=================================================
 # SAVE THE CONFIG FILE IF IT HAS BEEN MODIFIED
 #=================================================
 
-# Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-ynh_backup_if_checksum_is_different --file="$install_dir/wp-config.php"
+ynh_backup_if_checksum_is_different "$install_dir/wp-config.php"
 
 #=================================================
 # CONFIGURE MULTISITE
 #=================================================
-ynh_script_progression --message="Configuring multisite..." --weight=2
+ynh_script_progression "Configuring multisite..."
 
 if [ $multisite -eq 1 ]
 then
-	ynh_replace_string --match_string="#--MULTISITE--" --replace_string="" --target_file=/etc/nginx/conf.d/$domain.d/$app.conf
+	ynh_replace --match="#--MULTISITE--" --replace="" --file=/etc/nginx/conf.d/$domain.d/$app.conf
 
-    ynh_store_file_checksum --file="/etc/nginx/conf.d/$domain.d/$app.conf"
+    ynh_store_file_checksum "/etc/nginx/conf.d/$domain.d/$app.conf"
 
-	ynh_systemd_action --service_name=nginx --action=reload
+	ynh_systemctl --service=nginx --action=reload
 
 	db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
-	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/multisite.sql
-	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/multisite.sql
+	ynh_replace --match="__DB_PREFIX__" --replace="$db_prefix" --file=../conf/sql/multisite.sql
+	ynh_replace --match="__APP__" --replace="$app" --file=../conf/sql/multisite.sql
+	ynh_replace --match="__LENGTH__" --replace="$((${#app} + 108))" --file=../conf/sql/multisite.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/multisite.sql
+	ynh_mysql_db_shell < ../conf/sql/multisite.sql
 	plugin_network="--network"
 else
 	multisite=0
 	db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
-	ynh_replace_string --match_string="__DB_PREFIX__" --replace_string="$db_prefix" --target_file=../conf/sql/single.sql
-	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file=../conf/sql/single.sql
-	ynh_replace_string --match_string="__LENGTH__" --replace_string="$((${#app} + 108))" --target_file=../conf/sql/single.sql
+	ynh_replace --match="__DB_PREFIX__" --replace="$db_prefix" --file=../conf/sql/single.sql
+	ynh_replace --match="__APP__" --replace="$app" --file=../conf/sql/single.sql
+	ynh_replace --match="__LENGTH__" --replace="$((${#app} + 108))" --file=../conf/sql/single.sql
 
-	ynh_mysql_connect_as --user=$db_name --password=$db_pwd --database=$db_name < ../conf/sql/single.sql
+	ynh_mysql_db_shell < ../conf/sql/single.sql
 	plugin_network=""
 	if ynh_permission_has_user --permission="main" --user="visitor"
 	then
-		ynh_replace_string --match_string="//--PUBLIC--define" --replace_string="define" --target_file=$install_dir/wp-config.php
+		ynh_replace --match="//--PUBLIC--define" --replace="define" --file=$install_dir/wp-config.php
 	fi
 fi
-ynh_app_setting_set --app=$app --key=multisite --value=$multisite
+ynh_app_setting_set --key=multisite --value=$multisite
 
 #=================================================
 # UPDATE WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression --message="Updating plugins" --weight=11
+ynh_script_progression "Updating plugins"
 
 # wget -nv https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O $install_dir/wp-cli.phar
-# wpcli_alias="php$phpversion $install_dir/wp-cli.phar --allow-root --path=$install_dir"
+# wpcli_alias="php$php_version $install_dir/wp-cli.phar --allow-root --path=$install_dir"
 update_plugin () {
 	( $wpcli_alias plugin is-installed $1 && $wpcli_alias plugin update $1 ) || $wpcli_alias plugin install $1
 }
@@ -167,7 +126,6 @@ $wpcli_alias plugin activate wp-fail2ban-redux $plugin_network
 
 # Disable broken plugin http-authentication
 $wpcli_alias plugin is-installed http-authentication && $wpcli_alias plugin deactivate http-authentication $plugin_network
-
 
 # Set file and directories ownership
 mkdir -p $install_dir/wp-content/uploads
@@ -185,33 +143,27 @@ setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
 #=================================================
 
 # Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="$install_dir/wp-config.php"
-
-chmod 400 "$install_dir/wp-config.php"
-chown $app:$app "$install_dir/wp-config.php"
+ynh_store_file_checksum "$install_dir/wp-config.php"
 
 #=================================================
 # CREATE A CRON TASK FOR AUTOMATIC UPDATE
 #=================================================
 
 echo "# Reach everyday wp-cron.php to trig the internal WordPress cron.
-0 3  *  *  * $app php$phpversion  $install_dir/wp-cron.php" > /etc/cron.d/$app
+0 3  *  *  * $app php$php_version  $install_dir/wp-cron.php" > /etc/cron.d/$app
 
-#=================================================
-# GENERIC FINALISATION
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
-ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=9
+ynh_script_progression "Reconfiguring Fail2Ban..."
 
-# Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>" --max_retry=5
+ynh_config_add_fail2ban --logpath="/var/log/auth.log" --failregex="Authentication (attempt for unknown user|failure for) .* from <HOST>"
 
 #=================================================
 # REMOVE WP-CLI.PHAR
 #=================================================
 
-ynh_secure_remove --file=$install_dir/wp-cli.phar
+ynh_safe_rm $install_dir/wp-cli.phar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
@@ -223,4 +175,4 @@ ynh_maintenance_mode_OFF
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression "Upgrade of $app completed"

@@ -10,12 +10,12 @@ source /usr/share/yunohost/helpers
 if [ $multisite -eq 1 ]
 then
 	echo "A multisite installation of WordPress can't be moved easily. Please have a look at the WordPress codex to learn more about that." >&2
-	ynh_die --message="https://codex.wordpress.org/Moving_WordPress#Moving_WordPress_Multisite"
+	ynh_die "https://codex.wordpress.org/Moving_WordPress#Moving_WordPress_Multisite"
 fi
 
-ynh_script_progression --message="Updating NGINX web server configuration..." --weight=3
+ynh_script_progression "Updating NGINX web server configuration..."
 
-ynh_change_url_nginx_config
+ynh_config_change_url_nginx
 
 #=================================================
 # UPDATE THE DATABASE
@@ -24,11 +24,12 @@ ynh_change_url_nginx_config
 # Get the database table prefix
 db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
 
-ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='siteurl'" --database=$app
-ynh_mysql_execute_as_root --sql="UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='home'" --database=$app
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='siteurl'"
+
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='home'"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Change of URL completed for $app" --last
+ynh_script_progression "Change of URL completed for $app"

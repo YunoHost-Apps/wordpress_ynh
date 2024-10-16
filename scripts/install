@@ -18,7 +18,6 @@ fi
 #=================================================
 ynh_script_progression "Setting up source files..."
 
-# Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
 
 #=================================================
@@ -26,13 +25,7 @@ ynh_setup_source --dest_dir="$install_dir"
 #=================================================
 ynh_script_progression "Configuring NGINX web server..."
 
-# Create a dedicated NGINX config
 ynh_config_add_nginx
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression "Configuring PHP-FPM..."
 
 ynh_config_add_phpfpm
 

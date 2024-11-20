@@ -57,6 +57,7 @@ ynh_systemctl --action=restart --service=fail2ban
 ynh_script_progression "Reloading NGINX web server and PHP-FPM..."
 
 ynh_systemctl --service=php$php_version-fpm --action=reload
+
 ynh_systemctl --service=nginx --action=reload
 
 #=================================================

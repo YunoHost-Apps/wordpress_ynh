@@ -32,7 +32,7 @@ ynh_config_add_phpfpm
 #=================================================
 # CONFIGURE WP-CONFIG
 #=================================================
-ynh_script_progression "Configuring WordPress..."
+ynh_script_progression "Configuring $app..."
 
 # Change variables in Wordpress configuration
 dir=__DIR__
@@ -48,7 +48,7 @@ done
 #=================================================
 # SETTING UP WITH CURL
 #=================================================
-ynh_script_progression "Installing wordpress with cURL..."
+ynh_script_progression "Installing $app with cURL..."
 
 # Set right permissions for cURL install
 chown -R $app: $install_dir
@@ -75,7 +75,7 @@ done
 #=================================================
 # INSTALL WORDPRESS PLUGINS
 #=================================================
-ynh_script_progression "Installing WordPress plugins..."
+ynh_script_progression "Installing $app plugins..."
 
 ynh_hide_warnings wget --no-verbose https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output-document=$install_dir/wp-cli.phar
 wpcli_alias="php$php_version $install_dir/wp-cli.phar --allow-root --path=$install_dir"

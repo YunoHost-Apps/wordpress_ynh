@@ -87,11 +87,11 @@ ynh_maintenance_mode_OFF () {
 
 # Check the amount of available RAM
 #
-# usage: ynh_check_ram [--required=RAM required in Mb] [--no_swap|#REMOVEME? --only_swap] [--free_ram]
+# usage: ynh_check_ram [--required=RAM required in Mb] [--no_swap|--only_swap] [--free_ram]
 # | arg: -r, --required= - Amount of RAM required in Mb. The helper will return 0 is there's enough RAM, or 1 otherwise.
 # If --required isn't set, the helper will print the amount of RAM, in Mb.
 # | arg: -s, --no_swap   - Ignore swap
-# | arg: -o, #REMOVEME? --only_swap - Ignore real RAM, consider only swap.
+# | arg: -o, --only_swap - Ignore real RAM, consider only swap.
 # | arg: -f, --free_ram  - Count only free RAM, not the total amount of RAM available.
 ynh_check_ram () {
 	# Declare an array to define the options of this helper.

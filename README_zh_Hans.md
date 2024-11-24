@@ -5,7 +5,9 @@
 
 # YunoHost 上的 WordPress
 
-[![集成程度](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![工作状态](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
+[![集成程度](https://apps.yunohost.org/badge/integration/wordpress)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+![工作状态](https://apps.yunohost.org/badge/state/wordpress)
+![维护状态](https://apps.yunohost.org/badge/maintained/wordpress)
 
 [![使用 YunoHost 安装 WordPress](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
@@ -20,7 +22,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**分发版本：** 6.5~ynh1
+**分发版本：** 6.7.0~ynh1
 
 ## 截图
 

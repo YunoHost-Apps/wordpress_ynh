@@ -5,7 +5,9 @@ NON debe editarse manualmente.
 
 # WordPress para YunoHost
 
-[![Nivel de integración](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Estado de funcionamento](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Estado de mantemento](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
+[![Nivel de integración](https://apps.yunohost.org/badge/integration/wordpress)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+![Estado de funcionamento](https://apps.yunohost.org/badge/state/wordpress)
+![Estado de mantemento](https://apps.yunohost.org/badge/maintained/wordpress)
 
 [![Instalar WordPress con YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
@@ -20,7 +22,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Versión proporcionada:** 6.5~ynh1
+**Versión proporcionada:** 6.7.0~ynh1
 
 ## Capturas de pantalla
 

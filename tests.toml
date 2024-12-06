@@ -18,7 +18,7 @@ test_format = 1.0
     # Commits to test upgrade from
     # -------------------------------
 
-    test_upgrade_from.773073679873fbed3562c2d315f58eb4c1c0d4fc.name = "Upgrade from 5.8"
+    test_upgrade_from.69d58b9391fdbb9f68cdc7ad63b09c91a3635d9b.name = "Upgrade from 6.5"
 
 # This is an additional test suite
 [with_multisite]

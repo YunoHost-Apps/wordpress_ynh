@@ -5,7 +5,9 @@ No se debe editar a mano.
 
 # WordPress para Yunohost
 
-[![Nivel de integración](https://dash.yunohost.org/integration/wordpress.svg)](https://dash.yunohost.org/appci/app/wordpress) ![Estado funcional](https://ci-apps.yunohost.org/ci/badges/wordpress.status.svg) ![Estado En Mantención](https://ci-apps.yunohost.org/ci/badges/wordpress.maintain.svg)
+[![Nivel de integración](https://apps.yunohost.org/badge/integration/wordpress)](https://ci-apps.yunohost.org/ci/apps/wordpress/)
+![Estado funcional](https://apps.yunohost.org/badge/state/wordpress)
+![Estado En Mantención](https://apps.yunohost.org/badge/maintained/wordpress)
 
 [![Instalar WordPress con Yunhost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=wordpress)
 
@@ -20,7 +22,7 @@ WordPress is open source software you can use to create a beautiful website, blo
 With this package, you can even activate the [multisite](https://wordpress.org/support/article/glossary/#multisite) option.
 
 
-**Versión actual:** 6.5~ynh1
+**Versión actual:** 6.7.0~ynh1
 
 ## Capturas
 
@@ -41,7 +43,7 @@ With this package, you can even activate the [multisite](https://wordpress.org/s
 
 ## Información para desarrolladores
 
-Por favor enviar sus correcciones a la [`branch testing`](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing
+Por favor enviar sus correcciones a la [rama `testing`](https://github.com/YunoHost-Apps/wordpress_ynh/tree/testing).
 
 Para probar la rama `testing`, sigue asÍ:
 

@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.7.2~ynh1"
+version = "6.8~ynh1"
 
 maintainers = ["kay0u"]
 
@@ -16,12 +16,13 @@ admindoc = "https://codex.wordpress.org/"
 code = "https://core.trac.wordpress.org/browser"
 
 [integration]
-yunohost = ">= 11.2.30"
+yunohost = ">= 12.0.9"
 helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
 
 ldap = true
+
 sso = true
 
 disk = "50M"
@@ -58,8 +59,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://downloads.wordpress.org/release/wordpress-6.7.2.zip"
-        sha256 = "b6acbc116aabdc5a7c9bc4e861647148a1b444c1f2beec5440261b88f02c3a6e"
+        url = "https://downloads.wordpress.org/release/wordpress-6.8.zip"
+        sha256 = "6ec3954f27bfbf365b203de360734672605b1075cacc15cc791d79fe83d67c2a"
 
     [resources.system_user]
 
@@ -74,7 +75,7 @@ ram.runtime = "50M"
     admin.show_tile = false
 
     [resources.apt]
-    packages = "mariadb-server, php8.3-mysql, php8.3-curl, php8.3-mbstring, php8.3-xml, php8.3-zip, php8.3-gd, php8.3-soap, php8.3-ssh2, php8.3-tokenizer, php8.3-ldap"
+    packages = "mariadb-server, php8.4-mysql, php8.4-curl, php8.4-mbstring, php8.4-xml, php8.4-zip, php8.4-gd, php8.4-soap, php8.4-ssh2, php8.4-tokenizer, php8.4-ldap"
 
     [resources.database]
     type = "mysql"

@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.8.1~ynh1"
+version = "6.8.2~ynh1"
 
 maintainers = ["kay0u"]
 
@@ -22,7 +22,6 @@ architectures = "all"
 multi_instance = true
 
 ldap = true
-
 sso = true
 
 disk = "50M"
@@ -59,8 +58,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://downloads.wordpress.org/release/wordpress-6.8.1.zip"
-        sha256 = "29c612170f0d206e89a1390804b6f949bfbb01b827aed38f2296226fb9b573d6"
+        url = "https://downloads.wordpress.org/release/wordpress-6.8.2.zip"
+        sha256 = "46bbc3d5807e7aba4fb64aada0d5d99e41b4e80c4373b5ce0269898eca798ac7"
 
     [resources.system_user]
 

@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.8.3~ynh1"
+version = "6.8.3~ynh2"
 
 maintainers = ["kay0u"]
 
@@ -44,8 +44,8 @@ ram.runtime = "50M"
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
     type = "select"
-    choices = ["en_US", "fr_FR"]
-    default = "en_US"
+    choices = ["de_DE", "en_US", "es_ES", "fr_FR", "it_IT", "pt_PT", "pt_BR"]
+    default = "fr_FR"
 
     [install.admin]
     type = "user"
@@ -74,7 +74,7 @@ ram.runtime = "50M"
     admin.show_tile = false
 
     [resources.apt]
-    packages = "mariadb-server, php8.4-mysql, php8.4-curl, php8.4-mbstring, php8.4-xml, php8.4-zip, php8.4-gd, php8.4-soap, php8.4-ssh2, php8.4-tokenizer, php8.4-ldap"
+    packages = "mariadb-server, php8.4-mysql, php8.4-curl, php8.4-mbstring, php8.4-xml, php8.4-zip, php8.4-gd, php8.4-soap, php8.4-ssh2, php8.4-tokenizer, php8.4-ldap, php8.4-imagick, php8.4-intl"
 
     [resources.database]
     type = "mysql"

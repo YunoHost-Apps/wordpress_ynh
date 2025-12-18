@@ -3,7 +3,7 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-ynh_app_setting_set --key=php_memory_limit --value=64M
+ynh_app_setting_set_default --key=php_memory_limit --value=64M
 
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS

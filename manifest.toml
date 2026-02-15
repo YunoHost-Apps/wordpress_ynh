@@ -5,7 +5,7 @@ name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
 
-version = "6.9.0~ynh1"
+version = "6.9.1~ynh1"
 
 maintainers = ["kay0u"]
 
@@ -58,8 +58,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://downloads.wordpress.org/release/wordpress-6.9.zip"
-        sha256 = "3e95777a3acb3b05d5cdbd31b16fc1e9b71122ebe3c1f18c6f53dee3eab0d111"
+        url = "https://downloads.wordpress.org/release/wordpress-6.9.1.zip"
+        sha256 = "1c6ba9fc3ca6d5eb847666d82c0958c15878552387143ed61724ee81350fb120"
 
     [resources.system_user]
 

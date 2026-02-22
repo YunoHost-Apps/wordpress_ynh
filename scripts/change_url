@@ -15,16 +15,12 @@ fi
 
 ynh_script_progression "Updating NGINX web server configuration..."
 
-ynh_config_change_url_nginx
-
-#=================================================
-# UPDATE THE DATABASE
-#=================================================
-
-ynh_script_progression "Updating database URLs to use new domain..."
-
 # Get the database table prefix
 db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+# Get the old and new URLs
+# NB: Remove trailing slashes from URLs, as post-content may not end in a slash
+old_url="https://$old_domain${old_path%/}"
+new_url="https://$new_domain${new_path%/}"
 
 # ------------------------------------------------------------------------------
 # Helper functions for replacing parts of old URLs with new URLs in the database
@@ -35,7 +31,7 @@ table_exists() {
 	ynh_mysql_db_shell <<< "SHOW TABLES LIKE '$1'" | grep -q "."
 }
 
-# Get the number of rows in a table where a column contains the old URL
+# Get the number of rows in a table where a column contains the old string
 get_field_rows() {
 	# tail -n 1 is used to get the number of rows, as the first line is 'COUNT(*)'
 	ynh_mysql_db_shell <<< "SELECT COUNT(*) FROM $1 WHERE $2 LIKE '%${3}%';" | tail -n 1
@@ -43,15 +39,11 @@ get_field_rows() {
 
 # Replace old URLs with new URLs in a specific table and column
 update_string_in_db() {
-	local table="${db_prefix}$1"
+	local table="$1"
 	local old=$2
 	local new=$3
 	local column=$4
-
-	table_exists "$table" || return 0
-
-	local row_count=$(get_field_rows "$table" "$column" "$old")
-	[ "$row_count" != 0 ] || return 0
+	local row_count=$5
 
 	ynh_mysql_db_shell <<EOF
 		UPDATE $table
@@ -62,63 +54,75 @@ EOF
 
 # Queue string updates and count them for progression
 queue_string_update() {
-	local table="$1"
+	local table="${db_prefix}$1"
 	local old="$2"
 	local new="$3"
 	local column="$4"
+
+	table_exists "$table" || return 0
+	# Get the number of rows that will be updated for this table and column
+	local row_count=$(get_field_rows "$table" "$column" "$old")
+	[ "$row_count" != 0 ] || return 0
+
+	# Each update is counted as one step in the progression
 	max_progression=$((max_progression + 1))
 	# Store the update parameters in an array for later execution
-	string_updates+=("$table|$old|$new|$column")
+	string_updates+=("$table|$old|$new|$column|$row_count")
 }
 
 # Execute all queued string updates
 run_string_updates() {
 	for update in "${string_updates[@]}"; do
-		IFS='|' read -r table old new column <<< "$update"
-		update_string_in_db "$table" "$old" "$new" "$column"
+		IFS='|' read -r table old new column row_count <<< "$update"
+		update_string_in_db "$table" "$old" "$new" "$column" "$row_count"
 	done
 }
-
-# ---------------------------------------------------------------------------
-# Update URLs in relevant the columns of the database that need to be updated
-# ---------------------------------------------------------------------------
-
-# Get the old and new URLs, with trailing slashes removed
-# Post-content may not end in a slash, so we need to remove it
-old_url="https://$old_domain${old_path%/}"
-new_url="https://$new_domain${new_path%/}"
-
-# Initialize an array to store string updates and a counter for progression
-string_updates=()
 
 # ---------------------------------------------------------------------
 # First, queue the updates to count them for progression, then run them
 # ---------------------------------------------------------------------
 
-# WordPress core
-# The admin email defaults to the old domain, so we need to update it
-queue_string_update options  "@$old_domain" "@$new_domain" "option_value"
-
-# A number of options and post content may contain the old URL:
-# This also updates the critical 'siteurl' and 'home' options:
-queue_string_update options  "$old_url" "$new_url" option_value
-queue_string_update posts    "$old_url" "$new_url" guid
-queue_string_update posts    "$old_url" "$new_url" post_content
-queue_string_update postmeta "$old_url" "$new_url" meta_value
-queue_string_update users    "$old_url" "$new_url" user_url
-
-# BuddyPress
-queue_string_update bp_activity            "$old_url" "$new_url" action
-queue_string_update bp_activity            "$old_url" "$new_url" primary_link
-queue_string_update bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
+# Initialize an array to store string updates and a counter for progression
+string_updates=()
 
 # Substract the ynh_script_progression call already found in the function
 # update_string_in_db function so we don't double count it for progression
 max_progression=$((max_progression - 1))
 
-# -----------------------------
-# Run the queued string updates
-# -----------------------------
+# --------------
+# WordPress core
+# --------------
+
+# The admin email defaults to the old domain, so we need to update it
+queue_string_update options        "@$old_domain" "@$new_domain" option_value
+
+# A number of options and post content may contain the old URL:
+# This also updates the critical 'siteurl' and 'home' options:
+queue_string_update options                "$old_url" "$new_url" option_value
+queue_string_update posts                  "$old_url" "$new_url" guid
+queue_string_update posts                  "$old_url" "$new_url" post_content
+queue_string_update postmeta               "$old_url" "$new_url" meta_value
+queue_string_update users                  "$old_url" "$new_url" user_url
+
+# ----------
+# BuddyPress
+# ----------
+queue_string_update bp_activity            "$old_url" "$new_url" action
+queue_string_update bp_activity            "$old_url" "$new_url" primary_link
+queue_string_update bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
+
+# ==============================================================
+# The actual updates are run in the next steps, with progression
+# ==============================================================
+
+ynh_config_change_url_nginx
+
+#=================================================
+# UPDATE THE DATABASE
+#=================================================
+
+ynh_script_progression "Updating database URLs to use new domain..."
+
 run_string_updates
 
 #=================================================

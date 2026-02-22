@@ -25,9 +25,6 @@ ynh_script_progression "Updating database URLs to use new domain..."
 
 # Get the database table prefix
 db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
-# Get the old and new URLs
-old_url="https://$old_domain$old_path"
-new_url="https://$new_domain$new_path"
 
 # ------------------------------------------------------------------------------
 # Helper functions for replacing parts of old URLs with new URLs in the database
@@ -40,21 +37,25 @@ table_exists() {
 
 # Get the number of rows in a table where a column contains the old URL
 get_field_rows() {
-	ynh_mysql_db_shell <<< "SELECT COUNT(*) FROM $1 WHERE $2 LIKE '%${3}%';"
+	# tail -n 1 is used to get the number of rows, as the first line is 'COUNT(*)'
+	ynh_mysql_db_shell <<< "SELECT COUNT(*) FROM $1 WHERE $2 LIKE '%${3}%';" | tail -n 1
 }
 
 # Replace old URLs with new URLs in a specific table and column
-update_urls_in_db() {
-	local table=$1
-	local column=$2
-	table_exists "$table" || return
+update_string_in_db() {
+	local table="${db_prefix}$1"
+	local old=$2
+	local new=$3
+	local column=$4
 
-	local row_count=$(get_field_rows "$table" "$column" "$old_url")
-	[ "$row_count" != 0 ] || return
+	table_exists "$table" || return 0
+
+	local row_count=$(get_field_rows "$table" "$column" "$old")
+	[ "$row_count" != 0 ] || return 0
 
 	ynh_mysql_db_shell <<EOF
 		UPDATE $table
-		   SET $column = replace($column, '$old_url', '$new_url');
+		   SET $column = replace($column, '$old', '$new');
 EOF
 	ynh_script_progression "Updated $row_count $column entries in $table"
 }
@@ -63,16 +64,27 @@ EOF
 # Update URLs in relevant the columns of the database that need to be updated
 # ---------------------------------------------------------------------------
 
-update_urls_in_db "${db_prefix}posts"    "guid"
-update_urls_in_db "${db_prefix}posts"    "post_content"
-update_urls_in_db "${db_prefix}postmeta" "meta_value"
+# Get the old and new URLs, with trailing slashes removed
+# Post-content may not end in a slash, so we need to remove it
+old_url="https://$old_domain${old_path%/}"
+new_url="https://$new_domain${new_path%/}"
 
-# Update the siteurl and home options to the new URL
-ynh_mysql_db_shell <<EOF
-	UPDATE ${db_prefix}options
-	   SET option_value = '$new_url'
-	 WHERE option_name = 'home' OR option_name = 'siteurl';
-EOF
+# WordPress core
+# The admin email defaults to the old domain, so we need to update it
+update_string_in_db options  "@$old_domain" "@$new_domain" "option_value"
+
+# A number of options and post content may contain the old URL:
+# This also updates the critical 'siteurl' and 'home' options:
+update_string_in_db options  "$old_url" "$new_url" option_value
+update_string_in_db posts    "$old_url" "$new_url" guid
+update_string_in_db posts    "$old_url" "$new_url" post_content
+update_string_in_db postmeta "$old_url" "$new_url" meta_value
+update_string_in_db users    "$old_url" "$new_url" user_url
+
+# BuddyPress
+update_string_in_db bp_activity            "$old_url" "$new_url" action
+update_string_in_db bp_activity            "$old_url" "$new_url" primary_link
+update_string_in_db bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
 
 #=================================================
 # END OF SCRIPT

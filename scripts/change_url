@@ -60,6 +60,25 @@ EOF
 	ynh_script_progression "Updated $row_count $column entries in $table"
 }
 
+# Queue string updates and count them for progression
+queue_string_update() {
+	local table="$1"
+	local old="$2"
+	local new="$3"
+	local column="$4"
+	max_progression=$((max_progression + 1))
+	# Store the update parameters in an array for later execution
+	string_updates+=("$table|$old|$new|$column")
+}
+
+# Execute all queued string updates
+run_string_updates() {
+	for update in "${string_updates[@]}"; do
+		IFS='|' read -r table old new column <<< "$update"
+		update_string_in_db "$table" "$old" "$new" "$column"
+	done
+}
+
 # ---------------------------------------------------------------------------
 # Update URLs in relevant the columns of the database that need to be updated
 # ---------------------------------------------------------------------------
@@ -69,22 +88,38 @@ EOF
 old_url="https://$old_domain${old_path%/}"
 new_url="https://$new_domain${new_path%/}"
 
+# Initialize an array to store string updates and a counter for progression
+string_updates=()
+
+# ---------------------------------------------------------------------
+# First, queue the updates to count them for progression, then run them
+# ---------------------------------------------------------------------
+
 # WordPress core
 # The admin email defaults to the old domain, so we need to update it
-update_string_in_db options  "@$old_domain" "@$new_domain" "option_value"
+queue_string_update options  "@$old_domain" "@$new_domain" "option_value"
 
 # A number of options and post content may contain the old URL:
 # This also updates the critical 'siteurl' and 'home' options:
-update_string_in_db options  "$old_url" "$new_url" option_value
-update_string_in_db posts    "$old_url" "$new_url" guid
-update_string_in_db posts    "$old_url" "$new_url" post_content
-update_string_in_db postmeta "$old_url" "$new_url" meta_value
-update_string_in_db users    "$old_url" "$new_url" user_url
+queue_string_update options  "$old_url" "$new_url" option_value
+queue_string_update posts    "$old_url" "$new_url" guid
+queue_string_update posts    "$old_url" "$new_url" post_content
+queue_string_update postmeta "$old_url" "$new_url" meta_value
+queue_string_update users    "$old_url" "$new_url" user_url
 
 # BuddyPress
-update_string_in_db bp_activity            "$old_url" "$new_url" action
-update_string_in_db bp_activity            "$old_url" "$new_url" primary_link
-update_string_in_db bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
+queue_string_update bp_activity            "$old_url" "$new_url" action
+queue_string_update bp_activity            "$old_url" "$new_url" primary_link
+queue_string_update bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
+
+# Substract the ynh_script_progression call already found in the function
+# update_string_in_db function so we don't double count it for progression
+max_progression=$((max_progression - 1))
+
+# -----------------------------
+# Run the queued string updates
+# -----------------------------
+run_string_updates
 
 #=================================================
 # END OF SCRIPT

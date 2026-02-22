@@ -21,12 +21,28 @@ ynh_config_change_url_nginx
 # UPDATE THE DATABASE
 #=================================================
 
+ynh_script_progression "Updating database URLs to use new domain..."
+
 # Get the database table prefix
 db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+old_url="https://$old_domain$old_path"
+new_url="https://$new_domain$new_path"
 
-ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='siteurl'"
+guid_posts=$(ynh_mysql_db_shell <<< "SELECT guid FROM ${db_prefix}posts WHERE guid LIKE '%$old_url%';" | tail -n1)
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}posts SET guid = replace(guid, '$old_url','$new_url');"
+ynh_script_progression "Updated $guid_posts entries in ${db_prefix}posts table"
 
-ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='home'"
+urls_posts=$(ynh_mysql_db_shell <<< "SELECT id FROM ${db_prefix}posts WHERE post_content LIKE '%$old_url%';" | tail -n1)
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}posts SET post_content = replace(post_content, '$old_url', '$new_url');"
+ynh_script_progression "Updated $urls_posts entries in ${db_prefix}posts table"
+
+urls_postmeta=$(ynh_mysql_db_shell <<< "SELECT meta_value FROM postmeta WHERE meta_value LIKE '%$old_url%';" | tail -n1)
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}postmeta SET meta_value = replace(meta_value,'$old_url','$new_url');"
+ynh_script_progression "Updated $urls_postmeta entries in ${db_prefix}postmeta table"
+
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='$new_url' WHERE option_name='siteurl'"
+
+ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='$new_url' WHERE option_name='home'"
 
 #=================================================
 # END OF SCRIPT

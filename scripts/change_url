@@ -97,8 +97,6 @@ max_progression=$((max_progression - 1))
 queue_string_update options        "@$old_domain" "@$new_domain" option_value
 
 # A number of options and post content may contain the old URL:
-# This also updates the critical 'siteurl' and 'home' options:
-queue_string_update options                "$old_url" "$new_url" option_value
 queue_string_update posts                  "$old_url" "$new_url" guid
 queue_string_update posts                  "$old_url" "$new_url" post_content
 queue_string_update postmeta               "$old_url" "$new_url" meta_value
@@ -111,6 +109,15 @@ queue_string_update bp_activity            "$old_url" "$new_url" action
 queue_string_update bp_activity            "$old_url" "$new_url" primary_link
 queue_string_update bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
 
+# Note: The this may not cover all tables and columns where URLs may be present,
+# but it covers the most common ones. For instance, if the site uses caching,
+# statistics, or e-commerce plugins, there may be additional tables to update.
+
+# String replace plugins may be used after the changing the URL to update
+# any remaining URLs in the content that were not covered by this script.
+# There are several such plugins, and they offer to select which tables
+# to update and offer a preview of the changes.
+
 # ==============================================================
 # The actual updates are run in the next steps, with progression
 # ==============================================================
@@ -122,6 +129,20 @@ ynh_config_change_url_nginx
 #=================================================
 
 ynh_script_progression "Updating database URLs to use new domain..."
+
+# Update the siteurl and home options to the new URL
+
+# NB: Some themes (Blocksy's starter sites reproduce this issue) loose the
+# footer of the site when the URL is updated in all options. Keeping other
+# options unchanged avoids this issue, so we only update the home and siteurl
+# options here. If needed, users can use a string replace plugin to update
+# remaining options and strings to the new URL.
+
+ynh_mysql_db_shell <<EOF
+       UPDATE ${db_prefix}options
+          SET option_value = '$new_url/'
+        WHERE option_name = 'home' OR option_name = 'siteurl';
+EOF
 
 run_string_updates
 

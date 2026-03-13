@@ -15,18 +15,136 @@ fi
 
 ynh_script_progression "Updating NGINX web server configuration..."
 
+# Get the database table prefix
+db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+# Get the old and new URLs
+# NB: Remove trailing slashes from URLs, as post-content may not end in a slash
+old_url="https://$old_domain${old_path%/}"
+new_url="https://$new_domain${new_path%/}"
+
+# ------------------------------------------------------------------------------
+# Helper functions for replacing parts of old URLs with new URLs in the database
+# ------------------------------------------------------------------------------
+
+# Check if a table exists in the database (e.g. postmeta may not exist)
+table_exists() {
+	ynh_mysql_db_shell <<< "SHOW TABLES LIKE '$1'" | grep -q "."
+}
+
+# Get the number of rows in a table where a column contains the old string
+get_field_rows() {
+	# tail -n 1 is used to get the number of rows, as the first line is 'COUNT(*)'
+	ynh_mysql_db_shell <<< "SELECT COUNT(*) FROM $1 WHERE $2 LIKE '%${3}%';" | tail -n 1
+}
+
+# Replace old URLs with new URLs in a specific table and column
+update_string_in_db() {
+	local table="$1"
+	local old=$2
+	local new=$3
+	local column=$4
+	local row_count=$5
+
+	ynh_mysql_db_shell <<EOF
+		UPDATE $table
+		   SET $column = replace($column, '$old', '$new');
+EOF
+	ynh_script_progression "Updated $row_count $column entries in $table"
+}
+
+# Queue string updates and count them for progression
+queue_string_update() {
+	local table="${db_prefix}$1"
+	local old="$2"
+	local new="$3"
+	local column="$4"
+
+	table_exists "$table" || return 0
+	# Get the number of rows that will be updated for this table and column
+	local row_count=$(get_field_rows "$table" "$column" "$old")
+	[ "$row_count" != 0 ] || return 0
+
+	# Each update is counted as one step in the progression
+	max_progression=$((max_progression + 1))
+	# Store the update parameters in an array for later execution
+	string_updates+=("$table|$old|$new|$column|$row_count")
+}
+
+# Execute all queued string updates
+run_string_updates() {
+	for update in "${string_updates[@]}"; do
+		IFS='|' read -r table old new column row_count <<< "$update"
+		update_string_in_db "$table" "$old" "$new" "$column" "$row_count"
+	done
+}
+
+# ---------------------------------------------------------------------
+# First, queue the updates to count them for progression, then run them
+# ---------------------------------------------------------------------
+
+# Initialize an array to store string updates and a counter for progression
+string_updates=()
+
+# Substract the ynh_script_progression call already found in the function
+# update_string_in_db function so we don't double count it for progression
+max_progression=$((max_progression - 1))
+
+# --------------
+# WordPress core
+# --------------
+
+# The admin email defaults to the old domain, so we need to update it
+queue_string_update options        "@$old_domain" "@$new_domain" option_value
+
+# A number of options and post content may contain the old URL:
+queue_string_update posts                  "$old_url" "$new_url" guid
+queue_string_update posts                  "$old_url" "$new_url" post_content
+queue_string_update postmeta               "$old_url" "$new_url" meta_value
+queue_string_update users                  "$old_url" "$new_url" user_url
+
+# ----------
+# BuddyPress
+# ----------
+queue_string_update bp_activity            "$old_url" "$new_url" action
+queue_string_update bp_activity            "$old_url" "$new_url" primary_link
+queue_string_update bp_user_blogs_blogmeta "$old_url" "$new_url" meta_value
+
+# Note: The this may not cover all tables and columns where URLs may be present,
+# but it covers the most common ones. For instance, if the site uses caching,
+# statistics, or e-commerce plugins, there may be additional tables to update.
+
+# String replace plugins may be used after the changing the URL to update
+# any remaining URLs in the content that were not covered by this script.
+# There are several such plugins, and they offer to select which tables
+# to update and offer a preview of the changes.
+
+# ==============================================================
+# The actual updates are run in the next steps, with progression
+# ==============================================================
+
 ynh_config_change_url_nginx
 
 #=================================================
 # UPDATE THE DATABASE
 #=================================================
 
-# Get the database table prefix
-db_prefix=$(grep '^$table_prefix' "$install_dir/wp-config.php" | sed "s/.*'\(.*\)'.*/\1/" )
+ynh_script_progression "Updating database URLs to use new domain..."
 
-ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='siteurl'"
+# Update the siteurl and home options to the new URL
 
-ynh_mysql_db_shell <<< "UPDATE ${db_prefix}options SET option_value='https://$new_domain$new_path' WHERE option_name='home'"
+# NB: Some themes (Blocksy's starter sites reproduce this issue) loose the
+# footer of the site when the URL is updated in all options. Keeping other
+# options unchanged avoids this issue, so we only update the home and siteurl
+# options here. If needed, users can use a string replace plugin to update
+# remaining options and strings to the new URL.
+
+ynh_mysql_db_shell <<EOF
+       UPDATE ${db_prefix}options
+          SET option_value = '$new_url/'
+        WHERE option_name = 'home' OR option_name = 'siteurl';
+EOF
+
+run_string_updates
 
 #=================================================
 # END OF SCRIPT

@@ -35,6 +35,40 @@ ynh_script_progression "Restoring the MySQL database..."
 ynh_mysql_db_shell < ./db.sql
 
 #=================================================
+# RECREATE THE DEDICATED USER
+#=================================================
+ynh_script_progression "Recreating the dedicated system user..."
+
+if [ $with_sftp -eq 1 ]
+then
+    groups="sftp.app"
+    ynh_system_user_create --username=$app --home_dir="$install_dir" --groups="$groups"
+
+    if [ -n "$password" ]
+    then
+        # Add the password to this user
+        chpasswd <<< "${app}:${password}"
+    fi
+fi
+
+#=================================================
+# RESTORE PERMISSIONS
+#=================================================
+ynh_script_progression "Restoring permissions..."
+
+if [ $with_sftp -eq 1 ]
+then
+    # Restore permissions on app files
+    chown -R $app:www-data "$install_dir"
+    # Home directory of the user needs to be owned by root to allow
+    # SFTP connections
+    chown root:root "$install_dir"
+    setfacl -m g:$app:r-x "$install_dir"
+    setfacl -m g:www-data:r-x "$install_dir"
+    chmod 750 "$install_dir"
+fi
+
+#=================================================
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
 ynh_script_progression "Restoring the PHP-FPM configuration..."

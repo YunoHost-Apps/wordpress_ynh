@@ -4,6 +4,7 @@ id = "wordpress"
 name = "WordPress"
 description.en = "Create a beautiful blog or website easily"
 description.fr = "Logiciel de création de blog ou de site Web"
+description.de = "Hosten Sie ihren Blog oder ihre Webseite"
 
 version = "7.0~ynh1"
 
@@ -43,9 +44,10 @@ ram.runtime = "512M"
     [install.language]
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
+    ask.de = "Wählen Sie die Sprache der Applikation"
     type = "select"
     choices = ["de_DE", "en_US", "es_ES", "fr_FR", "it_IT", "pt_PT", "pt_BR"]
-    default = "fr_FR"
+    default = "en_US"
 
     [install.admin]
     type = "user"
@@ -53,6 +55,7 @@ ram.runtime = "512M"
     [install.multisite]
     ask.en = "Enable multisite option?"
     ask.fr = "Activer l'option multisite ?"
+    ask.de = "WordPress Multisite aktivieren?"
     type = "boolean"
     default = false
 

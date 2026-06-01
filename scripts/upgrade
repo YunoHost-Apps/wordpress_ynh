@@ -12,6 +12,18 @@ ynh_app_setting_set_default --key=php_upload_max_filesize --value=50M
 ynh_app_setting_set_default --key=php_post_max_size --value=50M
 ynh_app_setting_set_default --key=php_max_file_uploads --value=50M
 
+# If with_sftp doesn't exist, create it
+if [ -z "${with_sftp:-}" ]; then
+	with_sftp=0
+	ynh_app_setting_set --app=$app --key=with_sftp --value=$with_sftp
+fi
+
+# Ensure password is a setting even if empty, for the config panel
+if [ -z "${password:-}" ]; then
+	password=""
+fi
+ynh_app_setting_set --app=$app --key=password --value="$password"
+
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
@@ -68,6 +80,27 @@ ynh_script_progression "Upgrading NGINX web server configuration..."
 ynh_config_add_nginx
 
 ynh_config_add_phpfpm
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression "Making sure dedicated system user exists..."
+
+if [ $with_sftp -eq 1 ]
+then
+    groups="sftp.app"
+	ynh_system_user_create --username=$app --home_dir="$install_dir" --groups="$groups"
+
+	if [ -n "$password" ]
+	then
+		# Add the password to this user
+		chpasswd <<< "${app}:${password}"
+	fi
+
+	# Change the user group for previous install script
+	groupadd -f "$app"
+	usermod -g "$app" "$app"
+fi
 
 #=================================================
 # SAVE THE CONFIG FILE IF IT HAS BEEN MODIFIED

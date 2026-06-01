@@ -20,7 +20,7 @@ fi
 
 # Ensure password is a setting even if empty, for the config panel
 if [ -z "${password:-}" ]; then
-	password = ""
+	password=""
 fi
 ynh_app_setting_set --app=$app --key=password --value="$password"
 

@@ -36,6 +36,18 @@ ram.runtime = "512M"
     type = "path"
     default = "/blog"
 
+    [install.with_sftp]
+    ask.en = "Do you need a SFTP access?"
+    ask.fr = "Avez-vous besoin d'un accès SFTP ?"
+    type = "boolean"
+    default = true
+
+    [install.password]
+    type = "password"
+    optional = true
+    help.en = "Optional, this corresponds to the password for SFTP access, if you enabled it"
+    help.fr = "Optionnel, corresponds au mot de passe pour l'accès SFTP, si vous l'avez activé"
+
     [install.init_main_permission]
     type = "group"
     default = "visitors"

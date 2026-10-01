@@ -62,6 +62,7 @@ ram.runtime = "512M"
         sha256 = "d1ae02b5ae18428031ffc3943659fa87ab361d827f4aa804adf9276e4dc75df6"
 
     [resources.system_user]
+    allow_email = true
 
     [resources.install_dir]
     group = "www-data:rwx"

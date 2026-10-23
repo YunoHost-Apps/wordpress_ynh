@@ -1,0 +1,73 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+ynh_abort_if_errors
+
+#=================================================
+# SPECIFIC GETTERS FOR TOML SHORT KEY
+#=================================================
+
+#=================================================
+# SPECIFIC VALIDATORS FOR TOML SHORT KEYS
+#=================================================
+
+#=================================================
+# SPECIFIC SETTERS FOR TOML SHORT KEYS
+#=================================================
+
+set__password() {
+    if [ ! "$password" == "" ]
+    then
+        ynh_app_setting_set --key=password --value="$password"
+    fi
+}
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+
+ynh_app_config_validate() {
+    _ynh_app_config_validate
+
+    if [ "${changed[with_sftp]}" == "true" ] && [ $with_sftp -eq 1 ] && [ "$password" == "" ]
+    then
+        ynh_die --message="You need to set a password to enable SFTP"
+    fi
+}
+
+ynh_app_config_apply() {
+    _ynh_app_config_apply
+
+    if [ "${changed[with_sftp]}" == "true" ] && [ $with_sftp -eq 1 ]
+    then
+        ynh_system_user_add_group --username=$app --groups="sftp.app"
+
+        if [ ! "$password" == "" ]
+        then
+            chpasswd <<< "${app}:${password}"
+        fi
+    elif [ "${changed[with_sftp]}" == "true" ] && [ $with_sftp -eq 0 ]
+    then
+        ynh_system_user_del_group --username=$app --groups="sftp.app"
+    fi
+    
+    if [ "${changed[password]}" == "true" ] && [ ! "$password" == "" ]
+    then
+        chpasswd <<< "${app}:${password}"
+    fi
+
+    if [ "$phpversion" != "none" ]
+    then
+        ynh_add_fpm_config --phpversion=$phpversion
+    fi
+}
+
+ynh_app_config_run $1

@@ -1,0 +1,24 @@
+version = "1.0"
+
+[main]
+name.en = "WordPress configuration"
+name.fr = "Configuration de WordPress"
+
+    [main.sftp]
+    name.en = "SFTP access"
+    name.fr = "Accès SFTP"
+
+        [main.sftp.with_sftp]
+        ask.en = "Do you need SFTP access?"
+        ask.fr = "Avez-vous besoin d'un accès SFTP ?"
+        type = "boolean"
+        default = true
+
+        [main.sftp.password]
+        ask.en = "Set a password for the SFTP access"
+        ask.fr = "Définir un mot de passe pour l’accès SFTP"
+        type = "password"
+        optional = true
+        visible = "with_sftp"
+        help.en = "If a password already exist, leave blank and it will not be replaced."
+        help.fr = "Si un mot de passe existe déjà, laissez vide et il ne sera pas remplacé."

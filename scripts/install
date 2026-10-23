@@ -11,14 +11,20 @@ ynh_app_setting_set_default --key=php_memory_limit --value=768M
 ynh_app_setting_set_default --key=php_upload_max_filesize --value=512M
 ynh_app_setting_set_default --key=php_post_max_size --value=512M
 ynh_app_setting_set_default --key=php_max_file_uploads --value=512M
+ynh_app_setting_set --key=with_sftp --value="$with_sftp"
+ynh_app_setting_set --key=password --value=$password
 
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
 
+ynh_script_progression "Validating installation parameters..."
+
 if [ "$path" == "/" ] && [ $multisite -eq 1 ]; then
 	ynh_die "Multisite option of WordPress doesn't work at the root of a domain."
 fi
+
+[ $with_sftp -eq 0 ] || [ "$password" != "" ] || ynh_die --message="You need to set a password to enable SFTP"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -35,6 +41,19 @@ ynh_script_progression "Configuring NGINX web server..."
 ynh_config_add_nginx
 
 ynh_config_add_phpfpm
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..."
+
+if [ $with_sftp -eq 1 ]
+then
+    groups="sftp.app"
+    ynh_system_user_create --username=$app --home_dir="$install_dir" --groups="$groups"
+    # Add password to this user
+    chpasswd <<< "${app}:${password}"
+fi
 
 #=================================================
 # CONFIGURE WP-CONFIG
@@ -155,6 +174,21 @@ find "$install_dir/wp-content/uploads" -type d -exec chmod 770 {} \;
 find "$install_dir/wp-content/temp" -type d -exec chmod 770 {} \;
 setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/uploads"
 setfacl -Rm d:g:www-data:rwX "$install_dir/wp-content/temp"
+
+#=================================================
+# SET PERMISSIONS
+#=================================================
+
+if [ $with_sftp -eq 1 ]
+then
+	chown -R $app:www-data "$install_dir"
+	# Home directory of the user needs to be owned by root to allow
+	# SFTP connections
+	chown root:root "$install_dir"
+	setfacl -m g:$app:r-x "$install_dir"
+	setfacl -m g:www-data:r-x "$install_dir"
+	chmod 750 "$install_dir"
+fi
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
